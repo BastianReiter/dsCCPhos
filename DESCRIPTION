@@ -5,7 +5,23 @@ Authors@R:
     person("Bastian", "Reiter", , "b.reiter@med.uni-frankfurt.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-1088-0502"))
 Description: Enabling Data Science with the German Cancer Consortium's Clinical Communication Platform (CCP)
-License: use_gpl3_license()
+License: CC BY 4.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Imports: 
+    dbplyr,
+    dplyr,
+    duckdb,
+    ggplot2,
+    gt,
+    gtExtras,
+    lubridate,
+    readxl,
+    RPostgres,
+    showtext,
+    sysfonts,
+    tibble
+Depends: 
+    R (>= 2.10)
+LazyData: true

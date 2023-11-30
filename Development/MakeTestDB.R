@@ -1,0 +1,216 @@
+
+library(dplyr)
+
+#rm(list = ls())
+
+load(file = "./Development/Data/RealData/SDM_CCPFrankfurt.RData")
+
+
+TestDB <- CCPhos::XMLtoDB()
+
+DBI::dbListTables(TestDB)
+
+# [1] "diagnosis"         "histology"         "metastasis"        "molecular-marker"  "patient"           "progress"
+# [7] "radiation-therapy" "sample"            "surgery"           "system-therapy"    "tnm"
+
+
+
+df_Patients <- DBI::dbReadTable(TestDB, name = "patient")
+
+df_Patients <- df_Patients %>%
+                    bind_rows(data.frame(patient.id = df_SDM_Patients$PatientID,
+                                         dktk.id.lokal = df_SDM_Patients$PatientID_Site,
+                                         geburtsdatum = as.Date(paste(df_SDM_Patients$YearOfBirth, 6, 15, sep = "-")),
+                                         geschlecht = df_SDM_Patients$Sex,
+                                         datum_des_letztbekannten_vitalstatus = df_SDM_Patients$DateLastVitalStatus,
+                                         vitalstatus = df_SDM_Patients$LastVitalStatus))
+
+
+
+df_Diagnosis <- DBI::dbReadTable(TestDB, name = "diagnosis")
+
+df_SDM_Tumor <- df_SDM_Tumor %>%
+                        left_join(df_SDM_Diagnosis, by = join_by(PatientID, DiagnosisID))
+
+df_Diagnosis <- df_Diagnosis %>%
+                    bind_rows(data.frame(diagnosis.id = df_SDM_Tumor$TumorID,
+                                         patient.id = df_SDM_Tumor$TumorID,
+                                         primaerdiagnose = df_SDM_Tumor$ICD10Code.y,
+                                         tumor_diagnosedatum = as.Date(paste(df_SDM_Tumor$YearCancerDiagnosis, 6, 15, sep = "-")),
+                                         version_des_icd.10_katalogs = df_SDM_Tumor$ICDVersion,
+                                         lokalisation = df_SDM_Tumor$ICDO_Topography,
+                                         icd.o_katalog_topographie_version = df_SDM_Tumor$ICDO_VersionTopography,
+                                         seitenlokalisation_nach_adt.gekid = df_SDM_Tumor$LocalizationSide))
+
+
+
+df_Histology <- DBI::dbReadTable(TestDB, name = "histology")
+
+df_Histology <- df_Histology %>%
+                    bind_rows(data.frame(histology.id = as.character(df_SDM_Histology$HistologyID),
+                                         diagnosis.id = df_SDM_Histology$TumorID,
+                                         patient.id = df_SDM_Histology$PatientID,
+                                         icd.o_katalog_morphologie_version = df_SDM_Histology$ICDO_VersionMorphology,
+                                         morphologie = df_SDM_Histology$ICDO_Morphology,
+                                         grading = df_SDM_Histology$Grading))
+
+
+
+df_Metastasis <- DBI::dbReadTable(TestDB, name = "metastasis")
+
+df_Metastasis <- df_Metastasis %>%
+                    bind_rows(data.frame(metastasis.id = df_SDM_Metastasis$MetastasisID,
+                                         diagnosis.id = df_SDM_Metastasis$TumorID,
+                                         patient.id = df_SDM_Metastasis$PatientID,
+                                         datum_fernmetastasen = df_SDM_Metastasis$DateMetastasisDiagnosis,
+                                         fernmetastasen_vorhanden = df_SDM_Metastasis$IsDistantMetastasis,
+                                         lokalisation_fernmetastasen = df_SDM_Metastasis$DistantMetastasisLocalization))
+
+
+
+df_MolecularDiagnostics <- DBI::dbReadTable(TestDB, name = "molecular-marker")
+
+df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
+                                bind_rows(data.frame(mol.marker.id = df_SDM_MolecularDiagnostics$MolecularDiagnosticsID,
+                                                     diagnosis.id = df_SDM_MolecularDiagnostics$TumorID,
+                                                     patient.id = df_SDM_MolecularDiagnostics$PatientID,
+                                                     marker_datum = df_SDM_MolecularDiagnostics$DateMolecularDiagnostics,
+                                                     marker_name = df_SDM_MolecularDiagnostics$MolecularMarker,
+                                                     marker_status = df_SDM_MolecularDiagnostics$MolecularMarkerStatus,
+                                                     zusaetzliche_alternative_dokumentation = df_SDM_MolecularDiagnostics$MolecularMarkerComment))
+
+
+
+df_Progress <- DBI::dbReadTable(TestDB, name = "progress")
+
+df_Progress <- df_Progress %>%
+                    bind_rows(data.frame(progress.id = df_SDM_Progress$ProgressID,
+                                         diagnosis.id = df_SDM_Progress$TumorID,
+                                         patient.id = df_SDM_Progress$PatientID,
+                                         untersuchungs._befunddatum_im_verlauf = df_SDM_Progress$DateOfProgress,
+                                         gesamtbeurteilung_tumorstatus = df_SDM_Progress$TherapeuticResponse,
+                                         lokales_oder_regionaeres_rezidiv = df_SDM_Progress$LocalRelapse,
+                                         lymphknoten.rezidiv = df_SDM_Progress$LymphnodalRelapse,
+                                         fernmetastasen = df_SDM_Progress$DistantMetastasis))
+
+
+
+df_Radiotherapy <- DBI::dbReadTable(TestDB, name = "radiation-therapy")
+
+df_SDM_Radiotherapy <- df_SDM_Progress %>%
+                            select(ProgressID,
+                                   TumorID,
+                                   DateOfProgress,
+                                   RadiotherapyIntention,
+                                   RadiotherapyRelationToSurgery) %>%
+                            right_join(df_SDM_Radiotherapy, by = join_by(ProgressID))
+
+df_Radiotherapy <- df_Radiotherapy %>%
+                        bind_rows(data.frame(radiation.therapy.id = df_SDM_Radiotherapy$RadiotherapyID,
+                                             diagnosis.id = df_SDM_Radiotherapy$TumorID,
+                                             patient.id = df_SDM_Radiotherapy$PatientID,
+                                             strahlentherapie_stellung_zu_operativer_therapie = df_SDM_Radiotherapy$RadiotherapyRelationToSurgery,
+                                             intention_strahlentherapie = df_SDM_Radiotherapy$RadiotherapyIntention,
+                                             strahlentherapie_beginn = df_SDM_Radiotherapy$DateRadiotherapyStart,
+                                             strahlentherapie_ende = df_SDM_Radiotherapy$DateRadiotherapyEnd))
+
+
+
+df_BioSampling <- DBI::dbReadTable(TestDB, name = "sample")
+
+df_BioSampling <- df_BioSampling %>%
+                        bind_rows(data.frame(sample.id = df_SDM_BioSampling$SampleID,
+                                             patient.id = df_SDM_BioSampling$PatientID,
+                                             entnahmedatum = df_SDM_BioSampling$DateSampleTaking,
+                                             probentyp = df_SDM_BioSampling$SampleType))
+
+
+
+df_Surgery <- DBI::dbReadTable(TestDB, name = "surgery")
+
+df_SDM_Surgery <- df_SDM_Progress %>%
+                      select(ProgressID,
+                             DateOfProgress,
+                             TumorID,
+                             SurgeryIntention) %>%
+                      right_join(df_SDM_Surgery, by = join_by(ProgressID))
+
+df_Surgery <- df_Surgery %>%
+                  bind_rows(data.frame(surgery.id = as.character(df_SDM_Surgery$SurgeryID),
+                                       diagnosis.id = df_SDM_Surgery$TumorID,
+                                       patient.id = df_SDM_Surgery$PatientID,
+                                       datum_der_op = df_SDM_Surgery$DateOfProgress,
+                                       intention_op = df_SDM_Surgery$SurgeryIntention,
+                                       lokale_beurteilung_resttumor = df_SDM_Surgery$ResidualAssessmentLocal,
+                                       gesamtbeurteilung_resttumor = df_SDM_Surgery$ResidualAssessmentTotal))
+
+
+
+df_SystemicTherapy <- DBI::dbReadTable(TestDB, name = "system-therapy")
+
+df_SDM_SystemicTherapy <- df_SDM_Progress %>%
+                              select(ProgressID,
+                                     DateOfProgress,
+                                     TumorID,
+                                     ChemotherapyIntention,
+                                     ChemotherapyRelationToSurgery,
+                                     IsChemotherapy,
+                                     IsImmunotherapy,
+                                     IsHormonetherapy,
+                                     IsBonemarrowtransplant) %>%
+                              right_join(df_SDM_SystemicTherapy, by = join_by(ProgressID))
+
+df_SystemicTherapy <- df_SystemicTherapy %>%
+                          bind_rows(data.frame(system.therapy.id = df_SDM_SystemicTherapy$SystemicTherapyID,
+                                               diagnosis.id = df_SDM_SystemicTherapy$TumorID,
+                                               patient.id = df_SDM_SystemicTherapy$PatientID,
+                                               systemische_therapie_stellung_zu_operativer_therapie = df_SDM_SystemicTherapy$ChemotherapyRelationToSurgery,
+                                               intention_chemotherapie = df_SDM_SystemicTherapy$ChemotherapyIntention,
+                                               systemische_therapie_beginn = df_SDM_SystemicTherapy$DateSystemicTherapyStart,
+                                               systemische_therapie_ende = df_SDM_SystemicTherapy$DateSystemicTherapyEnd,
+                                               systemische_therapie_protokoll = df_SDM_SystemicTherapy$SystemicTherapyProtocol,
+                                               systemische_therapie_substanzen = df_SDM_SystemicTherapy$SystemicTherapySubstances,
+                                               chemotherapie = df_SDM_SystemicTherapy$IsChemotherapy,
+                                               hormontherapie = df_SDM_SystemicTherapy$IsHormonetherapy,
+                                               immuntherapie = df_SDM_SystemicTherapy$IsImmunotherapy,
+                                               knochenmarktransplantation = df_SDM_SystemicTherapy$IsBonemarrowtransplant))
+
+
+
+df_Staging <- DBI::dbReadTable(TestDB, name = "tnm")
+
+df_Staging <- df_Staging %>%
+                  bind_rows(data.frame(tnm.id = df_SDM_Staging$TnmID,
+                                       diagnosis.id = df_SDM_Staging$TumorID,
+                                       patient.id = df_SDM_Staging$PatientID,
+                                       datum_der_tnm_dokumentation_datum_befund = df_SDM_Staging$DateTNMDocumentation,
+                                       uicc_stadium = df_SDM_Staging$UICCStage,
+                                       tnm.t = df_SDM_Staging$TNM_T,
+                                       tnm.n = df_SDM_Staging$TNM_N,
+                                       tnm.m = df_SDM_Staging$TNM_M,
+                                       c_p_u_preefix_t = df_SDM_Staging$TNM_T_Prefix,
+                                       c_p_u_preefix_n = df_SDM_Staging$TNM_N_Prefix,
+                                       c_p_u_preefix_m = df_SDM_Staging$TNM_M_Prefix,
+                                       tnm.y.symbol = df_SDM_Staging$TNM_ySymbol,
+                                       tnm.r.symbol = df_SDM_Staging$TNM_rSymbol,
+                                       tnm.m.symbol = df_SDM_Staging$TNM_mSymbol,
+                                       tnm.version = df_SDM_Staging$TNMVersion))
+
+
+
+DBI::dbWriteTable(TestDB, name = "patient", value = df_Patients, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "diagnosis", value = df_Diagnosis, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "histology", value = df_Histology, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "metastasis", value = df_Metastasis, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "molecular-marker", value = df_MolecularDiagnostics, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "progress", value = df_Progress, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "radiation-therapy", value = df_Radiotherapy, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "sample", value = df_BioSampling, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "surgery", value = df_Surgery, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "system-therapy", value = df_SystemicTherapy, overwrite = TRUE)
+DBI::dbWriteTable(TestDB, name = "tnm", value = df_Staging, overwrite = TRUE)
+
+
+
+# Remove everything but TestDB
+rm(list = ls()[ls() != "TestDB"])
