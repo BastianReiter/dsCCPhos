@@ -29,6 +29,7 @@ library(devtools)
 # use_package("gt")
 # use_package("gtExtras")
 # use_package("lubridate")
+# use_package("readr")
 # use_package("readxl")
 # use_package("RPostgres")
 # use_package("showtext")
@@ -43,8 +44,16 @@ library(devtools)
 # use_r("ConnectToOpalDB")
 # use_r("Curate")
 # use_r("data")
-# use_r("LoadMetaData")
+# use_r("DataListToDataModel")
+# use_r("DataModelToCSV")
+# use_r("DataModelToDB")
+# use_r("GetDFInfo")
+# use_r("Harmonize")
 # use_r("LoadRawData")
-# use_r("XMLtoDB")
+# use_r("XMLToDataModel")
 
+
+
+# Get CCP Data Model from Opal DB Schema
+CCPDataModel <- CCPhos::XMLToDataModel(XMLSchemaFilePath = "./Development/MetaData/SchemaOpalDB.xml")
 

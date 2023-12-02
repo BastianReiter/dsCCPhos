@@ -3,31 +3,31 @@
 \docType{data}
 \name{Meta_ValueSets}
 \alias{Meta_ValueSets}
-\title{CCP Meta Data: Eligible value sets}
+\title{CCP Meta Data: Value sets}
 \format{
 \subsection{\code{Meta_ValueSets}}{
 
-Data frame
+Tibble
 \describe{
-\item{Table}{Table selector}
-\item{FeatureRank}{Rough position of Feature in Table}
-\item{Feature}{Feature label}
+\item{TableName_Harmonized}{Table selector}
+\item{FeaturePosition}{Position of Feature in Table}
+\item{FeatureName}{Feature name}
 \item{ScaleLevel}{Scale level of feature}
-\item{OriginalValue}{Value in original data}
-\item{Value}{Value as preferred}
-\item{Label}{Label for coded feature values}
-\item{LabelOriginal}{Label in original data}
+\item{Value_Raw}{Value in original / raw data}
+\item{Value_Harmonized}{Value as preferred}
+\item{Label_Harmonized}{Label for coded feature values}
+\item{Label_Raw}{Label in original data}
 \item{FactorRank}{Used to determine order in values}
 }
 }
 }
 \source{
-Own preferences
+\url{https://github.com/BastianReiter/CCPhos/blob/main/Development/MetaData}
 }
 \usage{
 Meta_ValueSets
 }
 \description{
-A data frame containing meta data about the eligibility and transformation of CCP data values
+A tibble containing meta data about eligible data values in Harmonized Data Model (HDM)
 }
 \keyword{datasets}

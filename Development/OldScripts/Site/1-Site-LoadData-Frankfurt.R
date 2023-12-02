@@ -48,9 +48,9 @@ InputFileName <- "Data_CCP_Frankfurt.xlsx"
 # df_SDM_Patients: Patient-specific data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_Patients <- read_excel(path = here::here(InputDataPath, InputFileName),
-                              sheet = "Patient",                                    
+                              sheet = "Patient",
                               skip = 1,                                         # No Header
-                              col_names = c("PatientID",                        # Column Names 
+                              col_names = c("PatientID",                        # Column Names
                                             "PatientID_Site",
                                             "DateFirstProgressDoc",
                                             "YearFirstCancerDiagnosis",
@@ -64,7 +64,7 @@ df_SDM_Patients <- read_excel(path = here::here(InputDataPath, InputFileName),
 # df_SDM_Diagnosis: Data on cancer diagnoses
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_Diagnosis <- read_excel(path = here::here(InputDataPath, InputFileName),
-                               sheet = "Diagnosis",                                    
+                               sheet = "Diagnosis",
                                skip = 1,
                                col_names = c("DiagnosisID",
                                              "PatientID",
@@ -78,7 +78,7 @@ df_SDM_Diagnosis <- read_excel(path = here::here(InputDataPath, InputFileName),
 # df_SDM_Tumor: Data on ICD-O coding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_Tumor <- read_excel(path = here::here(InputDataPath, InputFileName),
-                           sheet = "Tumour",                                    
+                           sheet = "Tumour",
                            skip = 1,
                            col_names = c("TumorID",
                                          "DiagnosisID",
@@ -93,7 +93,7 @@ df_SDM_Tumor <- read_excel(path = here::here(InputDataPath, InputFileName),
 # df_SDM_Histology: Data on cancer histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_Histology <- read_excel(path = here::here(InputDataPath, InputFileName),
-                               sheet = "Histology",                                    
+                               sheet = "Histology",
                                skip = 1,
                                col_names = c("HistologyID",
                                              "TumorID",
@@ -108,7 +108,7 @@ df_SDM_Histology <- read_excel(path = here::here(InputDataPath, InputFileName),
 # df_SDM_Staging: Data on TNM Status
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_Staging <- read_excel(path = here::here(InputDataPath, InputFileName),
-                             sheet = "Tnm",                                    
+                             sheet = "Tnm",
                              skip = 1,
                              col_names = c("TnmID",
                                            "TumorID",
@@ -132,7 +132,7 @@ df_SDM_Staging <- read_excel(path = here::here(InputDataPath, InputFileName),
 # df_SDM_Metastasis: Data on Metastasis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_Metastasis <- read_excel(path = here::here(InputDataPath, InputFileName),
-                                sheet = "Metastasis",                                    
+                                sheet = "Metastasis",
                                 skip = 1,
                                 col_names = c("MetastasisID",
                                               "TumorID",
@@ -147,7 +147,7 @@ df_SDM_Metastasis <- read_excel(path = here::here(InputDataPath, InputFileName),
 # df_SDM_Progress: Data on disease and therapy progress
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_Progress <- read_excel(path = here::here(InputDataPath, InputFileName),
-                              sheet = "Progress",                                    
+                              sheet = "Progress",
                               skip = 1,
                               col_names = c("ProgressID",
                                             "TumorID",
@@ -176,7 +176,7 @@ df_SDM_Progress <- read_excel(path = here::here(InputDataPath, InputFileName),
 # df_SDM_Surgery: Data on Surgery
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_Surgery <- read_excel(path = here::here(InputDataPath, InputFileName),
-                             sheet = "Surgery",                                    
+                             sheet = "Surgery",
                              skip = 1,
                              col_names = c("SurgeryID",
                                            "ProgressID",
@@ -190,7 +190,7 @@ df_SDM_Surgery <- read_excel(path = here::here(InputDataPath, InputFileName),
 # df_SDM_SystemicTherapy: Data on Systemic Therapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_SystemicTherapy <- read_excel(path = here::here(InputDataPath, InputFileName),
-                                     sheet = "SystemTherapy",                                    
+                                     sheet = "SystemTherapy",
                                      skip = 1,
                                      col_names = c("SystemicTherapyID",
                                                    "ProgressID",
@@ -206,7 +206,7 @@ df_SDM_SystemicTherapy <- read_excel(path = here::here(InputDataPath, InputFileN
 # df_SDM_Radiotherapy: Data on Radiotherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_Radiotherapy <- read_excel(path = here::here(InputDataPath, InputFileName),
-                                  sheet = "RadiationTherapy",                                    
+                                  sheet = "RadiationTherapy",
                                   skip = 1,
                                   col_names = c("RadiotherapyID",
                                                 "ProgressID",
@@ -220,7 +220,7 @@ df_SDM_Radiotherapy <- read_excel(path = here::here(InputDataPath, InputFileName
 # df_SDM_BioSampling: Data on Taking of Samples from Patients
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_BioSampling <- read_excel(path = here::here(InputDataPath, InputFileName),
-                                 sheet = "Sample",                                    
+                                 sheet = "Sample",
                                  skip = 1,
                                  col_names = c("SampleID",
                                                "PatientID",
@@ -235,7 +235,7 @@ df_SDM_BioSampling <- read_excel(path = here::here(InputDataPath, InputFileName)
 # df_SDM_MolecularDiagnostics: Data on Molecular Diagnostics
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SDM_MolecularDiagnostics <- read_excel(path = here::here(InputDataPath, InputFileName),
-                                          sheet = "MolecularMarker",                                    
+                                          sheet = "MolecularMarker",
                                           skip = 1,
                                           col_names = c("MolecularDiagnosticsID",
                                                         "TumorID",
