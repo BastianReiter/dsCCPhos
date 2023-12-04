@@ -11,6 +11,8 @@
 #' @examples
 DataListToDataModel <- function(DataList)
 {
+    require(dplyr)
+
     # Get names of tables
     vc_TableNames <- names(DataList)
 

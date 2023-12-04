@@ -11,6 +11,8 @@
 DataModelToCSV <- function(DataModel,
                            OutputPath = "./DataModel.csv")
 {
+    require(dplyr)
+
     df_Output <- tibble::tibble()
 
     for (i in 1:length(DataModel))

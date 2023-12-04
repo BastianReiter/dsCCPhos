@@ -50,6 +50,8 @@ library(devtools)
 # use_r("GetDFInfo")
 # use_r("Harmonize")
 # use_r("LoadRawData")
+use_r("Recode")
+# use_r("TrackFeatureValues")
 # use_r("XMLToDataModel")
 
 

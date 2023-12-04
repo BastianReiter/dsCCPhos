@@ -43,13 +43,13 @@ f_InitProgressBar <- function(inp_Title,
                                                       Description = "Initiation",
                                                       TimeStamp = Sys.time(),
                                                       Duration = 0))
-    
+
     try(tcltk::setTkProgressBar(pb = ls_ProgressInfo$ProgressBar,
                                 value = 0,
                                 title = inp_Title,
                                 label = "0% done"),
         silent = TRUE)
-    
+
     return(ls_ProgressInfo)
 }
 
@@ -65,25 +65,25 @@ f_UpdateProgressBar <- function(inp_ProgressInfo,
                                 inp_StepDescription = NULL)
 {
     df_StepInfo <- inp_ProgressInfo$ProgressStepInfo
-    
+
     FinishedStep <- last(df_StepInfo$Step) + 1
-    
+
     df_StepInfo <- df_StepInfo %>%
                         add_row(Step = FinishedStep,
                                 Description = inp_StepDescription,
                                 TimeStamp = Sys.time(),
                                 Duration = round(as.numeric(difftime(TimeStamp, last(df_StepInfo$TimeStamp), units = "secs")), 0))
-    
+
     NewProgressValue <- FinishedStep / inp_ProgressInfo$ProgressTotalSteps
-    
+
     Info <- sprintf("%i%% done", round(NewProgressValue * 100, 0))
-    
+
     try(tcltk::setTkProgressBar(pb = inp_ProgressInfo$ProgressBar,
                                 value = NewProgressValue,
                                 title = sprintf(paste(inp_ProgressInfo$ProgressBarTitle, "(%s)"), Info),
                                 label = Info),
         silent = TRUE)
-    
+
     # Print out information about finished task
     cat("Performed Step ",
             last(df_StepInfo$Step),
@@ -95,7 +95,7 @@ f_UpdateProgressBar <- function(inp_ProgressInfo,
             as.character(duration(last(df_StepInfo$Duration), units = "seconds")),
             "\n",
         sep = "")
-    
+
     return(df_StepInfo)
 }
 
@@ -160,26 +160,26 @@ f_GetObjectInfo <- function(inp_ObjectNames,
                             Object_Category = character(),
                             Object_Attributes = character(),
                             Number_of_Rows = numeric())
-    
+
     for (i in 1:length(inp_ObjectNames))
     {
         CurrentObject_Name <- inp_ObjectNames[i]
         CurrentObject <- get(CurrentObject_Name, envir = inp_Environment)
-        
+
         CurrentObject_RType <- type_of(CurrentObject)
-        
+
         CurrentObject_Category <- "Other"
         if (str_starts(CurrentObject_Name, "df")) { CurrentObject_Category <- "Table" }
         if (str_starts(CurrentObject_Name, "plot")) { CurrentObject_Category <- "Plot Object" }
         if (str_starts(CurrentObject_Name, "model")) { CurrentObject_Category <- "Model Object" }
         if (str_starts(CurrentObject_Name, "ls")) { CurrentObject_Category <- "eCDF Object" }
         if (str_starts(CurrentObject_Name, "Validation")) { CurrentObject_Category <- "Meta Data" }
-        
+
         CurrentObject_Attributes <- paste(colnames(CurrentObject), collapse = ", ")
-        
+
         CurrentObject_NumberOfRows <- NA
         if (CurrentObject_Category == "Table") { CurrentObject_NumberOfRows <- nrow(CurrentObject) }
-        
+
         df_ObjectInfo <- df_ObjectInfo %>%
                               add_row(Object_Name = CurrentObject_Name,
                                       Object_R_Type = CurrentObject_RType,
@@ -187,7 +187,7 @@ f_GetObjectInfo <- function(inp_ObjectNames,
                                       Object_Attributes = CurrentObject_Attributes,
                                       Number_of_Rows = CurrentObject_NumberOfRows)
     }
-    
+
     return(df_ObjectInfo)
 }
 
@@ -203,267 +203,32 @@ f_GetAttributesInfo <- function(inp_DataFrameName,
                                 inp_IncludeRandomRow = FALSE)                   # Boolean whether to include random values in the form of dependent values (from a randow row)
 {
     df_InputDataFrame <- get(inp_DataFrameName, envir = inp_Environment)
-  
+
     df_AttributesInfo <- tibble(Object = inp_DataFrameName,
                                 AttributeName = colnames(df_InputDataFrame),
                                 AttributeDataType = sapply(df_InputDataFrame, class))      # Get Data Type of each Attribute
-    
+
     # Include independent random values
     if (inp_IncludeRandomExampleValues == TRUE)
     {
       vc_RandomValues <- unlist(map(1:ncol(df_InputDataFrame),
                                     function(x) { toString(pull(df_InputDataFrame[sample(1:nrow(df_InputDataFrame), 1), x])) }))      # The combination of toString() and pull() is necessary to preserve date format
-      
+
       df_AttributesInfo <- df_AttributesInfo %>% add_column(ExampleValue = vc_RandomValues)
     }
 
     # Include random row (dependent values)
     if (inp_IncludeRandomExampleValues == FALSE && inp_IncludeRandomRow == TRUE)
     {
-      vc_RandomRow <- unlist(map(df_InputDataFrame[sample(1:nrow(df_InputDataFrame), 1), ], 
+      vc_RandomRow <- unlist(map(df_InputDataFrame[sample(1:nrow(df_InputDataFrame), 1), ],
                                  toString))      # Extract random row (as a list to preserve data types) and convert every value to character using toString() (preserves date format) and unlist to get character vector
-      
+
       df_AttributesInfo <- df_AttributesInfo %>% add_column(ExampleValue = vc_RandomRow)
     }
-    
+
     return(df_AttributesInfo)
 }
 
-
-
-################################################################################
-#--------- DATA SCREENING METHODS ---------------------------------------------#
-################################################################################
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Track occurrence of a feature's unique values, their eligibility and frequency
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Returns a tibble
-#-------------------------------------------------------------------------------
-f_TrackFeatureValues <- function(inp_df,
-                                 inp_Features,      # List of vectors. Name of vector object gives name of feature, optional vector values give eligible values.
-                                 inp_ProcessingStatus = NULL)
-  {
-    df_Output <- tibble(Feature = character(),
-                        Value = character(),
-                        IsValueEligible = logical(),
-                        ProcessingStatus = character(),
-                        Frequency = numeric())
-    
-    for (feature in names(inp_Features))
-    {
-        vc_ContingencyTable <- table(inp_df[[feature]], useNA = "always")      # table() returns a contingency table in the form of a named vector. Vector element names are the occurring values, vector element values are the corresponding absolute frequencies.
-        
-        vc_EligibleValues <- inp_Features[[feature]]      # Get eligible values from optional vector values
-        
-        df_FeatureRows <- tibble(Feature = feature,
-                                 Value = names(vc_ContingencyTable),      # Get all distinct values from contingency table
-                                 IsValueEligible = NA,
-                                 ProcessingStatus = inp_ProcessingStatus,
-                                 Frequency = as.numeric(vc_ContingencyTable)) %>%      # Get absolute frequencies from contingency table
-                              arrange(Value)
-                                 
-        if (!is.null(vc_EligibleValues))      # If vector of eligible values is passed (so not null), 
-        {
-            df_FeatureRows <- df_FeatureRows %>%
-                                  mutate(IsValueEligible = Value %in% vc_EligibleValues) %>%      # ... see which values are in it
-                                  arrange(IsValueEligible, Value)
-        }
-        
-        df_Output <- bind_rows(df_Output, df_FeatureRows)
-    }
-    
-    return(df_Output)
-}
-      
-        
-        
-################################################################################
-#--------- WRANGLING OPERATIONS -----------------------------------------------#
-################################################################################
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Custom Value Recoding
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Returns a vector
-#-------------------------------------------------------------------------------
-f_Recode <- function(inp_TargetVector,
-                     inp_Dictionary)      # A Named Character Vector. Vector Names are Lookup Values, Vector Values are Substitute Values.
-{
-    # Lookup Values come from names(inp_Dictionary)
-    vc_LookupValues <- regex(paste0("^",      # Embrace Lookup Values with "^" and "$" to isolate them, so that for example "R" is not recognized (and replaced) in "CR", but only when it stands isolated
-                                    str_escape(names(inp_Dictionary)),      # Introduce escaping of special characters, for example "(" and "/"
-                                    "$"))
-    
-    # Add "Protection Prefix" to mark freshly changed Values, so that they won't be looked up themselves
-    vc_NewValues <- paste0("NEW_", inp_Dictionary)
-    names(vc_NewValues) <- vc_LookupValues
-    
-    vc_Output <- stringr::str_replace_all(inp_TargetVector, vc_NewValues)
-    vc_Output <- stringr::str_remove_all(vc_Output, "NEW_")      # Remove the introduced "Protection Prefix"
-    
-    return(vc_Output)
-}
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Perform common value transforming operations
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Returns a vector
-#-------------------------------------------------------------------------------
-f_TransformValues <- function(inp_Values,
-                              inp_FactorLevels)
-{
-    vc_Output <- inp_Values
-                      
-}
-
-
-
-
-################################################################################
-#--------- CUSTOM STYLING -----------------------------------------------------#
-################################################################################
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CUSTOM COLORS
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Colors taken from package colorspace
-#PaletteName_Categorical <- "Dark3"
-#PaletteName_Sequential <- "Blue-Yellow"
-
-# Custom color palette
-#palette_CCP_Categorical <- qualitative_hcl(8, PaletteName_Categorical)
-#palette_CCP_Sequential <- sequential_hcl(8, PaletteName_Sequential)
-
-
-#color_Primary <- "#404DFF70"
-#color_Secondary <- palette_CCP_Categorical[2]
-
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CUSTOM FONT IN PLOTS AND TABLES
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Using package showtext to load Google font
-font_add_google(name = "Karla", family = "Karla")
-font_add_google(name = "Montserrat", family = "Montserrat")
-font_add_google(name = "Poppins", family = "Poppins")
-
-# Font usage initiation
-# Alternatively control font usage in functions / in script via showtext_begin() and showtext_end()
-showtext_auto()
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CUSTOM gt THEME
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-theme_gt_CDSG <- function(inp_gtObject,
-                          inp_ShowNAs = FALSE,
-                          inp_TableWidth = NULL,
-                          inp_TableAlign = "center",
-                          ...)
-{
-    inp_gtObject %>%
-        tab_options(table.width = inp_TableWidth,
-                    table.align = inp_TableAlign,
-                    table.font.names = c("Karla", default_fonts()),
-                    table.font.size = "80%",
-                    heading.align = "center",
-                    table.border.top.width = NULL,
-                    column_labels.background.color = "#05499650",
-                    column_labels.border.top.width = NULL,
-                    column_labels.border.bottom.width = 3,
-                    column_labels.border.bottom.color = "#054996",
-                    row_group.background.color = "#E0E0E0") %>%
-        #--- Style column label text ---
-        tab_style(locations = cells_column_labels(),
-                  style = "vertical-align: middle;
-                           text-transform: uppercase;
-                           font-weight: bold;
-                           color: #054996") %>%
-        #--- Format column label text (Replace "_" with " ")
-        text_replace(locations = cells_column_labels(),
-                     pattern = "[_]",
-                     replacement = " ") %>%
-        #--- Style row group label ---
-        tab_style(locations = cells_row_groups(),
-                  style = "font-weight: bold;
-                           color: #054996") %>%
-        { if (inp_ShowNAs == FALSE)
-        { sub_missing(., missing_text = "") }
-          else {.}
-        }
-}
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CUSTOM ggplot2 THEME
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-theme_CCP <- function(...,
-                      inp_Theme_BaseSize = 11,
-                      inp_Theme_LegendPosition = "right",
-                      inp_Theme_SizeFactorPlotTitle = 1.67,
-                      inp_Theme_SizeFactorPlotSubtitle = 1.33,
-                      inp_Theme_SizeFactorPlotCaption = 1,
-                      inp_Theme_SizeFactorAxisLabels = 1.33,
-                      inp_Theme_SizeFactorTickLabels_x = 1,
-                      inp_Theme_SizeFactorTickLabels_y = 1,
-                      inp_Theme_SizeFactorLegendLabels = 1,
-                      inp_Theme_SizeFactorFacetLabels = 1.33)
-{
-  # Set up new theme by overriding classic theme (not modifying)
-  theme_classic() %+replace%
-  
-      theme(#--- Parameters regarding entire plot ------------------------------
-            text = element_text(family = "Karla", size = inp_Theme_BaseSize),      # Settings for all text elements
-            plot.background = element_rect(fill = "transparent", color = NA),      # Transparent plot background, no border
-            plot.margin = margin(0.5, 1, 0.5, 1, unit = "cm"),      # Margin around entire plot
-            plot.title = element_text(face = "bold", size = rel(inp_Theme_SizeFactorPlotTitle), hjust = 0),
-            plot.title.position = "plot",
-            plot.subtitle = element_text(size = rel(inp_Theme_SizeFactorPlotSubtitle), margin = margin(0.2, 0, 1, 0, unit = "cm"), hjust = 0),
-            plot.caption = element_text(size = rel(inp_Theme_SizeFactorPlotCaption), margin = margin(1, 0, 0, 0, unit = "cm"), hjust = 1),
-            #--- Parameters regarding panel ------------------------------------
-            panel.background = element_rect(fill = "transparent", color = NA),      # Transparent panel background, no border
-            panel.border = element_blank(),      # No panel border
-            panel.grid.minor = element_blank(),      # Do not display minor grid lines
-            panel.grid.major.x = element_blank(),      # Do not display major grid lines of x axis
-            panel.grid.major.y =  element_line(color = color_MediumGrey),      # Color of y axis major grid lines
-            #--- Axis parameters -----------------------------------------------
-            axis.text = element_text(face = "bold", color = color_DarkGrey),      # Axis tick labels
-            axis.text.x = element_text(size = rel(inp_Theme_SizeFactorTickLabels_x)),      # x Axis tick label size
-            axis.text.y = element_text(size = rel(inp_Theme_SizeFactorTickLabels_y)),      # y Axis tick label size
-            axis.title = element_text(face = "bold", color = color_DarkGrey, size = rel(inp_Theme_SizeFactorAxisLabels)),      # Axis title labels
-            axis.title.x = element_text(margin = margin(0.5, 0, 0, 0, unit = "cm")),
-            axis.title.y = element_text(margin = margin(0, 0.5, 0, 0, unit = "cm"), angle =90),
-            axis.ticks = element_blank(),      # No axis tick marks
-            #axis.line.y = element_line(arrow = grid::arrow(length = unit(0.3, "cm"), ends = "last", type = "open")),      # Arrow at top end of y-axis
-            axis.line.y = element_line(),
-            #--- Parameters regarding facet ------------------------------------
-            strip.background = element_rect(fill = color_LightGrey, color = "white"),      # No strip background
-            strip.text = element_text(size = rel(inp_Theme_SizeFactorFacetLabels), face = "bold", margin = margin(5, 0, 5, 0)),      # Facet label text settings, including margin to plot area
-            panel.spacing = unit(0.4, "cm"),      # Spacing between facet panels
-            #--- Parameters regarding legend -----------------------------------
-            legend.position = inp_Theme_LegendPosition,
-            legend.background = element_rect(fill = "transparent", color = NA),      # Transparent legend background, no border
-            legend.box.background = element_rect(fill = "transparent", color = NA),      # Transparent legend box background (with multiple legends), no border
-            legend.title = element_text(color = color_DarkGrey, size = rel(inp_Theme_SizeFactorLegendLabels), face = "bold"),
-            legend.text = element_text(color = color_DarkGrey, size = rel(inp_Theme_SizeFactorLegendLabels), face = "bold"),
-            legend.key.size = unit(1, "cm"),      # Size of legend symbols
-            #--- All other parameters ------------------------------------------
-            ...
-            )
-}
 
 
 
@@ -491,7 +256,7 @@ f_GetSampleStatistics <- function(inp_df,
                                 MAD = mad({{ inp_MetricFeature }}, na.rm = inp_na.rm),
                                 Mean = mean({{ inp_MetricFeature }}, na.rm = inp_na.rm),
                                 SD = sd({{ inp_MetricFeature }}, na.rm = inp_na.rm))
-    
+
     if (quo_is_null(enquo(inp_GroupingFeature)) == FALSE)      # If inp_GroupingFeature is not empty...
     {
         # Get group-specific output
@@ -506,18 +271,18 @@ f_GetSampleStatistics <- function(inp_df,
                                       MAD = mad({{ inp_MetricFeature }}, na.rm = inp_na.rm),
                                       Mean = mean({{ inp_MetricFeature }}, na.rm = inp_na.rm),
                                       SD = sd({{ inp_MetricFeature }}, na.rm = inp_na.rm))
-        
+
         # Create Extra column for later rbinding
         df_Output <- df_Output %>%
                           mutate(dummy = "All", .before = 1)
-        
+
         # Harmonize column names for rbinding
         colnames(df_Output) <- colnames(df_Groupwise)
-        
+
         df_Output <- rbind(df_Output,
                            df_Groupwise)
     }
-    
+
     return(df_Output)
 }
 
@@ -536,16 +301,16 @@ f_GetSampleQuantiles <- function(inp_df,
     vc_Quantiles <- c(c(0.01, 0.025),
                       seq(from = 0.05, to = 0.95, by = 0.05),
                       c(0.975, 0.99))
-    
+
     # Auxiliary vector for column names
     vc_QuantileNames <- map_chr(vc_Quantiles, ~paste0("P", .x * 100))
-    
+
     # Using purrr::map, create a list of functions (in this case a set of quantile functions) to be mapped to the metric feature later on
     # Use purrr::partial to pre-define additional arguments for the set of quantile functions
     ls_f_Quantiles <- map(vc_Quantiles,
                           ~partial(quantile, probs = .x, na.rm = inp_na.rm)) %>%
                       set_names(vc_QuantileNames)
-  
+
     # Apply mapping of quantile functions to the column defined by inp_MetricFeature
     df_Output <- inp_df %>%
                       summarize(across(.cols = {{ inp_MetricFeature }},
@@ -560,18 +325,18 @@ f_GetSampleQuantiles <- function(inp_df,
                           summarize(across(.cols = {{ inp_MetricFeature }},
                                            .fns = ls_f_Quantiles,
                                            .names = "{.fn}"))
-      
+
       # Create Extra column for later rbinding
       df_Output <- df_Output %>%
                         mutate(dummy = "All", .before = 1)
-      
+
       # Harmonize column names for rbinding
       colnames(df_Output) <- colnames(df_Groupwise)
-      
+
       df_Output <- rbind(df_Output,
                          df_Groupwise)
     }
-    
+
     return(df_Output)
 }
 
@@ -587,32 +352,32 @@ f_GetECDF <- function(inp_df,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     df_Input <- inp_df
-    
+
     # Remove missing values if desired
     if (inp_na.rm == TRUE)
     {
-        df_Input <- df_Input %>% 
+        df_Input <- df_Input %>%
                         filter(., is.na({{ inp_MetricFeature }}) == FALSE)
     }
-    
+
     # Cumulated output
     df_Output <- df_Input %>%
                       summarize(eCDF = list(ecdf({{ inp_MetricFeature }})))
-  
+
     # Groupwise output
     if (quo_is_null(enquo(inp_GroupingFeature)) == FALSE)      # If inp_GroupingFeature is not empty...
     {
         df_Groupwise <- df_Input %>%
                             group_by(., {{ inp_GroupingFeature }}) %>%
                             summarize(eCDF = list(ecdf({{ inp_MetricFeature }})))
-      
+
         # Create Extra column for later rbinding
         df_Output <- df_Output %>%
                           mutate(dummy = "All", .before = 1)
-        
+
         # Harmonize column names for rbinding
         colnames(df_Output) <- colnames(df_Groupwise)
-        
+
         df_Output <- rbind(df_Output,
                            df_Groupwise)
     }
@@ -641,7 +406,7 @@ f_MakeLinePlot <- function(inp_df,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     #--- Process plot data -----------------------------------------------------
-  
+
     df_Plotdata <- inp_df %>%
                       ungroup() %>%
                       select({{ inp_X }},
@@ -660,10 +425,10 @@ f_MakeLinePlot <- function(inp_df,
                                    list(inp_Theme_LegendPosition = inp_LegendPosition),      # Because legend position is often used, it gets its own argument
                                    inp_ls_ThemeArguments)) +
             geom_line()
-    
-    
-    
-            # 
+
+
+
+            #
             # labs(x = inp_AxisTitle_x,
             #      y = inp_AxisTitle_y) +
             # #--- Option: If no axis title, delete space for label --------------
@@ -673,7 +438,7 @@ f_MakeLinePlot <- function(inp_df,
             #   if (inp_AxisTitle_y == "") { theme(axis.title.y = element_blank()) }
             # }
 
-  
+
 }
 
 
@@ -708,11 +473,11 @@ f_MakeColumnPlot <- function(inp_df,                                            
                              inp_ColorPrimary = color_Primary,
                              inp_AlphaPalette = NULL,
                              inp_ColumnWidth = 0.95,
-                             ...)                                               
+                             ...)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     #--- Process plot data -----------------------------------------------------
-  
+
     df_Plotdata <- inp_df %>%
                       ungroup() %>%
                       select({{ inp_X }},
@@ -743,7 +508,7 @@ f_MakeColumnPlot <- function(inp_df,                                            
     {
         if (is.null(names(inp_XSpecs)) == TRUE) { var_XLabels = inp_XSpecs }      # If X specs are passed without vector naming, take X labels from vector values
         else { var_XLabels <- names(inp_XSpecs) }      # Else take X labels from X specs vector names
-      
+
         df_Plotdata <- df_Plotdata %>%
                             mutate(X = factor(X, levels = inp_XSpecs, labels = var_XLabels)) %>%
                             filter(is.na(X) == FALSE)
@@ -756,7 +521,7 @@ f_MakeColumnPlot <- function(inp_df,                                            
         df_Plotdata <- df_Plotdata %>%
                             mutate(GroupingFeature = factor(GroupingFeature, levels = inp_GroupingSpecs)) %>%
                             filter(is.na(GroupingFeature) == FALSE)
-        
+
         vc_RepresentedGroupValues <- unique(df_Plotdata$GroupingFeature)
         vc_RepresentedGroupingSpecs <- inp_GroupingSpecs[inp_GroupingSpecs %in% vc_RepresentedGroupValues]
 
@@ -789,25 +554,25 @@ f_MakeColumnPlot <- function(inp_df,                                            
         if (inp_GroupingMapping == "alpha") { var_AlphaMapping <- df_Plotdata$GroupingFeature }
         if (inp_GroupingMapping == "pattern") { var_PatternMapping <- df_Plotdata$GroupingFeature }
     }
-    
+
     if (quo_is_null(enquo(inp_FacetFeature)) == FALSE)
     {
       if (inp_FacetMapping == "fill") { var_FillMapping <- df_Plotdata$FacetFeature }
       if (inp_FacetMapping == "alpha") { var_AlphaMapping <- df_Plotdata$FacetFeature }
       if (inp_FacetMapping == "pattern") { var_PatternMapping <- df_Plotdata$FacetFeature }
     }
-    
+
 
     #--- Set aesthetics mapping ------------------------------------------------
     var_aesMapping <- aes(fill = var_FillMapping,
                           alpha = var_AlphaMapping)
-    
+
     #--- Determine geom() object -----------------------------------------------
     var_Geom <- geom_col(mapping = var_aesMapping,
                          position = inp_GroupingPosition,
                          width = inp_ColumnWidth)
-    
-    
+
+
     #--- If fill mapping is set to X or Facet Feature --------------------------
     if (inp_XAdditionalMapping == "fill" | inp_FacetMapping == "fill")
     {
@@ -816,14 +581,14 @@ f_MakeColumnPlot <- function(inp_df,                                            
                                                       values = inp_FillPalette,      # Set custom fill colors
                                                       guide = NULL)))      # Do not display corresponding legend
     }
-    
+
     #--- For other cases of fill mapping pass the option to hide fill guide ----
     if (inp_LegendShowFillGuide == FALSE)
     {
         var_Modifications <- c(var_Modifications,
                                list(guides(fill = "none")))
     }
-    
+
     #--- If alpha mapping is enabled -------------------------------------------
     if (length(var_AlphaMapping) > 1)
     {
@@ -834,20 +599,20 @@ f_MakeColumnPlot <- function(inp_df,                                            
         else {
           var_AlphaValues = inp_AlphaPalette
         }
-        
+
         var_Modifications <- c(var_Modifications,
                                list(scale_alpha_manual(labels = var_LegendLabels,
                                                        values = var_AlphaValues,
                                                        name = NULL)))
     }
-    
+
     #--- If pattern mapping is enabled -----------------------------------------
     if (is.null(var_PatternMapping) == FALSE)
     {
         var_aesMapping <- aes(fill = var_FillMapping,
                               alpha = var_AlphaMapping,
                               pattern = var_PatternMapping)
-        
+
         var_Geom <- geom_col_pattern(mapping = var_aesMapping,
                                      position = inp_GroupingPosition,
                                      width = inp_ColumnWidth,
@@ -857,13 +622,13 @@ f_MakeColumnPlot <- function(inp_df,                                            
                                      pattern_spacing = 0.04,
                                      pattern_alpha = var_PatternAlpha,
                                      pattern_key_scale_factor = 0.5)
-        
+
         var_Modifications <- c(var_Modifications,
                                list(scale_pattern_manual(labels = var_LegendLabels,
                                                          values = c("stripe", "crosshatch", "stripe"),
                                                          name = NULL)))
     }
-    
+
     #--- Option: Format y axis for display of proportional values --------------
     if (inp_AxisType_y == "proportional")
     {
@@ -873,8 +638,8 @@ f_MakeColumnPlot <- function(inp_df,                                            
                                                      expand = expansion(mult = c(0, 0.1))),      # No padding between data lower y limit, 10 % padding on upper y limit
                                   theme(axis.line.y = element_line(arrow = NULL))))
     }
-    
-    
+
+
     #--- Plot ------------------------------------------------------------------
 
     plot <- ggplot(data = df_Plotdata,
@@ -944,7 +709,7 @@ f_MakeBoxViolinPlot <- function(inp_df,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     #--- Process plot data -----------------------------------------------------
-  
+
     df_Plotdata <- inp_df %>%
                         ungroup() %>%
                         select({{ inp_X }},
@@ -953,7 +718,7 @@ f_MakeBoxViolinPlot <- function(inp_df,
                                Y = {{ inp_Y }}) %>%
                         { #--- Option: Determine X value selection and order
                           if (is.null(inp_XSelection) == FALSE)
-                          { mutate(., X = factor(X, levels = inp_XSelection)) %>% 
+                          { mutate(., X = factor(X, levels = inp_XSelection)) %>%
                             filter(., is.na(X) == FALSE) }
                           else {.}
                         } %>%
@@ -971,10 +736,10 @@ f_MakeBoxViolinPlot <- function(inp_df,
                           else {.}
                         } %>%
                         group_by(X)
-    
-    
+
+
     #--- Plot ------------------------------------------------------------------
-    
+
     plot <- ggplot(data = df_Plotdata,
                    aes(x = X,
                        y = Y,
@@ -1031,16 +796,16 @@ f_ExportPlot <- function(inp_Plot,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
   if (inp_FileName == "default") { inp_FileName = deparse(substitute(inp_Plot)) }
-  
+
   inp_FileName <- paste0(inp_FileName, ".", inp_FileFormat)
-    
+
   if (inp_ShowAxisTitle_x == FALSE) { inp_Plot <- inp_Plot + theme(axis.title.x = element_blank()) }
   if (inp_ShowAxisTitle_y == FALSE) { inp_Plot <- inp_Plot + theme(axis.title.y = element_blank()) }
   if (inp_ShowAxisLabels_x == FALSE) { inp_Plot <- inp_Plot + theme(axis.text.x = element_blank()) }
   if (inp_ShowAxisLabels_y == FALSE) { inp_Plot <- inp_Plot + theme(axis.text.y = element_blank()) }
-  
+
   if (is.null(inp_LegendPosition) == FALSE) { inp_Plot <- inp_Plot + theme(legend.position = inp_LegendPosition) }
-  
+
   ggplot2::ggsave(plot = inp_Plot,
                   filename = inp_FileName,
                   path = inp_Directory,

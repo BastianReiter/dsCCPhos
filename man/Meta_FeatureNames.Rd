@@ -9,10 +9,10 @@
 
 Tibble
 \describe{
-\item{TableName_Harmonized}{Table selector}
+\item{TableName_Curated}{Table selector}
 \item{FeaturePosition}{Position of Feature in Table}
 \item{FeatureName_Raw}{Feature name in Raw Data Model}
-\item{FeatureName_Harmonized}{Feature name in Harmonized Data Model}
+\item{FeatureName_Curated}{Corresponding feature name in Curated Data Model}
 }
 }
 }
@@ -23,6 +23,6 @@ Tibble
 Meta_FeatureNames
 }
 \description{
-A tibble containing meta data about feature names in Raw Data Model (RDM) and Harmonized Data Model (HDM)
+A tibble containing meta data about corresponding feature names in Raw Data Model (RDM) and Curated Data Model (CDM)
 }
 \keyword{datasets}

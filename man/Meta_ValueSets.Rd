@@ -9,13 +9,13 @@
 
 Tibble
 \describe{
-\item{TableName_Harmonized}{Table selector}
+\item{TableName_Curated}{Table selector}
 \item{FeaturePosition}{Position of Feature in Table}
 \item{FeatureName}{Feature name}
 \item{ScaleLevel}{Scale level of feature}
 \item{Value_Raw}{Value in original / raw data}
-\item{Value_Harmonized}{Value as preferred}
-\item{Label_Harmonized}{Label for coded feature values}
+\item{Value_Curated}{Value as preferred}
+\item{Label_Curated}{Label for coded feature values}
 \item{Label_Raw}{Label in original data}
 \item{FactorRank}{Used to determine order in values}
 }
@@ -28,6 +28,6 @@ Tibble
 Meta_ValueSets
 }
 \description{
-A tibble containing meta data about eligible data values in Harmonized Data Model (HDM)
+A tibble containing meta data about eligible data values in Curated Data Model (CDM)
 }
 \keyword{datasets}

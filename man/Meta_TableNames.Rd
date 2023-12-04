@@ -10,7 +10,7 @@
 Tibble
 \describe{
 \item{TableName_Raw}{Table name in Raw Data Model}
-\item{TableName_Harmonized}{Corresponding table name in Harmonized Data Model}
+\item{TableName_Curated}{Corresponding table name in Curated Data Model}
 }
 }
 }
@@ -21,6 +21,6 @@ Tibble
 Meta_TableNames
 }
 \description{
-A tibble containing meta data about table names in Raw Data Model (RDM) and Harmonized Data Model (HDM)
+A tibble containing meta data about corresponding table names in Raw Data Model (RDM) and Curated Data Model (CDM)
 }
 \keyword{datasets}

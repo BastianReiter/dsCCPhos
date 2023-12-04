@@ -21,6 +21,8 @@ XMLToDataModel <- function(XMLSchemaFilePath,
                            FeatureNameAttribute = "csv-column",
                            FeatureTypeAttribute = "opal-value-type")
 {
+    require(dplyr)
+
     # Read xml file
     XMLSchema = xml2::read_xml(XMLSchemaFilePath)
 
