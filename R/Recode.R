@@ -14,9 +14,9 @@ Recode <- function(TargetVector,
                    Dictionary)
 {
     # Look-up Values come from names(Dictionary)
-    vc_LookupValues <- regex(paste0("^",      # Embrace Lookup Values with "^" and "$" to isolate them, so that for example "R" is not recognized (and replaced) in "CR", but only when it stands isolated
-                                    str_escape(names(Dictionary)),      # Introduce escaping of special characters, for example "(" and "/"
-                                    "$"))
+    vc_LookupValues <- paste0("^",      # Embrace Lookup Values with "^" and "$" to isolate them, so that for example "R" is not recognized (and replaced) in "CR", but only when it stands isolated
+                              stringr::str_escape(names(Dictionary)),      # Introduce escaping of special characters, for example "(" and "/"
+                              "$")
 
     # Add "Protection Prefix" to mark freshly changed Values, so that they won't be looked up themselves
     vc_NewValues <- paste0("NEW_", Dictionary)

@@ -15,7 +15,7 @@ Tibble
 }
 }
 \source{
-\url{https://github.com/BastianReiter/CCPhos/blob/main/Development/MetaData}
+\url{https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData}
 }
 \usage{
 Meta_TableNames

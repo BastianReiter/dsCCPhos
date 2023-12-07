@@ -15,6 +15,8 @@ TrackFeatureValues <- function(DataFrame,
                                Features,
                                CurationStage = NULL)
 {
+    require(dplyr)
+
     df_Output <- tibble(Feature = character(),
                         Value = character(),
                         IsValueEligible = logical(),
@@ -27,12 +29,12 @@ TrackFeatureValues <- function(DataFrame,
 
         vc_EligibleValues <- Features[[feature]]      # Get eligible values from optional vector values
 
-        df_FeatureRows <- tibble(Feature = feature,
-                                 Value = names(vc_ContingencyTable),      # Get all distinct values from contingency table
-                                 IsValueEligible = NA,
-                                 CurationStage = CurationStage,
-                                 Frequency = as.numeric(vc_ContingencyTable)) %>%      # Get absolute frequencies from contingency table
-                              arrange(Value)
+        df_FeatureRows <- tibble::tibble(Feature = feature,
+                                         Value = names(vc_ContingencyTable),      # Get all distinct values from contingency table
+                                         IsValueEligible = NA,
+                                         CurationStage = CurationStage,
+                                         Frequency = as.numeric(vc_ContingencyTable)) %>%      # Get absolute frequencies from contingency table
+                                      arrange(Value)
 
         if (!is.null(vc_EligibleValues))      # If vector of eligible values is passed (so not null),
         {

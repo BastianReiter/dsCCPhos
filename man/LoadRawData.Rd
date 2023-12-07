@@ -4,10 +4,10 @@
 \alias{LoadRawData}
 \title{LoadRawData}
 \usage{
-LoadRawData()
+LoadRawData(OpalDBConnection)
 }
 \value{
-A "raw data model" (RDM) as a list of tibbles
+A list of tibbles containing raw data as described by the Raw Data Model
 }
 \description{
 LoadRawData

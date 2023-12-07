@@ -13,7 +13,7 @@
 #'   \item{TableName_Raw}{Table name in Raw Data Model}
 #'   \item{TableName_Curated}{Corresponding table name in Curated Data Model}
 #' }
-#' @source <https://github.com/BastianReiter/CCPhos/blob/main/Development/MetaData>
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 "Meta_TableNames"
 
 
@@ -34,7 +34,7 @@
 #'   \item{FeatureName_Raw}{Feature name in Raw Data Model}
 #'   \item{FeatureName_Curated}{Corresponding feature name in Curated Data Model}
 #' }
-#' @source <https://github.com/BastianReiter/CCPhos/blob/main/Development/MetaData>
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 "Meta_FeatureNames"
 
 
@@ -60,5 +60,5 @@
 #'   \item{Label_Raw}{Label in original data}
 #'   \item{FactorRank}{Used to determine order in values}
 #' }
-#' @source <https://github.com/BastianReiter/CCPhos/blob/main/Development/MetaData>
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 "Meta_ValueSets"

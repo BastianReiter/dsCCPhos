@@ -2,13 +2,12 @@
 
 #===============================================================================
 #
-# CCPhos Package DEVELOPMENT TRACKER
+# dsCCPhos Package DEVELOPMENT TRACKER
 #
 #===============================================================================
 
 
 library(devtools)
-
 
 
 # Set preferred license in description
@@ -33,8 +32,10 @@ library(devtools)
 # use_package("readxl")
 # use_package("RPostgres")
 # use_package("showtext")
+# use_package("stringr")
 # use_package("sysfonts")
 # use_package("tibble")
+# use_package("xml2")
 
 
 
@@ -42,15 +43,17 @@ library(devtools)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_r("Augment")
 # use_r("ConnectToOpalDB")
-# use_r("Curate")
+# use_r("CurateDataDS")
+# use_r("CurationReportDS")
 # use_r("data")
 # use_r("DataListToDataModel")
 # use_r("DataModelToCSV")
 # use_r("DataModelToDB")
 # use_r("GetDFInfo")
 # use_r("Harmonize")
+# use_r("MakeTestDB")
 # use_r("LoadRawData")
-use_r("Recode")
+# use_r("Recode")
 # use_r("TrackFeatureValues")
 # use_r("XMLToDataModel")
 

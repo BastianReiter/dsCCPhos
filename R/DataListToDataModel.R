@@ -20,7 +20,6 @@ DataListToDataModel <- function(DataList)
     ls_DataModel <- purrr::map(.x = vc_TableNames,
                                .f = function(x)
                                     {
-
                                         vc_ColumnNames <- colnames(DataList)
 
                                         DataFrame <- data.frame()

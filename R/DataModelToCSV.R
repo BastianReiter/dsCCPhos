@@ -18,7 +18,7 @@ DataModelToCSV <- function(DataModel,
     for (i in 1:length(DataModel))
     {
         # Get info about current data frame
-        df_Current <- CCPhos::GetDFInfo(DataModel[[i]])
+        df_Current <- dsCCPhos::GetDFInfo(DataModel[[i]])
         # Overwrite column "DFName" with actual data frame names
         df_Current <- df_Current %>%
                           mutate(DFName = rep(names(DataModel)[i], nrow(df_Current)))

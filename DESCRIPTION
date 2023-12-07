@@ -1,5 +1,5 @@
 Package: dsCCPhos
-Title: dsCCPhos
+Title: Enabling Data Science with the DKTK-CCP
 Version: 0.0.90
 Authors@R: 
     person("Bastian", "Reiter", , "b.reiter@med.uni-frankfurt.de", role = c("aut", "cre"),
@@ -21,8 +21,10 @@ Imports:
     readxl,
     RPostgres,
     showtext,
+    stringr,
     sysfonts,
-    tibble
+    tibble,
+    xml2
 Depends: 
     R (>= 2.10)
 LazyData: true

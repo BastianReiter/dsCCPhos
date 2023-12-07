@@ -106,7 +106,7 @@ df_Progress <- df_Progress %>%
 
 
 
-df_Radiotherapy <- DBI::dbReadTable(TestDB, name = "radiation-therapy", check.names = FALSE)
+df_RadiationTherapy <- DBI::dbReadTable(TestDB, name = "radiation-therapy", check.names = FALSE)
 
 df_SDM_Radiotherapy <- df_SDM_Progress %>%
                             select(ProgressID,
@@ -116,15 +116,15 @@ df_SDM_Radiotherapy <- df_SDM_Progress %>%
                                    RadiotherapyRelationToSurgery) %>%
                             right_join(df_SDM_Radiotherapy, by = join_by(ProgressID))
 
-df_Radiotherapy <- df_Radiotherapy %>%
-                        bind_rows(data.frame("radiation-therapy-id" = df_SDM_Radiotherapy$RadiotherapyID,
-                                             "diagnosis-id" = df_SDM_Radiotherapy$TumorID,
-                                             "patient-id" = df_SDM_Radiotherapy$PatientID,
-                                             strahlentherapie_stellung_zu_operativer_therapie = df_SDM_Radiotherapy$RadiotherapyRelationToSurgery,
-                                             intention_strahlentherapie = df_SDM_Radiotherapy$RadiotherapyIntention,
-                                             strahlentherapie_beginn = as.Date(df_SDM_Radiotherapy$DateRadiotherapyStart, format = "%d.%m.%Y"),
-                                             strahlentherapie_ende = as.Date(df_SDM_Radiotherapy$DateRadiotherapyEnd, format = "%d.%m.%Y"),
-                                             check.names = FALSE))
+df_RadiationTherapy <- df_RadiationTherapy %>%
+                            bind_rows(data.frame("radiation-therapy-id" = df_SDM_Radiotherapy$RadiotherapyID,
+                                                 "diagnosis-id" = df_SDM_Radiotherapy$TumorID,
+                                                 "patient-id" = df_SDM_Radiotherapy$PatientID,
+                                                 strahlentherapie_stellung_zu_operativer_therapie = df_SDM_Radiotherapy$RadiotherapyRelationToSurgery,
+                                                 intention_strahlentherapie = df_SDM_Radiotherapy$RadiotherapyIntention,
+                                                 strahlentherapie_beginn = as.Date(df_SDM_Radiotherapy$DateRadiotherapyStart, format = "%d.%m.%Y"),
+                                                 strahlentherapie_ende = as.Date(df_SDM_Radiotherapy$DateRadiotherapyEnd, format = "%d.%m.%Y"),
+                                                 check.names = FALSE))
 
 
 
@@ -213,20 +213,70 @@ df_Staging <- df_Staging %>%
                                        check.names = FALSE))
 
 
-
-DBI::dbWriteTable(TestDB, name = "patient", value = df_Patient, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "diagnosis", value = df_Diagnosis, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "histology", value = df_Histology, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "metastasis", value = df_Metastasis, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "molecular-marker", value = df_MolecularDiagnostics, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "progress", value = df_Progress, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "radiation-therapy", value = df_Radiotherapy, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "sample", value = df_BioSampling, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "surgery", value = df_Surgery, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "system-therapy", value = df_SystemicTherapy, overwrite = TRUE)
-DBI::dbWriteTable(TestDB, name = "tnm", value = df_Staging, overwrite = TRUE)
-
+CCPTestData_Total <- list(BioSampling = df_BioSampling,
+                          Diagnosis = df_Diagnosis,
+                          Histology = df_Histology,
+                          Metastasis = df_Metastasis,
+                          MolecularDiagnostics = df_MolecularDiagnostics,
+                          Patient = df_Patient,
+                          Progress = df_Progress,
+                          RadiationTherapy = df_RadiationTherapy,
+                          Staging = df_Staging,
+                          Surgery = df_Surgery,
+                          SystemicTherapy = df_SystemicTherapy)
 
 
-# Remove everything but TestDB
-rm(list = ls()[ls() != "TestDB"])
+vc_PatientIDs_A <- sample(df_Patient$"patient-id", 3000)
+df_Patient_Rest <- filter(df_Patient, !(df_Patient$"patient-id" %in% vc_PatientIDs_A))
+vc_PatientIDs_B <- sample(df_Patient_Rest$"patient-id", 3000)
+df_Patient_Rest <- filter(df_Patient_Rest, !(df_Patient_Rest$"patient-id" %in% vc_PatientIDs_B))
+vc_PatientIDs_C <- sample(df_Patient_Rest$"patient-id", 3000)
+
+
+
+CCPTestData_A <- list(BioSampling = filter(df_BioSampling, df_BioSampling$"patient-id" %in% vc_PatientIDs_A),
+                      Diagnosis = filter(df_Diagnosis, df_Diagnosis$"patient-id" %in% vc_PatientIDs_A),
+                      Histology = filter(df_Histology, df_Histology$"patient-id" %in% vc_PatientIDs_A),
+                      Metastasis = filter(df_Metastasis, df_Metastasis$"patient-id" %in% vc_PatientIDs_A),
+                      MolecularDiagnostics = filter(df_MolecularDiagnostics, df_MolecularDiagnostics$"patient-id" %in% vc_PatientIDs_A),
+                      Patient = filter(df_Patient, df_Patient$"patient-id" %in% vc_PatientIDs_A),
+                      Progress = filter(df_Progress, df_Progress$"patient-id" %in% vc_PatientIDs_A),
+                      RadiationTherapy = filter(df_RadiationTherapy, df_RadiationTherapy$"patient-id" %in% vc_PatientIDs_A),
+                      Staging = filter(df_Staging, df_Staging$"patient-id" %in% vc_PatientIDs_A),
+                      Surgery = filter(df_Surgery, df_Surgery$"patient-id" %in% vc_PatientIDs_A),
+                      SystemicTherapy = filter(df_SystemicTherapy, df_SystemicTherapy$"patient-id" %in% vc_PatientIDs_A))
+
+
+CCPTestData_B <- list(BioSampling = filter(df_BioSampling, df_BioSampling$"patient-id" %in% vc_PatientIDs_B),
+                      Diagnosis = filter(df_Diagnosis, df_Diagnosis$"patient-id" %in% vc_PatientIDs_B),
+                      Histology = filter(df_Histology, df_Histology$"patient-id" %in% vc_PatientIDs_B),
+                      Metastasis = filter(df_Metastasis, df_Metastasis$"patient-id" %in% vc_PatientIDs_B),
+                      MolecularDiagnostics = filter(df_MolecularDiagnostics, df_MolecularDiagnostics$"patient-id" %in% vc_PatientIDs_B),
+                      Patient = filter(df_Patient, df_Patient$"patient-id" %in% vc_PatientIDs_B),
+                      Progress = filter(df_Progress, df_Progress$"patient-id" %in% vc_PatientIDs_B),
+                      RadiationTherapy = filter(df_RadiationTherapy, df_RadiationTherapy$"patient-id" %in% vc_PatientIDs_B),
+                      Staging = filter(df_Staging, df_Staging$"patient-id" %in% vc_PatientIDs_B),
+                      Surgery = filter(df_Surgery, df_Surgery$"patient-id" %in% vc_PatientIDs_B),
+                      SystemicTherapy = filter(df_SystemicTherapy, df_SystemicTherapy$"patient-id" %in% vc_PatientIDs_B))
+
+
+CCPTestData_C <- list(BioSampling = filter(df_BioSampling, df_BioSampling$"patient-id" %in% vc_PatientIDs_C),
+                      Diagnosis = filter(df_Diagnosis, df_Diagnosis$"patient-id" %in% vc_PatientIDs_C),
+                      Histology = filter(df_Histology, df_Histology$"patient-id" %in% vc_PatientIDs_C),
+                      Metastasis = filter(df_Metastasis, df_Metastasis$"patient-id" %in% vc_PatientIDs_C),
+                      MolecularDiagnostics = filter(df_MolecularDiagnostics, df_MolecularDiagnostics$"patient-id" %in% vc_PatientIDs_C),
+                      Patient = filter(df_Patient, df_Patient$"patient-id" %in% vc_PatientIDs_C),
+                      Progress = filter(df_Progress, df_Progress$"patient-id" %in% vc_PatientIDs_C),
+                      RadiationTherapy = filter(df_RadiationTherapy, df_RadiationTherapy$"patient-id" %in% vc_PatientIDs_C),
+                      Staging = filter(df_Staging, df_Staging$"patient-id" %in% vc_PatientIDs_C),
+                      Surgery = filter(df_Surgery, df_Surgery$"patient-id" %in% vc_PatientIDs_C),
+                      SystemicTherapy = filter(df_SystemicTherapy, df_SystemicTherapy$"patient-id" %in% vc_PatientIDs_C))
+
+
+
+save(CCPTestData_Total, file = "./Development/Data/RealData/CCPTestData_Total.Rdata")
+save(CCPTestData_A, file = "./Development/Data/RealData/CCPTestData_A.Rdata")
+save(CCPTestData_B, file = "./Development/Data/RealData/CCPTestData_B.Rdata")
+save(CCPTestData_C, file = "./Development/Data/RealData/CCPTestData_C.Rdata")
+
+
