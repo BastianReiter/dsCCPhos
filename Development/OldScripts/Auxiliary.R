@@ -5,17 +5,6 @@
 #------------------------------------------------------------------------------#
 ################################################################################
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# PACKAGE DEPENDENCIES for this Script
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# library(colorspace)
-# library(dplyr)
-# library(ggpattern)
-# library(ggplot2)
-# library(showtext)
-# library(sysfonts)
-
 
 
 ################################################################################
@@ -101,49 +90,6 @@ f_UpdateProgressBar <- function(inp_ProgressInfo,
 
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Initialize Attrition Tracker (auxiliary table to track sample sizes after filtering operations)
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Returns a tibble
-#-------------------------------------------------------------------------------
-f_InitAttritionTracker <- function()
-{
-    df_AttritionTracker <- tibble(SampleSize = numeric(),
-                                  InclusionComment = character(),
-                                  ExclusionComment = character(),
-                                  AttritionCount = numeric())
-}
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Update Attrition Tracker
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Processes a tibble
-#-------------------------------------------------------------------------------
-f_UpdateAttritionTracker <- function(inp_df_AttritionTracker,
-                                     inp_NewSampleSize,
-                                     inp_InclusionComment = "",
-                                     inp_ExclusionComment = "")
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-{
-    inp_df_AttritionTracker %>%
-        add_row(SampleSize = inp_NewSampleSize,
-                InclusionComment = inp_InclusionComment,
-                ExclusionComment = inp_ExclusionComment)
-}
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Close Attrition Tracker
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Processes a tibble
-#-------------------------------------------------------------------------------
-f_CloseAttritionTracker <- function(inp_df_AttritionTracker)
-{
-    inp_df_AttritionTracker %>%
-        mutate(AttritionCount = SampleSize - lead(SampleSize)) %>%
-        rowid_to_column() %>%
-        rename(Step = rowid)
-}
 
 
 

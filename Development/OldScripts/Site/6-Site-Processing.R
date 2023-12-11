@@ -22,7 +22,7 @@
 #    - df_SDM_BioSampling
 #    - df_SDM_MolecularDiagnostics
 
-                         
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -54,8 +54,8 @@ df_Work_Patients <- df_SDM_Patients %>%
 #                                                     IndexStaging > 1 ~ "Re-Staging",
 #                                                     TRUE ~ NA),
 #                            DiseaseEventDetail = case_when()
-# 
-# 
+#
+#
 # df_WorkDiseaseEvents <- df_Tumor %>%
 #                             group_by(TumorID)
 
@@ -65,10 +65,10 @@ df_Work_Patients <- df_SDM_Patients %>%
 
 
 df_Work_Tumor <- df_SDM_Tumor %>%
-                      left_join(df_SDM_Histology, by = join_by(PatientID, TumorID, ICD10Code)) %>%
+                      left_join(df_SDM_Histology, by = join_by(PatientID, DiagnosisID)) %>%
                       group_by(across(!c(HistologyID, ICDO_Morphology, Grading))) %>%      # Group all columns but HistologyID, ICDO_Morphology and Grading ...
                           mutate(HistologiesPerTumor = n(),      # ... to obtain number of Histology Reports per Tumor, regardless of differences in ICDO-Morphology-Code
-                                 DifferentHistologiesPerTumor = n_distinct(ICDO_Morphology, Grading)) %>%      # ... and number of DIFFERENT ICDO-Morphology-Codes or Grading per Tumor   
+                                 DifferentHistologiesPerTumor = n_distinct(ICDO_Morphology, Grading)) %>%      # ... and number of DIFFERENT ICDO-Morphology-Codes or Grading per Tumor
                           arrange(HistologyID) %>%      # Sort by HistologyID, presuming that reports with higher ID are more recent
                           filter(row_number() == n()) %>%      # Keep only the last row of each tumor (should be the most recent Histology report)
                       ungroup() %>%

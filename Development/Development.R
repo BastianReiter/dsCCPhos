@@ -41,7 +41,10 @@ library(devtools)
 
 # Adding function script files
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# use_r("Augment")
+# use_r("AttritionTracker_Close")
+# use_r("AttritionTracker_Init")
+# use_r("AttritionTracker_Update")
+# use_r("AugmentDataDS")
 # use_r("ConnectToOpalDB")
 # use_r("CurateDataDS")
 # use_r("CurationReportDS")
@@ -60,5 +63,5 @@ library(devtools)
 
 
 # Get CCP Data Model from Opal DB Schema
-CCPDataModel <- CCPhos::XMLToDataModel(XMLSchemaFilePath = "./Development/MetaData/SchemaOpalDB.xml")
+# CCPDataModel <- CCPhos::XMLToDataModel(XMLSchemaFilePath = "./Development/MetaData/SchemaOpalDB.xml")
 

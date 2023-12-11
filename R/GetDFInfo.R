@@ -29,7 +29,7 @@ GetDFInfo <- function(DataFrame,
     if (IncludeRandomExampleValues == TRUE)
     {
       vc_RandomValues <- unlist(purrr::map(1:ncol(DataFrame),
-                                           function(x) { toString(dplyr::pull(DataFrame[sample(1:nrow(DataFrame), 1), x])) }))      # The combination of toString() and pull() is necessary to preserve date format
+                                           function(x) { toString(dplyr::pull(tibble::as_tibble(DataFrame[sample(1:nrow(DataFrame), 1), x]))) }))      # The combination of toString() and pull() is necessary to preserve date format
 
       df_Info <- df_Info %>% tibble::add_column(ExampleValue = vc_RandomValues)
     }

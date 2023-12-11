@@ -1,0 +1,119 @@
+---
+title: "CCPDataModel"
+author: "Bastian Reiter"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r calc, echo=FALSE}
+
+library(dplyr)
+library(dsCCPhos)
+
+load("../Data/RealData/CCPTestData_A.RData")
+
+
+tbl_BioSampling <- GetDFInfo(CCPTestData_A$BioSampling, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_Diagnosis <- GetDFInfo(CCPTestData_A$Diagnosis, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_Histology <- GetDFInfo(CCPTestData_A$Histology, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_Metastasis <- GetDFInfo(CCPTestData_A$Metastasis, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_MolecularDiagnostics <- GetDFInfo(CCPTestData_A$MolecularDiagnostics, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_Patient <- GetDFInfo(CCPTestData_A$Patient, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_Progress <- GetDFInfo(CCPTestData_A$Progress, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_RadiationTherapy <- GetDFInfo(CCPTestData_A$RadiationTherapy, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_Staging <- GetDFInfo(CCPTestData_A$Staging, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_Surgery <- GetDFInfo(CCPTestData_A$Surgery, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+tbl_SystemicTherapy <- GetDFInfo(CCPTestData_A$SystemicTherapy, IncludeRandomExampleValues = TRUE) %>%
+                      gt::gt(groupname_col = "DFName") %>%
+                      TinkerLab::gtTheme_Tinker(TableWidth = "80%")
+
+
+
+```
+
+
+
+### BioSampling = sample
+
+`r tbl_BioSampling`
+
+### Diagnosis = sample
+
+`r tbl_Diagnosis`
+
+### Histology = sample
+
+`r tbl_Histology`
+
+### Metastasis = sample
+
+`r tbl_Metastasis`
+
+### MolecularDiagnostics = sample
+
+`r tbl_MolecularDiagnostics`
+
+### Patient = sample
+
+`r tbl_Patient`
+
+### Progress = sample
+
+`r tbl_Progress`
+
+### RadiationTherapy = sample
+
+`r tbl_RadiationTherapy`
+
+### Staging = sample
+
+`r tbl_Staging`
+
+### Surgery = sample
+
+`r tbl_Surgery`
+
+### SystemicTherapy = sample
+
+`r tbl_SystemicTherapy`
+
+
+

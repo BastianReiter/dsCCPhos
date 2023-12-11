@@ -2,6 +2,7 @@
 # Install own dataSHIELD packages
 #devtools::install_github(repo = "BastianReiter/dsCCPhos")
 #devtools::install_github(repo = "BastianReiter/dsCCPhosClient")
+#devtools::install_github(repo = "BastianReiter/TinkerLab")
 
 # Load needed packages
 library(dsBase)
@@ -63,7 +64,7 @@ CCPConnections <- DSI::datashield.login(logins = LoginData,
                                         assign = T)
 
 
-datashield.symbols(CCPConnections)
+#
 datashield.tables(CCPConnections)
 
 
@@ -95,18 +96,21 @@ ds.list(x = c("BioSampling",
         datasources = CCPConnections)
 
 
+# Test with ds.mean()
 Test <- ds.mean(x = "Patient$geburtsdatum",
                 type = "both",
                 datasources = CCPConnections)
 
 
+# Curate the raw data
 dsCCPhosClient::ds.CurateData(Name_RawData = "RawData",
                               Name_Output = "CurationOutput",
                               DataSources = CCPConnections)
 
 
-Test <- ds.CurationReport(Name_CurationOutput = "CurationOutput",
-                          DataSources = CCPConnections)
+# Get Curation reports
+CurationReports <- ds.CurationReport(Name_CurationOutput = "CurationOutput",
+                                     DataSources = CCPConnections)
 
 
 

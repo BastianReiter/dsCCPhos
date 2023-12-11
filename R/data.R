@@ -51,7 +51,6 @@
 #' Tibble
 #' \describe{
 #'   \item{TableName_Curated}{Table selector}
-#'   \item{FeaturePosition}{Position of Feature in Table}
 #'   \item{FeatureName}{Feature name}
 #'   \item{ScaleLevel}{Scale level of feature}
 #'   \item{Value_Raw}{Value in original / raw data}
