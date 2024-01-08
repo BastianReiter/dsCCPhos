@@ -1,0 +1,8 @@
+"name","valueType","entityType","mimeType","unit","occurrenceGroup","repeatable","categories"
+"diagnosis-id","text","Histology",,,,"false",""
+"patient-id","text","Histology",,,,"false",""
+"histologie_datum","text","Histology",,,,"false",""
+"icd-o_katalog_morphologie_version","text","Histology",,,,"false",""
+"morphologie","text","Histology",,,,"false",""
+"morphologie-freitext","text","Histology",,,,"false",""
+"grading","text","Histology",,,,"false",""
