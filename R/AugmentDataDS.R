@@ -1,26 +1,26 @@
 
 #' AugmentDataDS
 #'
-#' @param Name_CuratedData
+#' @param Name_CurationOutput
 #'
 #' @return
 #' @export
 #'
 #' @examples
-AugmentDataDS <- function(Name_CuratedData = "CuratedData")
+AugmentDataDS <- function(Name_CurationOutput = "CurationOutput")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if (is.character(Name_CuratedData))
+if (is.character(Name_CurationOutput))
 {
-    CuratedData <- eval(parse(text = Name_CuratedData), envir = parent.frame())
+    CurationOutput <- eval(parse(text = Name_CurationOutput), envir = parent.frame())
 }
 else
 {
-    ClientMessage <- "ERROR: 'Name_CuratedData' must be specified as a character string"
+    ClientMessage <- "ERROR: 'Name_CurationOutput' must be specified as a character string"
     stop(ClientMessage, call. = FALSE)
 }
 
@@ -34,6 +34,9 @@ require(lubridate)
 require(purrr)
 require(stringr)
 require(tidyr)
+
+
+CuratedData <- CurationOutput$CuratedData
 
 
 df_CDM_BioSampling <- CuratedData$BioSampling

@@ -12,14 +12,15 @@ DBConnection <- MakeTestDB(CCPTestData_Total)
 RawData <- LoadRawData(DBConnection)
 
 # Curate data
-CuratedData <- dsCCPhos::CurateDataDS("RawData")$CuratedData
+CurationOutput <- dsCCPhos::CurateDataDS("RawData")
 
 # Save curated data set for test purposes
 #save(CuratedData, file = "./Development/Data/RealData/CCPCuratedData.Rdata")
 
+# Augment data based on curation output
+AugmentationOutput <- dsCCPhos::AugmentDataDS("CurationOutput")
 
-#TestConn <- dsCCPhos::ConnectToSites()
-
+View(AugmentationOutput$ADM_Events)
 
 
 

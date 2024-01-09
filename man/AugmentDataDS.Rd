@@ -4,10 +4,10 @@
 \alias{AugmentDataDS}
 \title{AugmentDataDS}
 \usage{
-AugmentDataDS(Name_CuratedData = "CuratedData")
+AugmentDataDS(Name_CurationOutput = "CurationOutput")
 }
 \arguments{
-\item{Name_CuratedData}{}
+\item{Name_CurationOutput}{}
 }
 \description{
 AugmentDataDS

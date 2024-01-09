@@ -4,8 +4,8 @@
 #devtools::install_github(repo = "BastianReiter/dsCCPhosClient")
 #devtools::install_github(repo = "BastianReiter/TinkerLab")
 
-devtools::install_github("tombisho/dsSynthetic", dependencies = TRUE)
-devtools::install_github("tombisho/dsSyntheticClient", dependencies = TRUE)
+#devtools::install_github("tombisho/dsSynthetic", dependencies = TRUE)
+#devtools::install_github("tombisho/dsSyntheticClient", dependencies = TRUE)
 
 # Load needed packages
 library(dsBase)
@@ -48,9 +48,6 @@ Server_SiteC <- newDSLiteServer(tables = CCPTestData_C,
                                 config = DSLite::defaultDSConfiguration(include = c("dsBase",
                                                                                     "dsCCPhos")))
 
-Server_SiteD <- newDSLiteServer(tables = CCPTestData_D,
-                                config = DSLite::defaultDSConfiguration(include = c("dsBase",
-                                                                                    "dsCCPhos")))
 
 # Check out some server properties
 Server_SiteA$config()
@@ -77,10 +74,6 @@ LoginBuilder$append(server = "SiteB",
 
 LoginBuilder$append(server = "SiteC",
                     url = "Server_SiteC",
-                    driver = "DSLiteDriver")
-
-LoginBuilder$append(server = "SiteD",
-                    url = "Server_SiteD",
                     driver = "DSLiteDriver")
 
 
@@ -141,6 +134,17 @@ dsCCPhosClient::ds.CurateData(Name_RawData = "RawData",
 # Get Curation reports
 CurationReports <- ds.CurationReport(Name_CurationOutput = "CurationOutput",
                                      DataSources = CCPConnections)
+
+
+# Augment data (based on curated data)
+dsCCPhosClient::ds.AugmentData(Name_CurationOutput = "CurationOutput",
+                               Name_Output = "AugmentationOutput",
+                               DataSources = CCPConnections)
+
+
+
+
+
 
 
 
