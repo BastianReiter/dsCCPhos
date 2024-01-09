@@ -1,0 +1,244 @@
+ICDCodeShort;CancerTopographyDetail;CancerSpecification;CancerTopographyGroup;CancerIsCarcinomaInSitu;CancerIsNeoplasmOfUncertainBehavior;CancerTopographyDetail_German;CancerSpecification_German;CancerTopographyGroup_German
+C00;Lip;;Lip, oral cavity, pharynx;FALSE;FALSE;Lippe;;Lippe, Mundhöhle, Pharynx
+C01;Base of tongue;;Lip, oral cavity, pharynx;FALSE;FALSE;Zungengrund;;Lippe, Mundhöhle, Pharynx
+C02;Tongue;;Lip, oral cavity, pharynx;FALSE;FALSE;Zunge;;Lippe, Mundhöhle, Pharynx
+C03;Gum;;Lip, oral cavity, pharynx;FALSE;FALSE;Zahnfleisch;;Lippe, Mundhöhle, Pharynx
+C04;Floor of mouth;;Lip, oral cavity, pharynx;FALSE;FALSE;Mundboden;;Lippe, Mundhöhle, Pharynx
+C05;Palate;;Lip, oral cavity, pharynx;FALSE;FALSE;Gaumen;;Lippe, Mundhöhle, Pharynx
+C06;Mouth;;Lip, oral cavity, pharynx;FALSE;FALSE;Mund;;Lippe, Mundhöhle, Pharynx
+C07;Parotid gland;;Lip, oral cavity, pharynx;FALSE;FALSE;Parotis;;Lippe, Mundhöhle, Pharynx
+C08;Major salivary glands;;Lip, oral cavity, pharynx;FALSE;FALSE;Große Speicheldrüsen;;Lippe, Mundhöhle, Pharynx
+C09;Tonsil;;Lip, oral cavity, pharynx;FALSE;FALSE;Tonsille allgemein;;Lippe, Mundhöhle, Pharynx
+C10;Oropharynx;;Lip, oral cavity, pharynx;FALSE;FALSE;Oropharynx;;Lippe, Mundhöhle, Pharynx
+C11;Nasopharynx;;Lip, oral cavity, pharynx;FALSE;FALSE;Nasopharynx;;Lippe, Mundhöhle, Pharynx
+C12;Piriform sinus;;Lip, oral cavity, pharynx;FALSE;FALSE;Recessus piriformis;;Lippe, Mundhöhle, Pharynx
+C13;Hypopharynx;;Lip, oral cavity, pharynx;FALSE;FALSE;Hypopharynx;;Lippe, Mundhöhle, Pharynx
+C14;Lip, oral cavity, pharynx;;Lip, oral cavity, pharynx;FALSE;FALSE;Lippe, Mundhöhle, Pharynx;;Lippe, Mundhöhle, Pharynx
+C15;Oesophagus;;Digestive organs;FALSE;FALSE;Ösophagus;;Verdauungsorgane
+C16;Stomach;;Digestive organs;FALSE;FALSE;Magen;;Verdauungsorgane
+C17;Small intestine;;Digestive organs;FALSE;FALSE;Dünndarm;;Verdauungsorgane
+C18;Colon;;Digestive organs;FALSE;FALSE;Kolon;;Verdauungsorgane
+C19;Rectosigmoid junction;;Digestive organs;FALSE;FALSE;Rektosigmoidaler Übergang;;Verdauungsorgane
+C20;Rectum;;Digestive organs;FALSE;FALSE;Rektum;;Verdauungsorgane
+C21;Anus and anal canal;;Digestive organs;FALSE;FALSE;Anus und Analkanal;;Verdauungsorgane
+C22;Liver and intrahepatic bile ducts;;Digestive organs;FALSE;FALSE;Leber und intrahepatische Gallengänge;;Verdauungsorgane
+C23;Gallbladder;;Digestive organs;FALSE;FALSE;Gallenblase;;Verdauungsorgane
+C24;Extrahepatic bile ducts;;Digestive organs;FALSE;FALSE;Extrahepatische Gallengänge;;Verdauungsorgane
+C25;Pancreas;;Digestive organs;FALSE;FALSE;Pankreas;;Verdauungsorgane
+C26;Digestive organs, other;;Digestive organs;FALSE;FALSE;Verdauungsorgane, sonstige;;Verdauungsorgane
+C30;Nasal cavity and middle ear;;Respiratory and intrathoracic organs;FALSE;FALSE;Nasenhöhle und Mittelohr;;Atmungsorgane und sonstige intrathorakale Organe
+C31;Accessory sinuses;;Respiratory and intrathoracic organs;FALSE;FALSE;Nasennebenhöhlen;;Atmungsorgane und sonstige intrathorakale Organe
+C32;Larynx;;Respiratory and intrathoracic organs;FALSE;FALSE;Larynx;;Atmungsorgane und sonstige intrathorakale Organe
+C33;Trachea;;Respiratory and intrathoracic organs;FALSE;FALSE;Trachea;;Atmungsorgane und sonstige intrathorakale Organe
+C34;Lung and bronchi;;Respiratory and intrathoracic organs;FALSE;FALSE;Lunge und Bronchien;;Atmungsorgane und sonstige intrathorakale Organe
+C37;Thymus;;Respiratory and intrathoracic organs;FALSE;FALSE;Thymus;;Atmungsorgane und sonstige intrathorakale Organe
+C38;Heart, mediastinum, pleura;;Respiratory and intrathoracic organs;FALSE;FALSE;Herz, Mediastinum, Pleura;;Atmungsorgane und sonstige intrathorakale Organe
+C39;Intrathoracic organs, other;;Respiratory and intrathoracic organs;FALSE;FALSE;Intrathorakale Organe sonstige;;Atmungsorgane und sonstige intrathorakale Organe
+C40;Bone and articular cartilage of limbs;;Bone and articular cartilage;FALSE;FALSE;Knochen und Gelenkknorpel Extremitäten;;Knochens und Gelenkknorpel
+C41;Bone and articular cartilage, other;;Bone and articular cartilage;FALSE;FALSE;Knochen und Gelenkknorpel, sonstige;;Knochens und Gelenkknorpel
+C43;Skin;;Malignant melanoma;FALSE;FALSE;Haut;;Malignes Melanom
+C44;Skin;;Skin other than melanoma;FALSE;FALSE;Haut;;Sonstige bösartige Neubildungen der Haut
+C45;Mesothel;;Mesothelial and soft tissue;FALSE;FALSE;Mesothel;;Mesothel und Weichteilgewebe
+C46;Kaposi sarcoma;;Mesothelial and soft tissue;FALSE;FALSE;Kaposi-Sarkom;;Mesothel und Weichteilgewebe
+C47;Peripheral nerves and autonomic nervous system;;Mesothelial and soft tissue;FALSE;FALSE;Periphere Nerven und autonomes Nervensystem;;Mesothel und Weichteilgewebe
+C48;Retroperitoneum and peritoneum;;Mesothelial and soft tissue;FALSE;FALSE;Retroperitoneum und Peritoneum;;Mesothel und Weichteilgewebe
+C49;Connective and soft tissue, other;;Mesothelial and soft tissue;FALSE;FALSE;Binde- und Weichteilgewebe, sonstiges;;Mesothel und Weichteilgewebe
+C50;Breast;;Breast;FALSE;FALSE;Mamma;;Mamma
+C51;Vulva;;Female genital organs;FALSE;FALSE;Vulva;;Weibliche Genitalorgane
+C52;Vagina;;Female genital organs;FALSE;FALSE;Vagina;;Weibliche Genitalorgane
+C53;Cervix uteri;;Female genital organs;FALSE;FALSE;Cervix uteri;;Weibliche Genitalorgane
+C54;Corpus uteri;;Female genital organs;FALSE;FALSE;Corpus uteri;;Weibliche Genitalorgane
+C55;Uterus, other;;Female genital organs;FALSE;FALSE;Uterus, sonstige;;Weibliche Genitalorgane
+C56;Ovary;;Female genital organs;FALSE;FALSE;Ovar;;Weibliche Genitalorgane
+C57;Female genital organ, other;;Female genital organs;FALSE;FALSE;Weibliche Genitalorgane, sonstige;;Weibliche Genitalorgane
+C58;Placenta;;Female genital organs;FALSE;FALSE;Plazenta;;Weibliche Genitalorgane
+C60;Penis;;Male genital organs;FALSE;FALSE;Penis;;Männliche Genitalorgane
+C61;Prostate;;Male genital organs;FALSE;FALSE;Prostata;;Männliche Genitalorgane
+C62;Testis;;Male genital organs;FALSE;FALSE;Hoden;;Männliche Genitalorgane
+C63;Male genital organ, other;;Male genital organs;FALSE;FALSE;Männliche Genitalorgane, sonstige;;Männliche Genitalorgane
+C64;Kidney;;Urinary tract;FALSE;FALSE;Nierenparenchym;;Harnorgane
+C65;Renal pelvis;;Urinary tract;FALSE;FALSE;Nierenbecken;;Harnorgane
+C66;Ureter;;Urinary tract;FALSE;FALSE;Ureter;;Harnorgane
+C67;Bladder;;Urinary tract;FALSE;FALSE;Harnblase;;Harnorgane
+C68;Urinary organ, other;;Urinary tract;FALSE;FALSE;Harnorgane, sonstige;;Harnorgane
+C69;Eye;;Eye, brain and other parts of CNS;FALSE;FALSE;Auge;;Auge, Gehirn und sonstiges ZNS
+C70;Meninges;;Eye, brain and other parts of CNS;FALSE;FALSE;Meningen;;Auge, Gehirn und sonstiges ZNS
+C71;Brain;;Eye, brain and other parts of CNS;FALSE;FALSE;Gehirn;;Auge, Gehirn und sonstiges ZNS
+C72;Spinal cord, cranial nerves, other CNS parts;;Eye, brain and other parts of CNS;FALSE;FALSE;Rückenmark, Hirnnerven, Sonstiges ZNS;;Auge, Gehirn und sonstiges ZNS
+C73;Thyroid gland;;Thyroid and other endocrine glands;FALSE;FALSE;Schilddrüse;;Schilddrüse und sonstige endokrine Drüsen
+C74;Adrenal gland;;Thyroid and other endocrine glands;FALSE;FALSE;Nebenniere;;Schilddrüse und sonstige endokrine Drüsen
+C75;Other endocrine glands;;Thyroid and other endocrine glands;FALSE;FALSE;Sonstige endokrine Drüsen;;Schilddrüse und sonstige endokrine Drüsen
+C76;Ill-defined;;Ill-defined or unspecified;FALSE;FALSE;Ungenau bezeichnet;;Ungenau oder nicht näher bezeichnet
+C80;Unspecified;;Ill-defined or unspecified;FALSE;FALSE;Nicht näher bezeichnet;;Ungenau oder nicht näher bezeichnet
+C81;Blood;Hodgkin lymphoma;Lymphoid and haematopoietic tissue;FALSE;FALSE;Hodgkin-Lymphom;;Lymphatisches und Blut bildendes Gewebe
+C82;Blood;Follicular lymphoma;Lymphoid and haematopoietic tissue;FALSE;FALSE;Follikuläres Lymphom;;Lymphatisches und Blut bildendes Gewebe
+C83;Blood;Non-follicular lymphoma;Lymphoid and haematopoietic tissue;FALSE;FALSE;Nicht follikuläres Lymphom;;Lymphatisches und Blut bildendes Gewebe
+C84;Blood;Mature T/NK-cell lymphoma;Lymphoid and haematopoietic tissue;FALSE;FALSE;Reifzelliges T/NK-Zell-Lymphom;;Lymphatisches und Blut bildendes Gewebe
+C85;Blood;Non-Hodgkin lymphoma, other;Lymphoid and haematopoietic tissue;FALSE;FALSE;Non-Hodgkin-Lymphom, sonstiges;;Lymphatisches und Blut bildendes Gewebe
+C86;Blood;T/NK-cell lymphoma, other;Lymphoid and haematopoietic tissue;FALSE;FALSE;T/NK-Zell-Lymphom, sonstiges;;Lymphatisches und Blut bildendes Gewebe
+C88;Blood;Malignant immunoproliferative diseases;Lymphoid and haematopoietic tissue;FALSE;FALSE;Bösartige immunproliferative Krankheit;;Lymphatisches und Blut bildendes Gewebe
+C90;Blood;Multiple myeloma, plasma cells;Lymphoid and haematopoietic tissue;FALSE;FALSE;Multiples Myelom, Plasmazellen;;Lymphatisches und Blut bildendes Gewebe
+C91;Blood;Lymphoid leukaemia;Lymphoid and haematopoietic tissue;FALSE;FALSE;Lymphatische Leukämie;;Lymphatisches und Blut bildendes Gewebe
+C92;Blood;Myeloid leukaemia;Lymphoid and haematopoietic tissue;FALSE;FALSE;Myeloische Leukämie;;Lymphatisches und Blut bildendes Gewebe
+C93;Blood;Monocytic leukaemia;Lymphoid and haematopoietic tissue;FALSE;FALSE;Monozytenleukämie;;Lymphatisches und Blut bildendes Gewebe
+C94;Blood;Leukaemia, other;Lymphoid and haematopoietic tissue;FALSE;FALSE;Leukämie, sonstige;;Lymphatisches und Blut bildendes Gewebe
+C95;Blood;Leukaemia, other;Lymphoid and haematopoietic tissue;FALSE;FALSE;Leukämie, sonstige;;Lymphatisches und Blut bildendes Gewebe
+C96;Blood;Lymphatic and haematopoietic tissue, other;Lymphoid and haematopoietic tissue;FALSE;FALSE;Lymphatisches und Blut bildendes Gewebe, sonstiges;;Lymphatisches und Blut bildendes Gewebe
+D00;Oral cavity, oesophagus, stomach;;Digestive organs;TRUE;FALSE;;;
+D00.0;Lip, oral cavity, pharynx;;Lip, oral cavity, pharynx;TRUE;FALSE;Carcinoma in situ;;Carcinoma in situ
+D00.1;Oesophagus;;Digestive organs;TRUE;FALSE;;;
+D00.2;Stomach;;Digestive organs;TRUE;FALSE;;;
+D01;Digestive organ, unspecified;;Digestive organs;TRUE;FALSE;;;
+D01.0;Colon;;Digestive organs;TRUE;FALSE;;;
+D01.1;Rectosigmoid junction;;Digestive organs;TRUE;FALSE;;;
+D01.2;Rectum;;Digestive organs;TRUE;FALSE;;;
+D01.3;Anus and anal canal;;Digestive organs;TRUE;FALSE;;;
+D01.4;Intestine, other;;Digestive organs;TRUE;FALSE;;;
+D01.5;Liver, gallbladder and bile ducts;;Digestive organs;TRUE;FALSE;;;
+D01.7;Digestive organ, other;;Digestive organs;TRUE;FALSE;;;
+D01.9;Digestive organ, unspecified;;Digestive organs;TRUE;FALSE;;;
+D02;Middle ear and respiratory system;;Respiratory and intrathoracic organs;TRUE;FALSE;;;
+D02.0;Larynx;;Respiratory and intrathoracic organs;TRUE;FALSE;;;
+D02.1;Trachea;;Respiratory and intrathoracic organs;TRUE;FALSE;;;
+D02.2;Lung and bronchi;;Respiratory and intrathoracic organs;TRUE;FALSE;;;
+D02.3;Respiratory organ, other;;Respiratory and intrathoracic organs;TRUE;FALSE;;;
+D02.4;Respiratory organ, unspecified;;Respiratory and intrathoracic organs;TRUE;FALSE;;;
+D03;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.0;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.1;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.2;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.3;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.4;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.5;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.6;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.7;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.8;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D03.9;Skin;;Malignant melanoma;TRUE;FALSE;;;
+D04;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.0;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.1;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.2;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.3;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.4;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.5;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.6;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.7;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.8;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D04.9;Skin;;Skin other than melanoma;TRUE;FALSE;;;
+D05;Breast;;Breast;TRUE;FALSE;;;
+D05.0;Breast;Lobular carcinoma in situ;Breast;TRUE;FALSE;;;
+D05.1;Breast;Intraductal carcinoma in situ;Breast;TRUE;FALSE;;;
+D05.7;Breast;;Breast;TRUE;FALSE;;;
+D05.9;Breast;;Breast;TRUE;FALSE;;;
+D06;Cervix uteri;;Female genital organs;TRUE;FALSE;;;
+D06.0;Cervix uteri;;Female genital organs;TRUE;FALSE;;;
+D06.1;Cervix uteri;;Female genital organs;TRUE;FALSE;;;
+D06.7;Cervix uteri;;Female genital organs;TRUE;FALSE;;;
+D06.9;Cervix uteri;;Female genital organs;TRUE;FALSE;;;
+D07;Genital organ, unspecified;;Ill-defined or unspecified;TRUE;FALSE;;;
+D07.0;Uterus;Endometrium;Female genital organs;TRUE;FALSE;;;
+D07.1;Vulva;;Female genital organs;TRUE;FALSE;;;
+D07.2;Vagina;;Female genital organs;TRUE;FALSE;;;
+D07.3;Female genital organ, other;;Female genital organs;TRUE;FALSE;;;
+D07.4;Penis;;Male genital organs;TRUE;FALSE;;;
+D07.5;Prostate;;Male genital organs;TRUE;FALSE;;;
+D07.6;Male genital organ, other;;Male genital organs;TRUE;FALSE;;;
+D09;Other;;Ill-defined or unspecified;TRUE;FALSE;;;
+D09.0;Bladder;;Urinary tract;TRUE;FALSE;;;
+D09.1;Urinary organ, other;;Urinary tract;TRUE;FALSE;;;
+D09.2;Eye;;Eye, brain and other parts of CNS;TRUE;FALSE;;;
+D09.3;Thyroid and other endocrine glands;;Thyroid and other endocrine glands;TRUE;FALSE;;;
+D09.7;Other;;Ill-defined or unspecified;TRUE;FALSE;;;
+D09.9;Other;;Ill-defined or unspecified;TRUE;FALSE;;;
+D37;Digestive organ, unspecified;;Digestive organs;FALSE;TRUE;Neubildungen unsicheren Verhaltens;;Neubildungen unsicheren Verhaltens
+D37.0;Lip, oral cavity, pharynx;;Lip, oral cavity, pharynx;FALSE;TRUE;;;
+D37.1;Stomach;;Digestive organs;FALSE;TRUE;;;
+D37.2;Small intestine;;Digestive organs;FALSE;TRUE;;;
+D37.3;Appendix;;Digestive organs;FALSE;TRUE;;;
+D37.4;Colon;;Digestive organs;FALSE;TRUE;;;
+D37.5;Rectum;;Digestive organs;FALSE;TRUE;;;
+D37.6;Liver, gallbladder and bile ducts;;Digestive organs;FALSE;TRUE;;;
+D37.7;Digestive organ, other;;Digestive organs;FALSE;TRUE;;;
+D37.70;Pancreas;;Digestive organs;FALSE;TRUE;;;
+D37.78;Digestive organ, other;;Digestive organs;FALSE;TRUE;;;
+D37.9;Digestive organ, unspecified;;Digestive organs;FALSE;TRUE;;;
+D38;Middle ear, respiratory and intrathoracic organs;;Respiratory and intrathoracic organs;FALSE;TRUE;;;
+D38.0;Larynx;;Respiratory and intrathoracic organs;FALSE;TRUE;;;
+D38.1;Trachea, bronchi, lung;;Respiratory and intrathoracic organs;FALSE;TRUE;;;
+D38.2;Pleura;;Respiratory and intrathoracic organs;FALSE;TRUE;;;
+D38.3;Mediastinum;;Respiratory and intrathoracic organs;FALSE;TRUE;;;
+D38.4;Thymus;;Respiratory and intrathoracic organs;FALSE;TRUE;;;
+D38.5;Respiratory organ, other;;Respiratory and intrathoracic organs;FALSE;TRUE;;;
+D38.6;Respiratory organ, unspecified;;Respiratory and intrathoracic organs;FALSE;TRUE;;;
+D39;Female genital organ, unspecified;;Female genital organs;FALSE;TRUE;;;
+D39.0;Uterus;;Female genital organs;FALSE;TRUE;;;
+D39.1;Ovary;;Female genital organs;FALSE;TRUE;;;
+D39.2;Placenta;;Female genital organs;FALSE;TRUE;;;
+D39.7;Female genital organ, other;;Female genital organs;FALSE;TRUE;;;
+D39.9;Female genital organ, unspecified;;Female genital organs;FALSE;TRUE;;;
+D40;Male genital organ, unspecified;;Male genital organs;FALSE;TRUE;;;
+D40.0;Prostate;;Male genital organs;FALSE;TRUE;;;
+D40.1;Testis;;Male genital organs;FALSE;TRUE;;;
+D40.7;Male genital organ, other;;Male genital organs;FALSE;TRUE;;;
+D40.9;Male genital organ, unspecified;;Male genital organs;FALSE;TRUE;;;
+D41;Urinary organ, unspecified;;Urinary tract;FALSE;TRUE;;;
+D41.0;Kidney;;Urinary tract;FALSE;TRUE;;;
+D41.1;Renal pelvis;;Urinary tract;FALSE;TRUE;;;
+D41.2;Ureter;;Urinary tract;FALSE;TRUE;;;
+D41.3;Urethra;;Urinary tract;FALSE;TRUE;;;
+D41.4;Bladder;;Urinary tract;FALSE;TRUE;;;
+D41.7;Urinary organ, other;;Urinary tract;FALSE;TRUE;;;
+D41.9;Urinary organ, unspecified;;Urinary tract;FALSE;TRUE;;;
+D42;Meninges;;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D42.0;Meninges;Cerebral meninges;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D42.1;Meninges;Spinal meninges;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D42.9;Meninges;;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D43;Brain and other parts of CNS;;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D43.0;Brain;Supratentorial;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D43.1;Brain;Infratentorial;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D43.2;Brain;;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D43.3;Cranial nerves;;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D43.4;Spinal cord;;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D43.7;Other parts of CNS;;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D43.9;Brain and other parts of CNS;;Eye, brain and other parts of CNS;FALSE;TRUE;;;
+D44;Endocrine gland, unspecified;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.0;Thyroid gland;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.1;Adrenal gland;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.2;Parathyroid gland;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.3;Pituitary gland;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.4;Craniopharyngeal duct;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.5;Pineal gland;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.6;Carotid body;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.7;Aortic body and other paraganglia;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.8;Pluriglandular involvement;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D44.9;Endocrine gland, unspecified;;Thyroid and other endocrine glands;FALSE;TRUE;;;
+D45;Blood;Polycythaemia vera;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46;Blood;Myelodysplastic syndrome, unspecified;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46.0;Blood;Refractory anaemia without ring sideroblasts;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46.1;Blood;Refractory anaemia with ring sideroblasts;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46.2;Blood;Refractory anaemia with excess of blasts;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46.3;Blood;Refractory anaemia with excess of blasts in transformation;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46.4;Blood;Refractory anaemia, unspecified;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46.5;Blood;Refractory anaemia with multi-lineage dysplasia;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46.6;Blood;Myelodysplastic syndrome with isolated del(5q) chromosomal abnormality;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46.7;Blood;Myelodysplastic syndrome, other;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D46.9;Blood;Myelodysplastic syndrome, unspecified;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D47;Blood;;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D47.0;Blood;Histiocytic and mast cell tumours;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D47.1;Blood;Chronic myeloproliferative disease;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D47.2;Blood;Monoclonal gammopathy of undetermined significance;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D47.3;Blood;Essential thrombocythaemia;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D47.4;Blood;Osteomyelofibrosis;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D47.5;Blood;Chronic eosinophilic leukaemia;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D47.7;Blood;;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D47.9;Blood;;Lymphoid and haematopoietic tissue;FALSE;TRUE;;;
+D48;Other;;Ill-defined or unspecified;FALSE;TRUE;;;
+D48.0;Bone and articular cartilage;;Bone and articular cartilage;FALSE;TRUE;;;
+D48.1;Connective and soft tissue, other;;Mesothelial and soft tissue;FALSE;TRUE;;;
+D48.2;Peripheral nerves and autonomic nervous system;;Mesothelial and soft tissue;FALSE;TRUE;;;
+D48.3;Retroperitoneum and peritoneum;Retroperitoneum;Mesothelial and soft tissue;FALSE;TRUE;;;
+D48.4;Retroperitoneum and peritoneum;Peritoneum;Mesothelial and soft tissue;FALSE;TRUE;;;
+D48.5;Skin;;Skin other than melanoma;FALSE;TRUE;;;
+D48.6;Breast;Connective tissue of breast;Breast;FALSE;TRUE;;;
+D48.7;Other;;Ill-defined or unspecified;FALSE;TRUE;;;
+D48.9;Unspecified;;Ill-defined or unspecified;FALSE;TRUE;;;

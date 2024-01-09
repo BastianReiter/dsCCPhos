@@ -36,9 +36,11 @@ require(stringr)
 require(tidyr)
 
 
+# Extract curated data from curation output
+# Curated Data Model (CDM) = list of data frames
 CuratedData <- CurationOutput$CuratedData
 
-
+# Extract data frames from list
 df_CDM_BioSampling <- CuratedData$BioSampling
 df_CDM_Diagnosis <- CuratedData$Diagnosis
 df_CDM_Histology <- CuratedData$Histology
@@ -52,9 +54,9 @@ df_CDM_Surgery <- CuratedData$Surgery
 df_CDM_SystemicTherapy <- CuratedData$SystemicTherapy
 
 
-#===============================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Augmented Data Model (ADM)
-#===============================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                      ________________
 #                     / df_ADM_Patient \
 #                     \________________/

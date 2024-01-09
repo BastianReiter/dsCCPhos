@@ -1,0 +1,40 @@
+---
+title: "Roadmap"
+id: chapter-Roadmap
+editor: source
+---
+  
+```{r}
+#| label: Setup
+#| echo: false
+
+knitr::opts_chunk$set(echo = FALSE)
+
+source("RSetup.R", local = knitr::knit_global())
+```
+
+\
+
+```{r}
+#| label: Roadmap
+#| warning: false
+
+df_RoadmapData <- read_excel(path = "./files/Tables.xlsx", sheet = "Roadmap") %>%
+                      filter(Subproject == "HIVCAre Part I")
+
+plot_GanttChart <- ggplot(data = df_RoadmapData,
+                          mapping = aes(x = as.Date(Start_Date, format = "%Y-%m-%d"),
+                                        xend = as.Date(End_Date, format = "%Y-%m-%d"),
+                                        y = Process,
+                                        yend = Process,
+                                        color = Subproject)) +
+                      geom_segment(linewidth = 8, show.legend = FALSE) +
+                      scale_x_date(limits = c(Sys.Date() - 3, NA)) +
+                      xlab("") +
+                      ylab("") +
+                      theme_CCP(inp_Theme_BaseSize = 20)
+
+plot_GanttChart
+
+```
+

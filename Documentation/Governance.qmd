@@ -1,0 +1,89 @@
+---
+title: "Project Governance"
+id: chapter-Governance
+editor: source
+---
+
+```{r}
+#| label: Setup
+#| echo: false
+
+knitr::opts_chunk$set(echo = FALSE)
+
+source("RSetup.R", local = knitr::knit_global())
+```
+
+\
+
+### Full Project Title
+
+**Epidemiology and Inpatient Care Characteristics of HIV-positive Cancer Patients in German university hospitals: A Real World Data Exploration (HIVCAre).**
+
+### Project Initiation
+
+**Prof. Dr. Jörg Janne Vehreschild\
+Melanie Stecher, PhD\
+Stefanie Andreas, M.Sc.\
+Dr. Daniel Maier**
+
+### Project Supervision
+
+**Prof. Dr. Jörg Janne Vehreschild** \
+[Goethe University Frankfurt\
+University Hospital Frankfurt\
+Department of Medicine\
+Hematology and Medical Oncology]{style="font-size: 80%"}
+
+### Project Administration
+
+**Bastian Reiter** \
+[Goethe University Frankfurt\
+University Hospital Frankfurt\
+Department of Medicine\
+Hematology and Medical Oncology]{style="font-size: 80%"}
+
+### Research Associates
+
+```{r}
+#| label: ResearchAssociates
+
+read_excel(path = "./files/Tables.xlsx", sheet = "ResearchAssociates") %>%
+    select(Last_Name,
+           First_Name,
+           Primary_Affiliation,
+           City,
+           Author_Contributions) %>% 
+    gt() %>%
+    theme_gt_CDSG()
+```
+
+### Participating Institutions
+
+```{r}
+#| label: ParticipatingInstitutions
+
+read_excel(path = "./files/Tables.xlsx", sheet = "ParticipatingSites") %>%
+    gt() %>%
+    theme_gt_CDSG(inp_TableAlign = "left")
+```
+
+
+
+### Funding
+
+There is no third-party funding for this project.
+
+
+### Conflicts of Interest
+
+We have no conflicts of interest to disclose.
+
+
+### Trial Registration
+
+It is intended to register the study at the German Clinical Trial Register ([Deutsches Register Klinischer Studien, DRKS](https://www.bfarm.de/DE/Das-BfArM/Aufgaben/Deutsches-Register-Klinischer-Studien/_node.html?page=5)).
+
+
+### Publication
+
+The study results will be published in cooperation with all associates.

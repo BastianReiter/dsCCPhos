@@ -1,0 +1,83 @@
+---
+title: "Study Design"
+id: chapter-StudyDesign
+editor: source
+---
+
+```{r}
+#| label: Setup
+#| echo: false
+
+knitr::opts_chunk$set(echo = FALSE)
+
+source("RSetup.R", local = knitr::knit_global())
+```
+
+
+> **HIVCAre** is a multicenter retrospective cohort study, conducted on Real World Health Data from German university hospitals.
+
+
+### Research Objectives    {#section-ResearchObjectives}
+
+> **Main Objective:** Explore epidemiology and inpatient care characteristics of HIV-positive cancer patients
+
+- Describe cancer occurrence in HIV-positive patients over time stratified by cancer category
+
+- Explore possible differences in care characteristics between HIV-negative and HIV-positive cancer patients
+
+- Explore differences in course of therapy between HIV-negative and HIV-positive cancer patients
+
+For a detailed list of Research Items, see according Section [below](#section-ResearchItems).
+
+
+### Study Data
+
+The primary health data analyzed in this study is curated by hospitals following legal requirements founded in [§21 Krankenhausentgeltgesetz (KHEntgG)](https://www.gesetze-im-internet.de/khentgg/__21.html). For more details, see Chapter [Study Data](#chapter-StudyData).
+
+
+### Study Cohort     {#section-StudyCohort}
+
+Data of patients admitted to the following university hospitals (in alphabetical order):
+
+```{r}
+#| label: ParticipatingSites
+
+read_excel(path = "./files/Tables.xlsx", sheet = "ParticipatingSites") %>%
+    select(-Institution) %>%
+    gt() %>%
+    theme_gt_CDSG(inp_TableAlign = "left")
+```
+
+#### Inclusion criteria
+
+-   Admitted between 01-01-2005 and 12-31-2022
+-   Aged at least 18 years at date of admission
+-   At least one documented ICD-10 code representing malignancy or HIV infection
+
+#### Exclusion criteria
+
+-   Implausible documentation of ICD-10 codes
+
+\
+
+#### Stratification Model
+
+![](Images/StratificationModel){fig-alt="Stratification Model" fig-align="center"}
+
+### Sample Size Determination
+
+Since this study does not aim at a particular effect size analysis and it can be assumed that the yielded Sample Sizes will be rather large, no specific Sample Size Determination will be performed.
+An estimation of the number of included patients will be available for each participating site and can reach up to 50.000 patients for large University hospitals.
+
+
+### Research Items   {#section-ResearchItems}
+
+The following research items result from the research objectives stated [here](#section-ResearchObjectives).
+
+```{r}
+#| label: ResearchItems
+
+read_excel(path = "./files/Tables.xlsx", sheet = "ResearchItems") %>%
+    gt(groupname_col = "Objective_Group") %>%
+    theme_gt_CDSG()
+```

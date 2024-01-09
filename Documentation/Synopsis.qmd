@@ -1,0 +1,40 @@
+---
+title: "Synopsis"
+id: chapter-Synopsis
+editor: source
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+knitr::opts_chunk$set(echo = FALSE)
+
+source("RSetup.R", local = knitr::knit_global())
+```
+
+\
+
+### Full Project Title
+
+**Epidemiology and Inpatient Care Characteristics of HIV-positive Cancer Patients in German university hospitals: A Real World Data Exploration (HIVCAre)**
+
+
+### Background   {#section-Background}
+
+- Infection with Human Immunodeficiency Virus (HIV) and its consequential acquired immune deficiency syndrome (AIDS) entail an increased risk of developing cancer. The associated malignancies are commonly classified into AIDS-defining cancer (AD, e.g. Kaposi sarcoma) and HIV-associated non-AIDS-defining cancer (NAD, e.g. Hodgkin lymphoma).
+
+- Establishment of effective antiretroviral therapy (ART) is considered a major driver of the steep decline in AD cancer incidence since the 1990s, however the risk of NAD cancer in persons living with HIV (PLWH) remains elevated compared to non-infected individuals. Today cancer is the leading cause of death among the infected population, a fact that has in part been attributed to the considerable rise in life expectancy.
+
+- Medical care of HIV-positive cancer patients involves management of complex interactions between ART and potential side effects, anti-infective therapy as well as cancer treatment in a latently immunocompromised host.
+
+- Currently no specific care structures have been established in German hospitals to meet this medical challenge.
+
+- Exploration of Real World Data could provide insights into epidemiology and inpatient care characteristics of HIV-positive cancer patients.
+
+- We analyze data curated in the context of a federal law (Krankenhausentgeltgesetz, KHEntgG), that requires all German hospitals to transmit the so-called §21-data-set to a semi-public institute (InEK GmbH) under management of central health system organization.
+
+- The correspondent data base is curated and hosted by hospital infrastructure and can be accessed by Data Integration Centers.
+
+- Using federated analysis techniques ensures a high level of data privacy and maintains data sovereignty of the participating sites.
+

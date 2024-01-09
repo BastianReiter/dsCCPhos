@@ -14,9 +14,10 @@ library(devtools)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_ccby_license()
 
-# Define part of project that should not be distributed in the package
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define parts of project that should not be distributed in the package
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_build_ignore("Development")
+# use_build_ignore("Documentation")
 
 
 # Adding package dependencies using usethis::use_package()

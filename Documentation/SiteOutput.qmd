@@ -1,0 +1,28 @@
+---
+title: "Site Output"
+id: chapter-SiteOutput
+editor: source
+---
+  
+```{r}
+#| label: Setup
+#| echo: false
+
+knitr::opts_chunk$set(echo = FALSE)
+
+source("RSetup.R", local = knitr::knit_global())
+```
+
+\
+
+### Output Objects
+
+```{r}
+#| label: OutputObjects
+#| message: false
+
+read_csv(file = "./Files/OutputObjectsInfo.csv") %>%
+    select(-Object_R_Type) %>%
+    gt(groupname_col = "Object_Category") %>%
+    theme_gt_CDSG(inp_TableAlign = "left")
+```

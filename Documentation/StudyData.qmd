@@ -1,0 +1,78 @@
+---
+title: "Study Data"
+id: chapter-StudyData
+editor: source
+---
+
+```{r}
+#| label: Setup
+#| echo: false
+
+knitr::opts_chunk$set(echo = FALSE)
+
+source("RSetup.R", local = knitr::knit_global())
+```
+
+\
+
+### Data Generation
+
+Primarily, data accumulated in the context of a federal law called *Krankenhausentgeltgesetz* (KHEntgG) is used to conduct this study. The KHEntgG requires all German hospitals to transmit the so-called §21-data-set to a semi-public institute (InEK GmbH) under management of central health system organizations.\
+For more information, see [here](https://www.g-drg.de/datenlieferung-gem.-21-khentgg/datenlieferung-gem.-21-abs.1-khentgg/dokumente-zur-datenlieferung/dokumente-zur-datenlieferung).
+
+### Data Storage and Administration
+
+The data to be analyzed in this project is stored and administered by Data Integration Centers (DIC) of the participating university hospitals. No individual-level patient data will be transmitted (see Section on [Federated Analysis](#section-FederatedAnalysis)). For a detailed insight into the requested Study Data see Chapter [Data Selection](#chapter-DataSelection).
+
+
+### Federated Analysis {#section-FederatedAnalysis}
+
+This study applies methods of Federated Data Analysis, with the following key consequences:
+
+-   Individual-level data is solely accessed by institutions of the participating sites.
+-   An analytic procedure (usually in the form of an executable Analysis Script) is provided to the sites by the Project Manager.
+-   The analytic output (usually in the form of aggregated data) is transmitted to the Project Manager
+
+For a detailed illustration of this method, refer to the Chapters on [Federated Analysis](#chapter-GeneralApproach).
+
+
+### Data Privacy and Security
+
+For individual-level data, the following applies:
+
+-   It is pseudonymized during Analysis
+-   No individual-level data accessed in this study will be transmitted outside of the participating sites
+
+For aggregated data, the following applies:
+
+-   Various automated and supervised measures are put in place to minimize risk of re-identification
+-   All files encrypted
+
+
+### Data Storage
+
+The aggregated / anonymized data hold at the Site of Project Administration will be deleted after 10 years.
+
+
+### Study Participant Consent
+
+In this study, no explicit documentation of Participant Consent is intended.
+Incorporating Art. 5, 6, 9 GDPR[^GDPR]/DSGVO[^DSGVO], §27 BDSG[^BDSG] and §24 HDSIG[^HDSIG], we justify this approach with the following reasons:
+
+-   Analysis on individual patient data is performed retrospectively
+-   All individual data remains at the Site of Data Generation
+-   To obtain explicit consent from every participant would be disproportionally laborious, considering the large numbers of included participant and the aspects stated above
+
+[^GDPR]: General Data Protection Regulation
+
+[^DSGVO]: Datenschutz-Grundverordnung
+
+[^BDSG]: Bundesdatenschutzgesetz
+
+[^HDSIG]: Hessisches Datenschutz- und Informationsfreiheitsgesetz
+
+
+### Meta Data
+
+See [Downloads](#chapter-Downloads) for an overview of Meta Data used in this Study.
+

@@ -1,0 +1,55 @@
+
+
+// CDSG Documentation Theme
+
+// Available SASS-Variables for this theme can be looked up on:
+// https://github.com/twbs/bootstrap/blob/main/scss/_variables.scss
+
+
+// Importing Google fonts
+
+/* Import Google font "Karla" */
+@import url('https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200;0,400;0,700;0,800;1,400;1,700&display=swap');
+
+/* Import Google font "Montserrat" */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,700;1,300;1,700&display=swap');
+
+
+/*-- scss:functions --*/
+
+
+
+/*-- scss:defaults --*/
+
+$white:                 #fff !default;
+$gray-100:              #f8f9fa !default;
+$gray-200:              #e9ecef !default;
+$gray-300:              #dee2e6 !default;
+$gray-400:              #ced4da !default;
+$gray-500:              #adb5bd !default;
+$gray-600:              #6c757d !default;
+$gray-700:              #495057 !default;
+$gray-800:              #343a40 !default;
+$gray-900:              #212529 !default;
+$black:                 #000 !default;
+
+$primary:               #054996 !default;
+$secondary:             #8e1e39 !default;
+$tertiary:              #595959 !default;
+$quaternary:            #2B8C88 !default;
+
+$body-color:            $gray-800 !default;
+
+$font-family-base:      'Karla' !default;
+
+$headings-color:        $primary !default;
+$headings-font-family:  'Montserrat' !default;
+
+
+
+/*-- scss:rules --*/
+
+.menu-text {
+  font-family: $headings-font-family;
+  font-weight: bold;
+}

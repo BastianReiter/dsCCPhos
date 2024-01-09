@@ -56,6 +56,7 @@ Server_SiteA$assignMethods()
 Server_SiteA$aggregateMethods()
 
 
+
 # Returns an environment
 LoginBuilder <- DSI::newDSLoginBuilder(.silent = FALSE)
 
@@ -90,6 +91,13 @@ CCPConnections <- DSI::datashield.login(logins = LoginData,
 datashield.tables(CCPConnections)
 
 
+# Test with ds.mean()
+Test <- ds.mean(x = "Patient$geburtsdatum",
+                type = "both",
+                datasources = CCPConnections)
+
+
+
 datashield.assign(CCPConnections, symbol = "BioSampling", value = "BioSampling")
 datashield.assign(CCPConnections, symbol = "Diagnosis", value = "Diagnosis")
 datashield.assign(CCPConnections, symbol = "Histology", value = "Histology")
@@ -117,12 +125,6 @@ ds.list(x = c("BioSampling",
               "SystemicTherapy"),
         newobj = "RawData",
         datasources = CCPConnections)
-
-
-# Test with ds.mean()
-Test <- ds.mean(x = "Patient$geburtsdatum",
-                type = "both",
-                datasources = CCPConnections)
 
 
 # Curate the raw data

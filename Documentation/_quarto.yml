@@ -1,0 +1,79 @@
+project:
+  type: book
+
+book:
+  title: "HIVCAre Documentation"
+  subtitle: "Epidemiology and Inpatient Care Characteristics of HIV-positive Cancer Patients in German university hospitals"
+  author: "Bastian Reiter"
+  date: last-modified
+  search: true
+  downloads: [pdf]
+  sidebar:
+    style: docked
+    background: light
+  chapters:
+    - index.qmd
+    - part: "Project Information"
+      chapters:
+        - Synopsis.qmd
+        - Governance.qmd
+        - StudyDesign.qmd
+        - StudyData.qmd
+        - RegulatoryCompliance.qmd
+        - Roadmap.qmd
+        - Downloads.qmd
+    - part: "Cooperative Approach"
+      chapters:
+        - FederatedAnalysis.qmd
+        - DataSelection.qmd
+        - ScriptExecution.qmd
+        - RuntimeEnvironment.qmd
+    - part: "Analysis"
+      chapters:
+        - SemanticPremises.qmd
+        - DataProcessing.qmd
+        - StatisticalMethods.qmd
+        - SiteOutput.qmd
+        - LimitationsAndConcerns.qmd
+    - part: "Publications"
+      chapters:
+        - Publications.qmd
+    - part: "References"
+      chapters:
+        - References.qmd
+  comments:
+    hypothesis:
+      theme: clean
+      openSidebar: false
+
+
+bibliography: references.bib
+csl: nature.csl
+
+
+format:
+  
+  html:
+    code-link: true
+    code-fold: true
+    default-image-extension: svg
+    grid:
+      sidebar-width: 400px
+    number-sections: false
+    theme:
+      - cosmo
+      - theme.scss
+    reference-location: margin
+      
+
+editor: source
+
+filters:
+  - lightbox
+
+resources:
+  - Downloads/KHEntgG_UebermittlungVonDaten_2023.pdf
+  - Downloads/ZI_HIVCodingManual_2023.pdf
+  - Downloads/ICD10CancerGrouping.csv
+  - Downloads/ICD10HIVStatus.csv
+  - Downloads/ICD10HIVDiseases.csv
