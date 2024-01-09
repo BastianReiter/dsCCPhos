@@ -2,8 +2,8 @@ project:
   type: book
 
 book:
-  title: "HIVCAre Documentation"
-  subtitle: "Epidemiology and Inpatient Care Characteristics of HIV-positive Cancer Patients in German university hospitals"
+  title: "CCPhos Documentation"
+  subtitle: "Development and Usage of dsCCPhos and dsCCPhosClient"
   author: "Bastian Reiter"
   date: last-modified
   search: true
@@ -13,28 +13,28 @@ book:
     background: light
   chapters:
     - index.qmd
-    - part: "Project Information"
+    - part: "General Info"
       chapters:
-        - Synopsis.qmd
-        - Governance.qmd
-        - StudyDesign.qmd
-        - StudyData.qmd
-        - RegulatoryCompliance.qmd
-        - Roadmap.qmd
-        - Downloads.qmd
-    - part: "Cooperative Approach"
-      chapters:
-        - FederatedAnalysis.qmd
-        - DataSelection.qmd
-        - ScriptExecution.qmd
-        - RuntimeEnvironment.qmd
-    - part: "Analysis"
+        - CCP.qmd
+        - DataShield.qmd
+        - CCPhos.qmd
+    - part: "Using CCPhos"
+      chapters: 
+        - Example.qmd
+        - DataModels.qmd
+    - part: "Methodical Aspects"
       chapters:
         - SemanticPremises.qmd
         - DataProcessing.qmd
         - StatisticalMethods.qmd
-        - SiteOutput.qmd
         - LimitationsAndConcerns.qmd
+    - part: "Development"
+      chapters: 
+        - Development.qmd
+    - part: "Governance"
+      chapters:
+        - Governance.qmd
+        - Downloads.qmd
     - part: "Publications"
       chapters:
         - Publications.qmd
@@ -70,10 +70,3 @@ editor: source
 
 filters:
   - lightbox
-
-resources:
-  - Downloads/KHEntgG_UebermittlungVonDaten_2023.pdf
-  - Downloads/ZI_HIVCodingManual_2023.pdf
-  - Downloads/ICD10CancerGrouping.csv
-  - Downloads/ICD10HIVStatus.csv
-  - Downloads/ICD10HIVDiseases.csv

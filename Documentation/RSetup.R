@@ -6,9 +6,14 @@
 ################################################################################
 
 
-#devtools::install_github("rchaput/knitrdrawio")
 
+#install.packages("devtools")
 #install.packages("pacman")
+
+#devtools::install_github(repo = "BastianReiter/TinkerLab")
+
+
+
 pacman::p_load( dplyr,
                 ggplot2,
                 gt,
@@ -16,7 +21,8 @@ pacman::p_load( dplyr,
                 purrr,
                 readr,
                 readxl,
-                showtext)
+                showtext,
+                TinkerLab)
 
 
 source("./Scripts/Preferences.R")

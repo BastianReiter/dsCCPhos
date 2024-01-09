@@ -14,11 +14,20 @@ source("RSetup.R", local = knitr::knit_global())
 
 \
 
-This Research Documentation means to provide both a comprehensive source of information about the underlying project as well as facilitate its cooperative approach. Following the general ideas of [Open Science](https://www.fosteropenscience.eu/learning/what-is-open-science/#/id/5ab8ea32dd1827131b90e3ac), we thus hope to achieve a high degree of transparency and reproducibility in our conduct of research.
+::: {.grid}
 
-**Important disclaimer:** The content of this Website is not a substitute for a signed Study Protocol. When in doubt, the content of the most recently signed Study Protocol overrules the content of this Documentation.
+::: {.g-col-3 .g-start-2}
+![](Images/Logo_dsCCPhos.png){fig-align="center"}
+:::
 
-The design of this Documentation follows the guides on [Good Epidemiological Practice (GEP)](https://www.dgepi.de/assets/Good-Epidemiological-Practice-GEP-EurJ-Epidemiol-2019.pdf)[@hoffmann2019] and [Gute Praxis Sekundärdatenanalyse (GPS)](https://www.dgepi.de/assets/Leitlinien-und-Empfehlungen/GPS_revision2-final_august2014.pdf)[@swart2015].
+::: {.g-col-3 .g-start-7}
+![](Images/Logo_dsCCPhosClient.png){fig-align="center"}
+:::
+
+:::
+
+
+This Documentation means to provide both a comprehensive source of information about **CCPhos** as well as facilitate its cooperative approach. Following the general ideas of [Open Science](https://www.fosteropenscience.eu/learning/what-is-open-science/#/id/5ab8ea32dd1827131b90e3ac), we thus hope to achieve a high degree of transparency and reproducibility in our conduct of research.
 
 \
 
