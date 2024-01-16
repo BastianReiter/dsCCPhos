@@ -1,7 +1,11 @@
 
 #' AugmentDataDS
 #'
-#' @param Name_CurationOutput
+#' Transforms Curated Data Set (CDS) into Augmented Data Set (ADS)
+#'
+#' Server-side ASSIGN method
+#'
+#' @param Name_CurationOutput String | Name of the list object created by CurateDataDS() | Default: 'CurationOutput'
 #'
 #' @return
 #' @export
@@ -36,55 +40,49 @@ require(stringr)
 require(tidyr)
 
 
-# Extract curated data from curation output
-# Curated Data Model (CDM) = list of data frames
-CuratedData <- CurationOutput$CuratedData
+# Extract Curated Data Set (list of data frames) from curation output
+CuratedDataSet <- CurationOutput$CuratedDataSet
 
 # Extract data frames from list
-df_CDM_BioSampling <- CuratedData$BioSampling
-df_CDM_Diagnosis <- CuratedData$Diagnosis
-df_CDM_Histology <- CuratedData$Histology
-df_CDM_Metastasis <- CuratedData$Metastasis
-df_CDM_MolecularDiagnostics <- CuratedData$MolecularDiagnostics
-df_CDM_Patient <- CuratedData$Patient
-df_CDM_Progress <- CuratedData$Progress
-df_CDM_RadiationTherapy <- CuratedData$RadiationTherapy
-df_CDM_Staging <- CuratedData$Staging
-df_CDM_Surgery <- CuratedData$Surgery
-df_CDM_SystemicTherapy <- CuratedData$SystemicTherapy
+df_CDS_BioSampling <- CuratedDataSet$BioSampling
+df_CDS_Diagnosis <- CuratedDataSet$Diagnosis
+df_CDS_Histology <- CuratedDataSet$Histology
+df_CDS_Metastasis <- CuratedDataSet$Metastasis
+df_CDS_MolecularDiagnostics <- CuratedDataSet$MolecularDiagnostics
+df_CDS_Patient <- CuratedDataSet$Patient
+df_CDS_Progress <- CuratedDataSet$Progress
+df_CDS_RadiationTherapy <- CuratedDataSet$RadiationTherapy
+df_CDS_Staging <- CuratedDataSet$Staging
+df_CDS_Surgery <- CuratedDataSet$Surgery
+df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Augmented Data Model (ADM)
+# Augmented Data Set (ADS)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                      ________________
-#                     / df_ADM_Patient \
+#                     / df_ADS_Patient \
 #                     \________________/
 #
 #                      __________________
-#                     / df_ADM_Diagnosis \
+#                     / df_ADS_Diagnosis \
 #                     \__________________/
 #
 #                      _______________
-#                     / df_ADM_Events \
+#                     / df_ADS_Events \
 #                     \_______________/
 
 
 
 
-df_Work_Patient <- df_CDM_Patient %>%
-                        left_join(df_CDM_Diagnosis, by = join_by(PatientID)) %>%
-                        group_by(PatientID) %>%
-                            mutate(CountDifferentDiagnoses = n_distinct(DiagnosisID),
-                                   CountDifferentCancers = n_distinct(ICD10Code),
-                                   CountDifferences = CountDifferentDiagnoses - CountDifferentCancers) %>%      # Get Counts of different diagnoses and different cancer entities (by ICD-10-Code). These counts should be equal in majority of cases.
-                        filter(CountDifferences > 0)
 
 
 
 
-df_Work_Diagnosis <- CuratedData$Diagnosis %>%
-                          left_join(CuratedData$Histology, by = join_by(PatientID, DiagnosisID)) %>%
+
+df_Work_Diagnosis <- CuratedDataSet$Diagnosis %>%
+                          left_join(CuratedDataSet$Histology, by = join_by(PatientID, DiagnosisID)) %>%
                           group_by(DiagnosisID) %>%
                               mutate(HistologiesPerDiagnosis = n(),
                                      DifferentHistologiesPerTumor = n_distinct(ICDOMorphology, Grading)) %>%
@@ -94,10 +92,10 @@ df_Work_Diagnosis <- CuratedData$Diagnosis %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Processing of CDM tables
+# Processing of CDS tables
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-df_CDM_SystemicTherapy <- df_CDM_SystemicTherapy %>%
+df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                               mutate(SystemicTherapySubclass = case_when((IsChemotherapy == TRUE
                                                                             & IsHormoneTherapy == FALSE
                                                                             & IsImmunotherapy == FALSE
@@ -109,7 +107,7 @@ df_CDM_SystemicTherapy <- df_CDM_SystemicTherapy %>%
                                                                           (IsChemotherapy == FALSE
                                                                             & IsHormoneTherapy == FALSE
                                                                             & IsImmunotherapy == TRUE
-                                                                            & IsBoneMarrowTransplant == FALSE) ~ "Immunoherapy Mono",
+                                                                            & IsBoneMarrowTransplant == FALSE) ~ "Immunotherapy Mono",
                                                                           (IsChemotherapy == FALSE
                                                                             & IsHormoneTherapy == FALSE
                                                                             & IsImmunotherapy == FALSE
@@ -140,15 +138,17 @@ df_CDM_SystemicTherapy <- df_CDM_SystemicTherapy %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Generate df_ADM_Events
+# Generate df_ADS_Events
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Diagnosis-related events
 
 
-# Initiate df_ADM_Events integrating initial diagnosis event
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_ADM_Events <- df_CDM_Patient %>%
-                      left_join(df_CDM_Diagnosis, join_by(PatientID)) %>%
+# Initiate df_ADS_Events, integrating patient-specific and initial diagnosis events
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Initiation 1: Initial diagnosis event
+df_ADS_Events <- df_CDS_Patient %>%
+                      right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
                       group_by(PatientID, DiagnosisID) %>%
                           mutate(EventType = "Point",
                                  EventDate = InitialDiagnosisDate,
@@ -164,11 +164,34 @@ df_ADM_Events <- df_CDM_Patient %>%
                                  InitialDiagnosisDate,
                                  starts_with("Event"))
 
+# Initiation 2: Last known vital status
+df_Events_LastVitalStatus <- df_CDS_Patient %>%
+                                  right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
+                                  group_by(PatientID, DiagnosisID) %>%
+                                      mutate(EventType = "Point",
+                                             EventDate = LastVitalStatusDate,
+                                             EventClass = "Vital Status",
+                                             EventSubclass = case_when(LastVitalStatus == "Deceased" ~ "Death",
+                                                                       LastVitalStatus == "Alive" ~ "Alive",
+                                                                       LastVitalStatus == NA ~ "Unknown")) %>%
+                                      nest(EventDetails = c(DeathCancerRelated,
+                                                            CausesOfDeath)) %>%
+                                  ungroup() %>%
+                                  select(PatientID,
+                                         DateOfBirth,
+                                         DiagnosisID,
+                                         InitialDiagnosisDate,
+                                         starts_with("Event"))
+
+# Initiation 3: Row-bind data frames from Initiation 1 and 2
+df_ADS_Events <- df_ADS_Events %>%
+                      bind_rows(df_Events_LastVitalStatus)
+
 
 
 # Transform BioSampling data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_BioSampling <- df_CDM_BioSampling %>%
+df_Events_BioSampling <- df_CDS_BioSampling %>%
                               group_by(PatientID) %>%
                                   arrange(SampleTakingDate, .by_group = TRUE) %>%
                                   mutate(EventType = "Point",
@@ -193,7 +216,7 @@ df_Events_BioSampling <- df_CDM_BioSampling %>%
 
 # Transform Histology data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Histology <- df_CDM_Histology %>%
+df_Events_Histology <- df_CDS_Histology %>%
                             group_by(PatientID, DiagnosisID) %>%
                                 arrange(HistologyDate, HistologyID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
@@ -217,7 +240,7 @@ df_Events_Histology <- df_CDM_Histology %>%
 
 # Transform Metastasis data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Metastasis <- df_CDM_Metastasis %>%
+df_Events_Metastasis <- df_CDS_Metastasis %>%
                             group_by(PatientID, DiagnosisID) %>%
                                 arrange(MetastasisDiagnosisDate, MetastasisID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
@@ -239,7 +262,7 @@ df_Events_Metastasis <- df_CDM_Metastasis %>%
 
 # Transform MolecularDiagnostics data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_MolecularDiagnostics <- df_CDM_MolecularDiagnostics %>%
+df_Events_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
                                       group_by(PatientID, DiagnosisID) %>%
                                           arrange(MolecularDiagnosticsDate, .by_group = TRUE) %>%
                                           mutate(EventType = "Point",
@@ -260,26 +283,9 @@ df_Events_MolecularDiagnostics <- df_CDM_MolecularDiagnostics %>%
 
 
 
-# Transform VitalStatus data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Patient <- df_CDM_Patient %>%
-                          group_by(PatientID) %>%
-                              mutate(EventType = "Point",
-                                     EventDate = LastVitalStatusDate,
-                                     EventClass = "Vital Status",
-                                     EventSubclass = "Vital Status") %>%
-                              nest(EventDetails = c(LastVitalStatus,
-                                                    DeathCancerRelated,
-                                                    CausesOfDeath)) %>%
-                          ungroup() %>%
-                          select(PatientID,
-                                 starts_with("Event"))
-
-
-
 # Transform Progress data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Progress <- df_CDM_Progress %>%
+df_Events_Progress <- df_CDS_Progress %>%
                           group_by(PatientID, DiagnosisID) %>%
                               arrange(ProgressReportDate, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
@@ -304,7 +310,7 @@ df_Events_Progress <- df_CDM_Progress %>%
 
 # Transform RadiationTherapy data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_RadiationTherapy <- df_CDM_RadiationTherapy %>%
+df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                   group_by(PatientID, DiagnosisID) %>%
                                       arrange(RadiationTherapyStart, .by_group = TRUE) %>%
                                       mutate(EventType = "Period",
@@ -327,7 +333,7 @@ df_Events_RadiationTherapy <- df_CDM_RadiationTherapy %>%
 
 # Transform Staging data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Staging <- df_CDM_Staging %>%
+df_Events_Staging <- df_CDS_Staging %>%
                           group_by(PatientID, DiagnosisID) %>%
                               arrange(StagingReportDate, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
@@ -358,7 +364,7 @@ df_Events_Staging <- df_CDM_Staging %>%
 
 # Transform Surgery data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Surgery <- df_CDM_Surgery %>%
+df_Events_Surgery <- df_CDS_Surgery %>%
                           group_by(PatientID, DiagnosisID) %>%
                               arrange(SurgeryDate, SurgeryID, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
@@ -382,7 +388,7 @@ df_Events_Surgery <- df_CDM_Surgery %>%
 
 # Transform SystemicTherapy data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_SystemicTherapy <- df_CDM_SystemicTherapy %>%
+df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                   group_by(PatientID, DiagnosisID, SystemicTherapySubclass) %>%
                                       arrange(SystemicTherapyStart, .by_group = TRUE) %>%
                                       mutate(EventType = "Period",
@@ -403,18 +409,19 @@ df_Events_SystemicTherapy <- df_CDM_SystemicTherapy %>%
                                          starts_with("Event"))
 
 
-df_ADM_Events <- df_ADM_Events %>%
+# Consolidate Event-oriented data from CDS tables
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+df_ADS_Events <- df_ADS_Events %>%
                       bind_rows(df_Events_BioSampling,
                                 df_Events_Histology,
                                 df_Events_Metastasis,
                                 df_Events_MolecularDiagnostics,
-                                df_Events_Patient,
                                 df_Events_Progress,
                                 df_Events_RadiationTherapy,
                                 df_Events_Staging,
                                 df_Events_Surgery,
                                 df_Events_SystemicTherapy) %>%
-                      group_by(DiagnosisID) %>%
+                      group_by(PatientID, DiagnosisID) %>%
                           arrange(EventDate, .by_group = TRUE) %>%
                           fill(DateOfBirth,
                                InitialDiagnosisDate) %>%
@@ -438,7 +445,38 @@ df_ADM_Events <- df_ADM_Events %>%
                              EventDetails)
 
 
-return(list(ADM_Events = df_ADM_Events))
+
+Test <- df_ADS_Events %>%
+            unnest(cols = c(EventDetails))
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Construct patient-specific endpoints for clinical outcome measures from event history
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#   - Overall survival (OS)
+#   -
+#   - Progression-free survival (PFS)
+#   - Disease-free survival (DFS)
+#
+#   - Overall response rate
+
+#   - Disease specific survival (Death from disease or from treatment)
+#
+#
+
+
+
+df_Events_Summary <- df_ADS_Events %>%
+                          group_by(PatientID) %>%
+                              mutate(TimeDiagnosisToDeath = ifelse())
+
+
+
+
+
+
+return(list(ADS_Events = df_ADS_Events))
 }
 
 

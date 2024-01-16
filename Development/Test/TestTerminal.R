@@ -9,18 +9,31 @@ load("./Development/Data/RealData/CCPTestData_Total.RData")
 DBConnection <- MakeTestDB(CCPTestData_Total)
 
 # Load raw test data from data base into WD
-RawData <- LoadRawData(DBConnection)
+RawDataSet <- LoadRawData(DBConnection)
 
 # Curate data
-CurationOutput <- dsCCPhos::CurateDataDS("RawData")
+CurationOutput <- dsCCPhos::CurateDataDS("RawDataSet")
 
 # Save curated data set for test purposes
-#save(CuratedData, file = "./Development/Data/RealData/CCPCuratedData.Rdata")
+#save(CurationOutput$CuratedDataSet, file = "./Development/Data/RealData/CCPCuratedDataSet.Rdata")
 
 # Augment data based on curation output
 AugmentationOutput <- dsCCPhos::AugmentDataDS("CurationOutput")
 
-View(AugmentationOutput$ADM_Events)
+View(AugmentationOutput$ADS_Events)
 
 
 
+
+
+
+# Missings <- purrr::map(CCPTestData_Total, function(df) {
+#                                               MissingColumns <- names(df)[which(colSums(is.na(df)) == nrow(df))]
+#
+#
+# })
+#
+#
+# Missings <- unlist(Missings)
+#
+# names(Missings) <- NULL

@@ -10,18 +10,24 @@
 library(devtools)
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set preferred license in description
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_ccby_license()
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Define parts of project that should not be distributed in the package
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # use_build_ignore("Development")
 # use_build_ignore("Documentation")
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adding package dependencies using usethis::use_package()
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # use_package("dbplyr")
 # use_package("dplyr")
 # use_package("duckdb")
@@ -36,32 +42,53 @@ library(devtools)
 # use_package("stringr")
 # use_package("sysfonts")
 # use_package("tibble")
+# use_package("validate")
 # use_package("xml2")
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Adding R script files
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Adding function script files
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Structural files
+#~~~~~~~~~~~~~~~~~
+# use_r("data")
+
+# General / Auxiliary functions
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_r("AttritionTracker_Close")
 # use_r("AttritionTracker_Init")
 # use_r("AttritionTracker_Update")
-# use_r("AugmentDataDS")
+# use_r("ClassifyDiagnosisEntries")
 # use_r("ConnectToOpalDB")
-# use_r("ConnectToSites")
-# use_r("CurateDataDS")
-# use_r("CurationReportDS")
-# use_r("data")
+# use_r("ConnectToTestServers")
 # use_r("DataListToDataModel")
 # use_r("DataModelToCSV")
 # use_r("DataModelToDB")
 # use_r("GetDFInfo")
-# use_r("GetObjectInfoDS")
 # use_r("Harmonize")
 # use_r("MakeTestDB")
 # use_r("LoadRawData")
 # use_r("Recode")
 # use_r("TrackFeatureValues")
 # use_r("XMLToDataModel")
+
+
+# dataSHIELD AGGREGATE functions
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# use_r("GetCurationReportDS")
+# use_r("GetOutcomeMeasuresDS")
+# use_r("GetObjectInfoDS")
+# use_r("GetValidationReportDS_RawData")
+
+
+# dataSHIELD ASSIGN functions
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# use_r("AugmentDataDS")
+# use_r("CurateDataDS")
+#### use_r("SetProgressionCriteriaDS")
+# use_r("ExcludeAugmentedDataDS")
+# use_r("ExcludeCuratedDataDS")
 
 
 

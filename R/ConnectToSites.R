@@ -1,11 +1,13 @@
 
-#' ConnectToSites
+#' ConnectToTestServers
 #'
-#' @return
+#' Establishes connections to two CCP test bridgeheads.
+#'
+#' @return A list of DSConnection objects
 #' @export
 #'
 #' @examples
-ConnectToSites <- function()
+ConnectToTestServers <- function()
 {
     require(DSI)
     require(DSOpal)
@@ -16,7 +18,14 @@ ConnectToSites <- function()
     # Returns an environment
     LoginBuilder <- DSI::newDSLoginBuilder(.silent = FALSE)
 
-    LoginBuilder$append(server = "DockerOpal",
+    # Append credentials for server "Sissy"
+    LoginBuilder$append(server = "Sissy",
+                        url = "https://128.140.13.237/opal/",
+                        token = "602e1f02-306e-4954-9872-6a0fd5ff33ef")
+                        #table = "PROJECT-TEST_20231220_X1.patient"
+
+    # Append credentials for server "Franz"
+    LoginBuilder$append(server = "Franz",
                         url = "https://128.140.13.237/opal/",
                         token = "602e1f02-306e-4954-9872-6a0fd5ff33ef")
                         #table = "PROJECT-TEST_20231220_X1.patient"
@@ -29,5 +38,4 @@ ConnectToSites <- function()
                                             assign = TRUE)
 
     return(CCPConnections)
-
 }

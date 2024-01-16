@@ -7,8 +7,11 @@
 AugmentDataDS(Name_CurationOutput = "CurationOutput")
 }
 \arguments{
-\item{Name_CurationOutput}{}
+\item{Name_CurationOutput}{String | Name of the list object created by CurateDataDS() | Default: 'CurationOutput'}
 }
 \description{
-AugmentDataDS
+Transforms Curated Data Set (CDS) into Augmented Data Set (ADS)
+}
+\details{
+Server-side ASSIGN method
 }

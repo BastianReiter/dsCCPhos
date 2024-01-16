@@ -4,16 +4,16 @@
 \alias{CurateDataDS}
 \title{CurateDataDS}
 \usage{
-CurateDataDS(Name_RawData = "RawData")
+CurateDataDS(Name_RawDataSet = "RawDataSet")
 }
 \arguments{
-\item{Name_RawData}{String | Name of raw data object (list) on server | Default: 'RawData'}
+\item{Name_RawDataSet}{String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'}
 }
 \value{
-A list containing the curated data and a curation report
+A list containing the Curated Data Set (CDS) and a curation report.
 }
 \description{
-Takes raw data and curates it while tracing transformation operations.
+Takes Raw Data Set (RDS) and transforms it into Curated Data Set (CDS) while tracing transformation operations.
 }
 \details{
 Server-side ASSIGN method

@@ -112,6 +112,7 @@ datashield.assign(CCPConnections, symbol = "SystemicTherapy", value = "SystemicT
 
 
 
+# Assign Raw Data Set (RDS) object
 ds.list(x = c("BioSampling",
               "Diagnosis",
               "Histology",
@@ -123,19 +124,29 @@ ds.list(x = c("BioSampling",
               "Staging",
               "Surgery",
               "SystemicTherapy"),
-        newobj = "RawData",
+        newobj = "RawDataSet",
         datasources = CCPConnections)
 
 
-# Curate the raw data
-dsCCPhosClient::ds.CurateData(Name_RawData = "RawData",
-                              Name_Output = "CurationOutput",
-                              DataSources = CCPConnections)
+# Get validation report of Raw Data Set (RDS)
+ValidationReportRDS <- ds.GetValidationReportDS_RawData(Name_RawDataSet = "RawDataSet",
+                                                        DataSources = CCPConnections)
+
+
+# Transform Raw Data Set (RDS) into Curated Data Set (CDS)
+ds.CurateData(Name_RawDataSet = "RawDataSet",
+              Name_Output = "CurationOutput",
+              DataSources = CCPConnections)
 
 
 # Get Curation reports
 CurationReports <- ds.CurationReport(Name_CurationOutput = "CurationOutput",
                                      DataSources = CCPConnections)
+
+
+# Get validation report of Curated Data Set (CDS)
+ValidationReportRDS <- ds.GetValidationReportDS_RawData(Name_RawDataSet = "RawDataSet",
+                                                        DataSources = CCPConnections)
 
 
 # Augment data (based on curated data)

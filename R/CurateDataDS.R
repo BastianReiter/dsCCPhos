@@ -1,29 +1,40 @@
 
 #' CurateDataDS
 #'
-#' Takes raw data and curates it while tracing transformation operations.
+#' Takes Raw Data Set (RDS) and transforms it into Curated Data Set (CDS) while tracing transformation operations.
 #'
 #' Server-side ASSIGN method
 #'
-#' @param Name_RawData String | Name of raw data object (list) on server | Default: 'RawData'
+#' @param Name_RawDataSet String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
 #'
-#' @return A list containing the curated data and a curation report
+#' @return A list containing the Curated Data Set (CDS) and a curation report.
 #' @export
 #'
 #' @examples
-CurateDataDS <- function(Name_RawData = "RawData")
+CurateDataDS <- function(Name_RawDataSet = "RawDataSet")
 {
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ROUGH OVERVIEW
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#   1) Evaluation and parsing of input
+#   2) Transform feature names
+#   3) Definition of features to monitor during value transformation
+#   4) Value transforming operations
+#   5) Additional transforming operations / correction of inconsistencies
+#   6) Return statement
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if (is.character(Name_RawData))
+if (is.character(Name_RawDataSet))
 {
-    RawData <- eval(parse(text = Name_RawData), envir = parent.frame())
+    RawDataSet <- eval(parse(text = Name_RawDataSet), envir = parent.frame())
 }
 else
 {
-    ClientMessage <- "ERROR: 'Name_RawData' must be specified as a character string"
+    ClientMessage <- "ERROR: 'Name_RawDataSet' must be specified as a character string"
     stop(ClientMessage, call. = FALSE)
 }
 
@@ -42,19 +53,19 @@ require(stringr)
 # Transform feature names
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_CuratedData <- purrr::map(.x = names(RawData),
-                             .f = function(TableName)
-                                  {
-                                      # Create named vector to look up matching feature names in meta data
-                                      vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Raw
-                                      names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Curated
+ls_CuratedDataSet <- purrr::map(.x = names(RawDataSet),
+                                .f = function(TableName)
+                                     {
+                                         # Create named vector to look up matching feature names in meta data
+                                         vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Raw
+                                         names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Curated
 
-                                      # Rename feature names according to look-up vector
-                                      dplyr::rename(RawData[[TableName]], any_of(vc_Lookup))      # Returns a tibble
-                                  })
+                                         # Rename feature names according to look-up vector
+                                         dplyr::rename(RawDataSet[[TableName]], any_of(vc_Lookup))      # Returns a tibble
+                                     })
 
 # Re-set table names
-names(ls_CuratedData) <- names(RawData)
+names(ls_CuratedDataSet) <- names(RawDataSet)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -141,7 +152,7 @@ ls_MonitorFeatures_All <- list(ls_MonitorFeatures_BioSampling,
 # MONITORING: Track feature values of raw data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_Monitors_Raw <- purrr::map2(.x = ls_CuratedData,
+ls_Monitors_Raw <- purrr::map2(.x = ls_CuratedDataSet,
                                .y = ls_MonitorFeatures_All,
                                .f = function(DataFrame, MonitorFeatures)
                                     {
@@ -153,31 +164,31 @@ ls_Monitors_Raw <- purrr::map2(.x = ls_CuratedData,
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CURATION / Transforming Operations
+# CURATION: Value transforming Operations
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 # Unpack list into data frames
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_BioSampling <- ls_CuratedData$BioSampling
-df_CDM_Diagnosis <- ls_CuratedData$Diagnosis
-df_CDM_Histology <- ls_CuratedData$Histology
-df_CDM_Metastasis <- ls_CuratedData$Metastasis
-df_CDM_MolecularDiagnostics <- ls_CuratedData$MolecularDiagnostics
-df_CDM_Patient <- ls_CuratedData$Patient
-df_CDM_Progress <- ls_CuratedData$Progress
-df_CDM_RadiationTherapy <- ls_CuratedData$RadiationTherapy
-df_CDM_Staging <- ls_CuratedData$Staging
-df_CDM_Surgery <- ls_CuratedData$Surgery
-df_CDM_SystemicTherapy <- ls_CuratedData$SystemicTherapy
+df_CDS_BioSampling <- ls_CuratedDataSet$BioSampling
+df_CDS_Diagnosis <- ls_CuratedDataSet$Diagnosis
+df_CDS_Histology <- ls_CuratedDataSet$Histology
+df_CDS_Metastasis <- ls_CuratedDataSet$Metastasis
+df_CDS_MolecularDiagnostics <- ls_CuratedDataSet$MolecularDiagnostics
+df_CDS_Patient <- ls_CuratedDataSet$Patient
+df_CDS_Progress <- ls_CuratedDataSet$Progress
+df_CDS_RadiationTherapy <- ls_CuratedDataSet$RadiationTherapy
+df_CDS_Staging <- ls_CuratedDataSet$Staging
+df_CDS_Surgery <- ls_CuratedDataSet$Surgery
+df_CDS_SystemicTherapy <- ls_CuratedDataSet$SystemicTherapy
 
 
 # dsCCPhos::Recode() uses a dictionary in the form of a named vector to perform recoding on a target vector
 
 
-# Transform df_CDM_BioSampling
+# Transform df_CDS_BioSampling
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_BioSampling <- df_CDM_BioSampling %>%
+df_CDS_BioSampling <- df_CDS_BioSampling %>%
                           mutate(SampleType = dsCCPhos::Recode(SampleType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "BioSampling" & FeatureName == "SampleType"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
                                                                                 set_names(Value_Curated, Value_Raw))),      # This returns a vector of the form c("Value_Raw1" = "Value1", ...), thereby inducing replacement of original values with new ones as defined in Meta Data
                                  #--------------------------------------------------
@@ -185,9 +196,9 @@ df_CDM_BioSampling <- df_CDM_BioSampling %>%
                                                                                     set_names(Value_Curated, Value_Raw))))
 
 
-# Transform df_CDM_Diagnosis
+# Transform df_CDS_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Diagnosis <- df_CDM_Diagnosis %>%
+df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         mutate(ICD10Version = as.integer(str_extract(ICD10Version, "\\d+")),      # Extract ICD-10 catalogue version year from string
                                #------------------------------------------------
                                LocalizationSide = str_to_upper(LocalizationSide),
@@ -196,9 +207,9 @@ df_CDM_Diagnosis <- df_CDM_Diagnosis %>%
                                                                                         set_names(Value_Curated, Value_Raw))))
 
 
-# Transform df_CDM_Histology
+# Transform df_CDS_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Histology <- df_CDM_Histology %>%
+df_CDS_Histology <- df_CDS_Histology %>%
                         mutate(HistologyID = as.integer(str_extract(HistologyID, "\\d+")),      # Extract integer number from string in HistologyID. Serves as surrogate for chronological order of events.
                                #----------------------------------------------------
                                Grading = str_to_upper(Grading),
@@ -208,9 +219,9 @@ df_CDM_Histology <- df_CDM_Histology %>%
                                                                       set_names(Value_Curated, Value_Raw))))
 
 
-# Transform df_CDM_Metastasis
+# Transform df_CDS_Metastasis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Metastasis <- df_CDM_Metastasis %>%
+df_CDS_Metastasis <- df_CDS_Metastasis %>%
                           mutate(MetastasisDiagnosisDate = lubridate::as_date(MetastasisDiagnosisDate, format = "%d.%m.%Y"),
                                  #--------------------------------------------------
                                  HasMetastasis = as.logical(HasMetastasis),
@@ -219,15 +230,15 @@ df_CDM_Metastasis <- df_CDM_Metastasis %>%
                                  MetastasisLocalization = str_remove_all(MetastasisLocalization, " "))
 
 
-# Transform df_CDM_MolecularDiagnostics
+# Transform df_CDS_MolecularDiagnostics
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_MolecularDiagnostics <- df_CDM_MolecularDiagnostics %>%
+df_CDS_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
                                     mutate(MolecularDiagnosticsDate = lubridate::as_date(MolecularDiagnosticsDate, format = "%d.%m.%Y"))
 
 
-# Transform df_CDM_Patient
+# Transform df_CDS_Patient
 #~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Patient <- df_CDM_Patient %>%
+df_CDS_Patient <- df_CDS_Patient %>%
                         mutate(Gender = str_to_upper(Gender),      # Convert all lower to upper letters
                                Gender = str_remove_all(Gender, " "),      # Eliminate spaces
                                Gender = dsCCPhos::Recode(Gender, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "Gender"),
@@ -239,9 +250,9 @@ df_CDM_Patient <- df_CDM_Patient %>%
                                                                                       set_names(Value_Curated, Value_Raw))))
 
 
-# Transform df_CDM_Progress
+# Transform df_CDS_Progress
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Progress <- df_CDM_Progress %>%
+df_CDS_Progress <- df_CDS_Progress %>%
                         mutate(ProgressReportDate = lubridate::as_date(ProgressReportDate, format = "%d.%m.%Y"),
                                #----------------------------------------------------
                                GlobalStatus = dsCCPhos::Recode(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Progress" & FeatureName == "GlobalStatus"),
@@ -257,9 +268,9 @@ df_CDM_Progress <- df_CDM_Progress %>%
                                                                                           set_names(Value_Curated, Value_Raw))))
 
 
-# Transform df_CDM_RadiationTherapy
+# Transform df_CDS_RadiationTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_RadiationTherapy <- df_CDM_RadiationTherapy %>%
+df_CDS_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                 mutate(RadiationTherapyRelationToSurgery = dsCCPhos::Recode(RadiationTherapyRelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "RadiationTherapy" & FeatureName == "RadiationTherapyRelationToSurgery"),
                                                                                                                                   set_names(Value_Curated, Value_Raw))),
                                        #----------------------------------------
@@ -270,9 +281,9 @@ df_CDM_RadiationTherapy <- df_CDM_RadiationTherapy %>%
                                        RadiationTherapyEnd = as_date(RadiationTherapyEnd, format = "%d.%m.%Y"))
 
 
-# Transform df_CDM_Staging
+# Transform df_CDS_Staging
 #~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Staging <- df_CDM_Staging %>%
+df_CDS_Staging <- df_CDS_Staging %>%
                       mutate(StagingReportDate = lubridate::as_date(StagingReportDate, format = "%d.%m.%Y"),
                              #------------------------------------------------------
                              UICCStage = str_to_upper(UICCStage),
@@ -345,9 +356,9 @@ df_CDM_Staging <- df_CDM_Staging %>%
 
 
 
-# Transform df_CDM_Surgery
+# Transform df_CDS_Surgery
 #~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Surgery <- df_CDM_Surgery %>%
+df_CDS_Surgery <- df_CDS_Surgery %>%
                       mutate(SurgeryID = as.integer(str_extract(SurgeryID, "\\d+")),      # Extract integer number from string in SurgeryID. Serves as surrogate for chronological order of events.
                              #----------------------------------------------------
                              SurgeryIntention = dsCCPhos::Recode(SurgeryIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Surgery" & FeatureName == "SurgeryIntention"),
@@ -360,9 +371,9 @@ df_CDM_Surgery <- df_CDM_Surgery %>%
                                                                                               set_names(Value_Curated, Value_Raw))))
 
 
-# Transform df_CDM_SystemicTherapy
+# Transform df_CDS_SystemicTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_SystemicTherapy <- df_CDM_SystemicTherapy %>%
+df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                               mutate(IsChemotherapy = as.logical(IsChemotherapy),
                                      IsImmunotherapy = as.logical(IsImmunotherapy),
                                      IsHormoneTherapy = as.logical(IsHormoneTherapy),
@@ -380,17 +391,17 @@ df_CDM_SystemicTherapy <- df_CDM_SystemicTherapy %>%
 
 # Re-pack data frames into list
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ls_CuratedData <- list(BioSampling = df_CDM_BioSampling,
-                       Diagnosis = df_CDM_Diagnosis,
-                       Histology = df_CDM_Histology,
-                       Metastasis = df_CDM_Metastasis,
-                       MolecularDiagnostics = df_CDM_MolecularDiagnostics,
-                       Patient = df_CDM_Patient,
-                       Progress = df_CDM_Progress,
-                       RadiationTherapy = df_CDM_RadiationTherapy,
-                       Staging = df_CDM_Staging,
-                       Surgery = df_CDM_Surgery,
-                       SystemicTherapy = df_CDM_SystemicTherapy)
+ls_CuratedDataSet <- list(BioSampling = df_CDS_BioSampling,
+                       Diagnosis = df_CDS_Diagnosis,
+                       Histology = df_CDS_Histology,
+                       Metastasis = df_CDS_Metastasis,
+                       MolecularDiagnostics = df_CDS_MolecularDiagnostics,
+                       Patient = df_CDS_Patient,
+                       Progress = df_CDS_Progress,
+                       RadiationTherapy = df_CDS_RadiationTherapy,
+                       Staging = df_CDS_Staging,
+                       Surgery = df_CDS_Surgery,
+                       SystemicTherapy = df_CDS_SystemicTherapy)
 
 
 
@@ -398,7 +409,7 @@ ls_CuratedData <- list(BioSampling = df_CDM_BioSampling,
 # MONITORING: Track feature values after Transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_Monitors_Transformed <- map2(.x = ls_CuratedData,
+ls_Monitors_Transformed <- map2(.x = ls_CuratedDataSet,
                                 .y = ls_MonitorFeatures_All,
                                 .f = function(DataFrame, MonitorFeatures)
                                      {
@@ -413,9 +424,9 @@ ls_Monitors_Transformed <- map2(.x = ls_CuratedData,
 # Finalize curation of data: Ineligible data (includes data that could not be curated) is turned into NA using factor conversion or other methods
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Finalize df_CDM_BioSampling
+# Finalize df_CDS_BioSampling
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_BioSampling <- df_CDM_BioSampling %>%
+df_CDS_BioSampling <- df_CDS_BioSampling %>%
                           mutate(SampleType = factor(SampleType,
                                                      levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "BioSampling" & FeatureName == "SampleType")$Value_Curated,
                                                      labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "BioSampling" & FeatureName == "SampleType")$Label_Curated),      # Convert to factor to mark ineligible values as NA and establish level order where appropriate
@@ -423,25 +434,25 @@ df_CDM_BioSampling <- df_CDM_BioSampling %>%
                                                         levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "BioSampling" & FeatureName == "SampleAliquot")$Value_Curated))
 
 
-# Finalize df_CDM_Diagnosis
+# Finalize df_CDS_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Diagnosis <- df_CDM_Diagnosis %>%
+df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         mutate(LocalizationSide = factor(LocalizationSide,
                                                          levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Diagnosis" & FeatureName == "LocalizationSide")$Value_Curated,
                                                          labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Diagnosis" & FeatureName == "LocalizationSide")$Label_Curated))
 
 
-# Finalize df_CDM_Histology
+# Finalize df_CDS_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Histology <- df_CDM_Histology %>%
+df_CDS_Histology <- df_CDS_Histology %>%
                         mutate(Grading = factor(Grading,
                                                 levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Histology" & FeatureName == "Grading")$Value_Curated,
                                                 labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Histology" & FeatureName == "Grading")$Label_Curated))
 
 
-# Finalize df_CDM_Patient
+# Finalize df_CDS_Patient
 #~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Patient <- df_CDM_Patient %>%
+df_CDS_Patient <- df_CDS_Patient %>%
                         mutate(Gender = factor(Gender,
                                                levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "Gender")$Value_Curated,
                                                labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "Gender")$Label_Curated),
@@ -449,9 +460,9 @@ df_CDM_Patient <- df_CDM_Patient %>%
                                                         levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "LastVitalStatus")$Value_Curated))
 
 
-# Finalize df_CDM_Progress
+# Finalize df_CDS_Progress
 #~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Progress <- df_CDM_Progress %>%
+df_CDS_Progress <- df_CDS_Progress %>%
                         mutate(GlobalStatus = factor(GlobalStatus,
                                                      levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Progress" & FeatureName == "GlobalStatus")$Value_Curated,
                                                      labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Progress" & FeatureName == "GlobalStatus")$Label_Curated),
@@ -466,9 +477,9 @@ df_CDM_Progress <- df_CDM_Progress %>%
                                                          labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Progress" & FeatureName == "MetastasisStatus")$Label_Curated))
 
 
-# Finalize df_CDM_RadiationTherapy
+# Finalize df_CDS_RadiationTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_RadiationTherapy <- df_CDM_RadiationTherapy %>%
+df_CDS_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                 mutate(RadiationTherapyRelationToSurgery = factor(RadiationTherapyRelationToSurgery,
                                                                                   levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "RadiationTherapy" & FeatureName == "RadiationTherapyRelationToSurgery")$Value_Curated,
                                                                                   labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "RadiationTherapy" & FeatureName == "RadiationTherapyRelationToSurgery")$Label_Curated),
@@ -477,9 +488,9 @@ df_CDM_RadiationTherapy <- df_CDM_RadiationTherapy %>%
                                                                           labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "RadiationTherapy" & FeatureName == "RadiationTherapyIntention")$Label_Curated))
 
 
-# Finalize df_CDM_Staging
+# Finalize df_CDS_Staging
 #~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Staging <- df_CDM_Staging %>%
+df_CDS_Staging <- df_CDS_Staging %>%
                       mutate(UICCStage = factor(UICCStage,
                                                 levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Staging" & FeatureName == "UICCStage")$Value_Curated),
                              TNM_T = factor(TNM_T,
@@ -500,9 +511,9 @@ df_CDM_Staging <- df_CDM_Staging %>%
                                                    levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Staging" & FeatureName == "TNM_rSymbol")$Value_Curated))
 
 
-# Finalize df_CDM_Surgery
+# Finalize df_CDS_Surgery
 #~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_Surgery <- df_CDM_Surgery %>%
+df_CDS_Surgery <- df_CDS_Surgery %>%
                       mutate(SurgeryIntention = factor(SurgeryIntention,
                                                        levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Surgery" & FeatureName == "SurgeryIntention")$Value_Curated,
                                                        labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Surgery" & FeatureName == "SurgeryIntention")$Label_Curated),
@@ -512,9 +523,9 @@ df_CDM_Surgery <- df_CDM_Surgery %>%
                                                               levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Surgery" & FeatureName == "ResidualAssessmentTotal")$Value_Curated))
 
 
-# Finalize df_CDM_SystemicTherapy
+# Finalize df_CDS_SystemicTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDM_SystemicTherapy <- df_CDM_SystemicTherapy %>%
+df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                               mutate(SystemicTherapyRelationToSurgery = factor(SystemicTherapyRelationToSurgery,
                                                                                levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "SystemicTherapy" & FeatureName == "SystemicTherapyRelationToSurgery")$Value_Curated,
                                                                                labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "SystemicTherapy" & FeatureName == "SystemicTherapyRelationToSurgery")$Label_Curated),
@@ -523,27 +534,12 @@ df_CDM_SystemicTherapy <- df_CDM_SystemicTherapy %>%
                                                                        labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "SystemicTherapy" & FeatureName == "SystemicTherapyIntention")$Label_Curated))
 
 
-# Re-pack data frames into list
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ls_CuratedData <- list(BioSampling = df_CDM_BioSampling,
-                       Diagnosis = df_CDM_Diagnosis,
-                       Histology = df_CDM_Histology,
-                       Metastasis = df_CDM_Metastasis,
-                       MolecularDiagnostics = df_CDM_MolecularDiagnostics,
-                       Patient = df_CDM_Patient,
-                       Progress = df_CDM_Progress,
-                       RadiationTherapy = df_CDM_RadiationTherapy,
-                       Staging = df_CDM_Staging,
-                       Surgery = df_CDM_Surgery,
-                       SystemicTherapy = df_CDM_SystemicTherapy)
-
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MONITORING: Track Feature Values after Finalized Harmonization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_Monitors_Final <- map2(.x = ls_CuratedData,
+ls_Monitors_Final <- map2(.x = ls_CuratedDataSet,
                           .y = ls_MonitorFeatures_All,
                           .f = function(DataFrame, MonitorFeatures)
                                {
@@ -557,7 +553,6 @@ ls_Monitors_Final <- map2(.x = ls_CuratedData,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MONITORING: Merge Monitor Objects into Coherent Summaries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 ls_MonitorSummaries <- list()
 
@@ -597,8 +592,144 @@ names(ls_MonitorSummaries) <- c("Monitor_BioSampling",
                                 "Monitor_Surgery",
                                 "Monitor_SystemicTherapy")
 
-# Return both the Curated Data and the list of monitor objects as Curation Report
-return(list(CuratedData = ls_CuratedData,
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ADDITIONAL TRANSFORMATIONS (Correction of inconsistencies)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# df_CDS_Patient
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Clear duplicate patient entries
+#-------------------------------------------------------------------------------
+df_Aux_Patient <- df_CDS_Patient %>%
+                      group_by(PatientID) %>%
+                          mutate(CountDifferentCombinations = n()) %>%
+                      filter(CountDifferentCombinations > 1)
+
+
+# df_CDS_Diagnosis
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - In patients with multiple diagnosis entries: Aim to plausibly distinguish pseudo-different from actually different diagnoses
+#-------------------------------------------------------------------------------
+
+# Definition of duplicate entries: Same value in following variables:
+#   - ICD10Code
+#   - ICDOTopography
+#   - LocalizationSide
+
+# Document initital counts of different combinations and total duplicates per patient
+df_Aux_Diagnosis <- df_CDS_Diagnosis %>%
+                        group_by(PatientID) %>%
+                            mutate(CountEntries = n(),
+                                   CountDifferentCombinations = n_distinct(ICD10Code,
+                                                                           ICDOTopographyCode,
+                                                                           LocalizationSide),
+                                   CountTotalDuplicatesInPatient = CountEntries - CountDifferentCombinations)
+
+# For efficiency reasons, first filter out all patients who don't have any duplicate diagnosis entries...
+df_Aux_Diagnosis_NoDuplicates <- df_Aux_Diagnosis %>%
+                                      filter(CountTotalDuplicatesInPatient == 0)
+
+# ... then handle all patients with any number of duplicate diagnosis entries
+df_Aux_Diagnosis_HandledDuplicates <- df_Aux_Diagnosis %>%
+                                            filter(CountTotalDuplicatesInPatient > 0) %>%
+                                            group_by(PatientID, ICD10Code, ICDOTopographyCode, LocalizationSide) %>%
+                                                mutate(CountDuplicates = n() - 1,
+                                                       JointIDs = list(DiagnosisID)) %>%
+                                                arrange(InitialDiagnosisDate) %>%
+                                                slice_head()
+
+# Get table to re-map deleted DiagnosisIDs in other tables
+df_Aux_Diagnosis_IDMapping <- df_Aux_Diagnosis_HandledDuplicates %>%
+                                  ungroup() %>%
+                                  filter(CountDuplicates > 0) %>%
+                                  select(PatientID, JointIDs, DiagnosisID) %>%
+                                  unnest(cols = c(JointIDs)) %>%
+                                  rename(all_of(c(OldDiagnosisID = "JointIDs",
+                                                  NewDiagnosisID = "DiagnosisID")))
+
+# Re-assign df_CDS_Diagnosis after clearance and handling of duplicate entries
+df_CDS_Diagnosis <- rbind(df_Aux_Diagnosis_NoDuplicates,
+                          df_Aux_Diagnosis_HandledDuplicates)
+
+
+
+# Ensure correct re-mapping of DiagnosisIDs in other tables
+
+df_CDSt_Histology <- df_CDS_Histology %>%
+                          left_join(df_Aux_Diagnosis_IDMapping, by = join_by(PatientID,
+                                                                             DiagnosisID == OldDiagnosisID)) %>%
+                          mutate(DiagnosisID = ifelse(!is.na(NewDiagnosisID),
+                                                      NewDiagnosisID,
+                                                      DiagnosisID)) %>%
+                          select(-NewDiagnosisID)
+
+
+
+
+
+# df_Work_Diagnosis <- df_CDS_Diagnosis %>%
+#                           group_by(PatientID) %>%
+#                               mutate(CountEntries = n()) %>%
+#                               arrange(desc(InitialDiagnosisDate)) %>%
+#                               distinct(DiagnosisID,
+#                                        ICD10Code,
+#                                        ICDOTopographyCode,
+#                                        LocalizationSide,
+#                                        .keep_all = TRUE) %>%
+#                               mutate(CountDifferentEntries = n())
+#
+#
+#
+# df_PatientsSingleDiagnosis <- df_Aux_Diagnosis %>%
+#                                   filter(CountDifferentCombinations == 1)
+
+
+
+
+
+
+
+
+                        #            CountDifferentDiagnoses = n_distinct(DiagnosisID),
+                        #            CountDifferentCancers = n_distinct(ICD10Code)) %>%
+                        # group_by(PatientID, ICD10Code) %>%
+                        #     mutate(CountSameDiagnosisDifferentTopography = n_distinct(ICDOTopographyCode),
+                        #            CountSameDiagnosisDifferentSide = n_distinct(LocalizationSide)) %>%
+                        # group_by(PatientID, ICD10Code, LocalizationSide) %>%
+                        #     mutate(CountSameDiagnosisSameSideDifferentTopography = n_distinct(ICDOTopographyCode)) %>%
+                        # group_by(PatientID, ICD10Code, ICDOTopographyCode) %>%
+                        #     mutate(CountSameDiagnosisSameTopographyDifferentSide = n_distinct(LocalizationSide)) %>%
+                        # group_by(PatientID, ICDOTopographyCode) %>%
+                        #     mutate(CountSameTopographyDifferentDiagnosis = n_distinct(ICD10Code),
+                        #            CountSameTopographyDifferentDiagnosisDifferentSide = n_distinct(LocalizationSide)) %>%
+                        # filter(CountDifferences > 0)
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Re-pack data frames into list to get compact Curated Data Set (CDS) object
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ls_CuratedDataSet <- list(BioSampling = df_CDS_BioSampling,
+                          Diagnosis = df_CDS_Diagnosis,
+                          Histology = df_CDS_Histology,
+                          Metastasis = df_CDS_Metastasis,
+                          MolecularDiagnostics = df_CDS_MolecularDiagnostics,
+                          Patient = df_CDS_Patient,
+                          Progress = df_CDS_Progress,
+                          RadiationTherapy = df_CDS_RadiationTherapy,
+                          Staging = df_CDS_Staging,
+                          Surgery = df_CDS_Surgery,
+                          SystemicTherapy = df_CDS_SystemicTherapy)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# RETURN STATEMENT
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Return both the Curated Data Set (CDS) and the list of monitor objects as Curation Report
+return(list(CuratedDataSet = ls_CuratedDataSet,
             CurationReport = ls_MonitorSummaries))
 
 }

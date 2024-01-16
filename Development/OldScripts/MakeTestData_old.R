@@ -7,7 +7,7 @@ library(stringr)
 load(file = "./Development/Data/RealData/SDM_CCPFrankfurt.RData")
 
 
-CCPDataModel <- CCPhos::XMLToDataModel(XMLSchemaFilePath = "./Development/MetaData/SchemaOpalDB.xml")
+CCPDataModel <- dsCCPhos::XMLToDataModel(XMLSchemaFilePath = "./Development/Data/MetaData/SchemaOpalDB.xml")
 TestDB <- CCPhos::DataModelToDB(DataModel = CCPDataModel,
                                 DBPath = ":memory:")
 

@@ -1,5 +1,5 @@
 
-#' CurationReportDS
+#' GetCurationReportDS
 #'
 #' What it does
 #'
@@ -11,7 +11,7 @@
 #' @export
 #'
 #' @examples
-CurationReportDS <- function(Name_CurationOutput = "CurationOutput")
+GetCurationReportDS <- function(Name_CurationOutput = "CurationOutput")
 {
     if (is.character(Name_CurationOutput))
     {

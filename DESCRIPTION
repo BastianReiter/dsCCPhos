@@ -24,6 +24,7 @@ Imports:
     stringr,
     sysfonts,
     tibble,
+    validate,
     xml2
 Depends: 
     R (>= 2.10)
