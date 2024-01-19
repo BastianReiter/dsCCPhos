@@ -74,20 +74,9 @@ df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
 #                     \_______________/
 
 
+df_ADS_Patient <- df_CDS_Patient %>%
+                      left_join(df_CDS_Diagnosis, by = join_by(PatientID))
 
-
-
-
-
-
-
-df_Work_Diagnosis <- CuratedDataSet$Diagnosis %>%
-                          left_join(CuratedDataSet$Histology, by = join_by(PatientID, DiagnosisID)) %>%
-                          group_by(DiagnosisID) %>%
-                              mutate(HistologiesPerDiagnosis = n(),
-                                     DifferentHistologiesPerTumor = n_distinct(ICDOMorphology, Grading)) %>%
-                              arrange(HistologyDate, HistologyID) %>%
-                              filter(row_number() == n())      # Keep only the last row of each diagnosis (should be the most recent Histology report)
 
 
 

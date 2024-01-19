@@ -47,6 +47,11 @@ require(dplyr)
 require(lubridate)
 require(purrr)
 require(stringr)
+require(tidyr)
+
+
+# Suppress summarize info
+options(dplyr.summarise.inform = FALSE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -561,15 +566,15 @@ for (i in 1:length(ls_Monitors_Raw))
     if (nrow(ls_Monitors_Raw[[i]]) > 0)
     {
         df_CurrentSummary <- ls_Monitors_Raw[[i]] %>%
-                                  dplyr::full_join(ls_Monitors_Transformed[[i]]) %>%
-                                  dplyr::full_join(ls_Monitors_Final[[i]]) %>%
+                                  dplyr::full_join(ls_Monitors_Transformed[[i]], by = join_by(Feature, Value, IsValueEligible, CurationStage, Frequency)) %>%
+                                  dplyr::full_join(ls_Monitors_Final[[i]], by = join_by(Feature, Value, IsValueEligible, CurationStage, Frequency)) %>%
                                   tidyr::pivot_wider(names_from = CurationStage,
                                                      values_from = Frequency) %>%
                                   dplyr::group_by(Feature, Value, IsValueEligible) %>%
-                                  dplyr::summarize(Raw = sum(Raw, na.rm = TRUE),
-                                                   Transformed = sum(Transformed, na.rm = TRUE),
-                                                   Final = sum(Final, na.rm = TRUE)) %>%
-                                  dplyr::arrange(Feature, desc(IsValueEligible))
+                                      dplyr::summarize(Raw = sum(Raw, na.rm = TRUE),
+                                                       Transformed = sum(Transformed, na.rm = TRUE),
+                                                       Final = sum(Final, na.rm = TRUE)) %>%
+                                      dplyr::arrange(Feature, desc(IsValueEligible))
     }
     else
     {
@@ -610,38 +615,72 @@ df_Aux_Patient <- df_CDS_Patient %>%
 
 # df_CDS_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - In patients with multiple diagnosis entries: Aim to plausibly distinguish pseudo-different from actually different diagnoses
+#   A) Removal of duplicate entries
+#   B) In patients with multiple but not duplicate diagnosis entries:
+#      Use CCPhos-function ClassifyDiagnosisEntries() to plausibly distinguish pseudo-different from actually different diagnoses
+#   C) Adjust modified DiagnosisIDs in other tables
 #-------------------------------------------------------------------------------
 
+
+# A) Removal of duplicate entries
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Definition of duplicate entries: Same value in following variables:
 #   - ICD10Code
 #   - ICDOTopography
 #   - LocalizationSide
 
-# Document initital counts of different combinations and total duplicates per patient
-df_Aux_Diagnosis <- df_CDS_Diagnosis %>%
+df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         group_by(PatientID) %>%
                             mutate(CountEntries = n(),
                                    CountDifferentCombinations = n_distinct(ICD10Code,
                                                                            ICDOTopographyCode,
-                                                                           LocalizationSide),
-                                   CountTotalDuplicatesInPatient = CountEntries - CountDifferentCombinations)
+                                                                           LocalizationSide)) %>%
+                        group_by(PatientID, ICD10Code, ICDOTopographyCode, LocalizationSide) %>%
+                            mutate(CountDuplicates = n() - 1,
+                                   JointIDs = case_when(CountDuplicates == 0 ~ list(NULL),
+                                                        CountDuplicates > 0 ~ list(DiagnosisID))) %>%
+                            arrange(InitialDiagnosisDate) %>%
+                            slice_head() %>%
+                        ungroup()
 
-# For efficiency reasons, first filter out all patients who don't have any duplicate diagnosis entries...
-df_Aux_Diagnosis_NoDuplicates <- df_Aux_Diagnosis %>%
-                                      filter(CountTotalDuplicatesInPatient == 0)
+# Obtain number of duplicate entries for monitoring purposes
+CountDuplicates_Diagnosis <- sum(df_CDS_Diagnosis$CountDuplicates)
 
-# ... then handle all patients with any number of duplicate diagnosis entries
-df_Aux_Diagnosis_HandledDuplicates <- df_Aux_Diagnosis %>%
-                                            filter(CountTotalDuplicatesInPatient > 0) %>%
-                                            group_by(PatientID, ICD10Code, ICDOTopographyCode, LocalizationSide) %>%
-                                                mutate(CountDuplicates = n() - 1,
-                                                       JointIDs = list(DiagnosisID)) %>%
-                                                arrange(InitialDiagnosisDate) %>%
-                                                slice_head()
+# Number of patients that had duplicate diagnosis entries for monitoring purposes
+CountPatientsWithDuplicates <- df_CDS_Diagnosis %>%
+                                    filter(CountDuplicates > 0) %>%
+                                    select(PatientID) %>%
+                                    n_distinct()
+
+
+
+# B) Classify multiple diagnosis entries
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosEntries()
+df_Aux_Diagnosis_ClassifiedMultipleEntries <- df_CDS_Diagnosis %>%
+                                                  filter(CountEntries > 1) %>%
+                                                  group_by(PatientID) %>%
+                                                      ClassifyDiagnosisEntries()
+
+
+
+# Reassemble df_CDS_Diagnosis after processing of multiple diagnosis entries
+df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
+                        filter(CountEntries == 1) %>%
+                        rbind(df_Aux_Diagnosis_ClassifiedMultipleEntries)
+
+# To do...
+CountJointDiagnoses <- NULL
+CountPatientsWithJointDiagnoses <- NULL
+
+
+
+# C) Adjust modified DiagnosisIDs in other tables
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Get table to re-map deleted DiagnosisIDs in other tables
-df_Aux_Diagnosis_IDMapping <- df_Aux_Diagnosis_HandledDuplicates %>%
+df_Aux_Diagnosis_IDMapping <- df_CDS_Diagnosis %>%
                                   ungroup() %>%
                                   filter(CountDuplicates > 0) %>%
                                   select(PatientID, JointIDs, DiagnosisID) %>%
@@ -649,15 +688,11 @@ df_Aux_Diagnosis_IDMapping <- df_Aux_Diagnosis_HandledDuplicates %>%
                                   rename(all_of(c(OldDiagnosisID = "JointIDs",
                                                   NewDiagnosisID = "DiagnosisID")))
 
-# Re-assign df_CDS_Diagnosis after clearance and handling of duplicate entries
-df_CDS_Diagnosis <- rbind(df_Aux_Diagnosis_NoDuplicates,
-                          df_Aux_Diagnosis_HandledDuplicates)
-
 
 
 # Ensure correct re-mapping of DiagnosisIDs in other tables
 
-df_CDSt_Histology <- df_CDS_Histology %>%
+df_CDS_Histology <- df_CDS_Histology %>%
                           left_join(df_Aux_Diagnosis_IDMapping, by = join_by(PatientID,
                                                                              DiagnosisID == OldDiagnosisID)) %>%
                           mutate(DiagnosisID = ifelse(!is.na(NewDiagnosisID),
@@ -669,42 +704,16 @@ df_CDSt_Histology <- df_CDS_Histology %>%
 
 
 
-# df_Work_Diagnosis <- df_CDS_Diagnosis %>%
-#                           group_by(PatientID) %>%
-#                               mutate(CountEntries = n()) %>%
-#                               arrange(desc(InitialDiagnosisDate)) %>%
-#                               distinct(DiagnosisID,
-#                                        ICD10Code,
-#                                        ICDOTopographyCode,
-#                                        LocalizationSide,
-#                                        .keep_all = TRUE) %>%
-#                               mutate(CountDifferentEntries = n())
-#
-#
-#
-# df_PatientsSingleDiagnosis <- df_Aux_Diagnosis %>%
-#                                   filter(CountDifferentCombinations == 1)
 
 
+df_Work_Diagnosis <- CuratedDataSet$Diagnosis %>%
+                          left_join(CuratedDataSet$Histology, by = join_by(PatientID, DiagnosisID)) %>%
+                          group_by(DiagnosisID) %>%
+                              mutate(HistologiesPerDiagnosis = n(),
+                                     DifferentHistologiesPerTumor = n_distinct(ICDOMorphology, Grading)) %>%
+                              arrange(HistologyDate, HistologyID) %>%
+                              filter(row_number() == n())      # Keep only the last row of each diagnosis (should be the most recent Histology report)
 
-
-
-
-
-
-                        #            CountDifferentDiagnoses = n_distinct(DiagnosisID),
-                        #            CountDifferentCancers = n_distinct(ICD10Code)) %>%
-                        # group_by(PatientID, ICD10Code) %>%
-                        #     mutate(CountSameDiagnosisDifferentTopography = n_distinct(ICDOTopographyCode),
-                        #            CountSameDiagnosisDifferentSide = n_distinct(LocalizationSide)) %>%
-                        # group_by(PatientID, ICD10Code, LocalizationSide) %>%
-                        #     mutate(CountSameDiagnosisSameSideDifferentTopography = n_distinct(ICDOTopographyCode)) %>%
-                        # group_by(PatientID, ICD10Code, ICDOTopographyCode) %>%
-                        #     mutate(CountSameDiagnosisSameTopographyDifferentSide = n_distinct(LocalizationSide)) %>%
-                        # group_by(PatientID, ICDOTopographyCode) %>%
-                        #     mutate(CountSameTopographyDifferentDiagnosis = n_distinct(ICD10Code),
-                        #            CountSameTopographyDifferentDiagnosisDifferentSide = n_distinct(LocalizationSide)) %>%
-                        # filter(CountDifferences > 0)
 
 
 

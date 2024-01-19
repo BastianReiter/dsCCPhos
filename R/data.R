@@ -1,9 +1,36 @@
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_CancerGrouping.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' General meta data: ICD-10 cancer grouping
+#'
+#' A tibble containing meta data about grouping of ICD-10 cancer codes
+#'
+#' @format ## `Meta_CancerGrouping`
+#' Tibble
+#' \describe{
+#'   \item{ICD10CodeShort}{Three digit ICD-10 code}
+#'   \item{CancerTopographyGroup_ICD10}{Topography group as put forth by ICD-10}
+#'   \item{CancerTopographyOrgan_ICD10}{Affected organ / topography as put forth by ICD-10}
+#'   \item{CancerTopographyGroup_ZFKD}{Topography detail as put forth by ZFKD}
+#'   \item{CancerTopographySpecification}{Additional information on topography}
+#'   \item{CancerSpecification}{Specification of cancer entity where needed}
+#'   \item{CancerIsLikelyToMetastasize}{}
+#'   \item{CancerIsCarcinomaInSitu}{}
+#'   \item{CancerIsNeoplasmOfUncertainBehavior}{}
+#' }
+#' @source <https://github.com/BastianReiter/TinkerLab/tree/main/Development/Data>
+"Meta_CancerGrouping"
+
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Meta_TableNames.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' CCP Meta Data: Table names
+#' CCP meta data: Table names
 #'
 #' A tibble containing meta data about corresponding table names in Raw Data Model (RDM) and Curated Data Model (CDM)
 #'
@@ -22,7 +49,7 @@
 # Meta_FeatureNames.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' CCP Meta Data: Feature names
+#' CCP meta data: Feature names
 #'
 #' A tibble containing meta data about corresponding feature names in Raw Data Model (RDM) and Curated Data Model (CDM)
 #'
@@ -43,7 +70,7 @@
 # Meta_ValueSets.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' CCP Meta Data: Value sets
+#' CCP meta data: Value sets
 #'
 #' A tibble containing meta data about eligible data values in Curated Data Model (CDM)
 #'

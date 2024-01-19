@@ -3,7 +3,7 @@
 \docType{data}
 \name{Meta_FeatureNames}
 \alias{Meta_FeatureNames}
-\title{CCP Meta Data: Feature names}
+\title{CCP meta data: Feature names}
 \format{
 \subsection{\code{Meta_FeatureNames}}{
 

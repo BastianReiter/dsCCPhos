@@ -38,3 +38,12 @@ Meta_ValueSets <- read_excel(path = "./Development/MetaData/MetaDataCCP.xlsx",
 use_data(Meta_ValueSets, overwrite = TRUE)
 
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta Data from TinkerLab
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Meta_CancerGrouping <- TinkerLab::CancerGrouping
+
+# Save data in .rda-file and make it part of package
+use_data(Meta_CancerGrouping, overwrite = TRUE)

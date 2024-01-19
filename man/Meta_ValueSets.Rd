@@ -3,7 +3,7 @@
 \docType{data}
 \name{Meta_ValueSets}
 \alias{Meta_ValueSets}
-\title{CCP Meta Data: Value sets}
+\title{CCP meta data: Value sets}
 \format{
 \subsection{\code{Meta_ValueSets}}{
 

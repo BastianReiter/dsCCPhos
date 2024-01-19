@@ -3,7 +3,7 @@
 \docType{data}
 \name{Meta_TableNames}
 \alias{Meta_TableNames}
-\title{CCP Meta Data: Table names}
+\title{CCP meta data: Table names}
 \format{
 \subsection{\code{Meta_TableNames}}{
 

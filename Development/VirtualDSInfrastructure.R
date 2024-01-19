@@ -2,7 +2,7 @@
 # Install own dataSHIELD packages
 #devtools::install_github(repo = "BastianReiter/dsCCPhos")
 #devtools::install_github(repo = "BastianReiter/dsCCPhosClient")
-#devtools::install_github(repo = "BastianReiter/TinkerLab")
+devtools::install_github(repo = "BastianReiter/TinkerLab")
 
 #devtools::install_github("tombisho/dsSynthetic", dependencies = TRUE)
 #devtools::install_github("tombisho/dsSyntheticClient", dependencies = TRUE)
