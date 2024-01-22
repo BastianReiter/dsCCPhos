@@ -191,12 +191,12 @@ df_Events_BioSampling <- df_CDS_BioSampling %>%
                                          EventOrderSignificance = case_when(row_number() == 1 ~ "First Sample Taking",
                                                                             row_number() == n() ~ "Last Sample Taking",
                                                                             TRUE ~ NA)) %>%
-                                  nest(EventDetails = (c(SampleAliquot,
-                                                         SampleType,
-                                                         SampleStatus,
-                                                         SampleQuantity,
-                                                         SampleUnit,
-                                                         SampleProjectName))) %>%
+                                  nest(EventDetails = c(SampleAliquot,
+                                                        SampleType,
+                                                        SampleStatus,
+                                                        SampleQuantity,
+                                                        SampleUnit,
+                                                        SampleProjectName)) %>%
                               ungroup() %>%
                               select(PatientID,
                                      starts_with("Event"))

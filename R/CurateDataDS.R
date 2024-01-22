@@ -50,7 +50,7 @@ require(stringr)
 require(tidyr)
 
 
-# Suppress summarize info
+# Suppress summarize info messages
 options(dplyr.summarise.inform = FALSE)
 
 
@@ -631,7 +631,7 @@ df_Aux_Patient <- df_CDS_Patient %>%
 
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         group_by(PatientID) %>%
-                            mutate(CountEntries = n(),
+                            mutate(CountInitialEntries = n(),
                                    CountDifferentCombinations = n_distinct(ICD10Code,
                                                                            ICDOTopographyCode,
                                                                            LocalizationSide)) %>%
@@ -657,18 +657,26 @@ CountPatientsWithDuplicates <- df_CDS_Diagnosis %>%
 # B) Classify multiple diagnosis entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# df_Aux_Diagnosis_MultipleEntries <- df_CDS_Diagnosis %>%
+#                                         filter(CountDifferentCombinations > 1)
+
+#TestBefore <- unique(df_Aux_Diagnosis_MultipleEntries$PatientID)
+#TestAfter <- unique(df_Aux_Diagnosis_ClassifiedMultipleEntries$PatientID)
+#LookAt <- TestBefore[!(TestBefore %in% TestAfter)]
+
+
 # Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosEntries()
 df_Aux_Diagnosis_ClassifiedMultipleEntries <- df_CDS_Diagnosis %>%
-                                                  filter(CountEntries > 1) %>%
+                                                  filter(CountDifferentCombinations > 1) %>%
                                                   group_by(PatientID) %>%
-                                                      ClassifyDiagnosisEntries()
+                                                      group_modify(~ ClassifyDiagnosisEntries(.x))
 
 
 
 # Reassemble df_CDS_Diagnosis after processing of multiple diagnosis entries
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
-                        filter(CountEntries == 1) %>%
-                        rbind(df_Aux_Diagnosis_ClassifiedMultipleEntries)
+                        filter(CountDifferentCombinations == 1) %>%
+                        bind_rows(df_Aux_Diagnosis_ClassifiedMultipleEntries)
 
 # To do...
 CountJointDiagnoses <- NULL

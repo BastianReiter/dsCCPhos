@@ -4,12 +4,12 @@
 \alias{ClassifyDiagnosisEntries}
 \title{ClassifyDiagnosisEntries}
 \usage{
-ClassifyDiagnosisEntries(DataFrame, Method = "Auto", Rules)
+ClassifyDiagnosisEntries(DiagnosisEntries, Method = "Auto", Rules)
 }
 \arguments{
-\item{DataFrame}{Data frame (partially curated) that contains multiple diagnosis entries}
-
 \item{Method}{String |}
+
+\item{DataFrame}{Data frame (partially curated) that contains multiple diagnosis entries}
 }
 \value{
 Data frame with classified diagnoses
