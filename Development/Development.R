@@ -56,14 +56,16 @@ library(devtools)
 
 # General / Auxiliary functions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# use_r("AdjustDiagnosisIDs")
 # use_r("AttritionTracker_Close")
 # use_r("AttritionTracker_Init")
 # use_r("AttritionTracker_Update")
-# use_r("ClassifyDiagnosisEntries")
+# use_r("ClassifyDiagnosisAssociations")
 # use_r("ConnectToOpalDB")
 # use_r("DataListToDataModel")
 # use_r("DataModelToCSV")
 # use_r("DataModelToDB")
+# use_r("GetClassificationCall")
 # use_r("GetDFInfo")
 # use_r("Harmonize")
 # use_r("MakeTestDB")

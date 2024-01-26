@@ -30,4 +30,7 @@ Meta_CancerGrouping
 \description{
 A tibble containing meta data about grouping of ICD-10 cancer codes
 }
+\author{
+Bastian Reiter
+}
 \keyword{datasets}

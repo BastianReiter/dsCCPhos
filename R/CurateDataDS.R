@@ -6,12 +6,15 @@
 #' Server-side ASSIGN method
 #'
 #' @param Name_RawDataSet String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
+#' @param RulesProfile_DiagnosisAssociation String | Profile name defining rule set to be used for classification of diagnosis association | Default: 'Default'
 #'
 #' @return A list containing the Curated Data Set (CDS) and a curation report.
 #' @export
 #'
 #' @examples
-CurateDataDS <- function(Name_RawDataSet = "RawDataSet")
+#' @author Bastian Reiter
+CurateDataDS <- function(Name_RawDataSet = "RawDataSet",
+                         RulesProfile_DiagnosisAssociation = "Default")
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ROUGH OVERVIEW
@@ -44,6 +47,7 @@ else
 
 # Use require() to load package namespaces
 require(dplyr)
+require(dsCCPhos)
 require(lubridate)
 require(purrr)
 require(stringr)
@@ -613,7 +617,8 @@ df_Aux_Patient <- df_CDS_Patient %>%
                       filter(CountDifferentCombinations > 1)
 
 
-# df_CDS_Diagnosis
+
+# Diagnosis information bundled in df_CDS_Diagnosis through joining with df_CDS_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   A) Removal of duplicate entries
 #   B) In patients with multiple but not duplicate diagnosis entries:
@@ -621,32 +626,52 @@ df_Aux_Patient <- df_CDS_Patient %>%
 #   C) Adjust modified DiagnosisIDs in other tables
 #-------------------------------------------------------------------------------
 
+# Join df_CDS_Diagnosis and df_CDS_Histology and create joint ID
+df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
+                        left_join(df_CDS_Histology, by = join_by(PatientID, DiagnosisID)) %>%
+                        mutate(DiagnosisID = paste0(DiagnosisID, "/", HistologyID)) %>%
+                        relocate(DiagnosisID, .after = PatientID)
+
 
 # A) Removal of duplicate entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Definition of duplicate entries: Same value in following variables:
+#   - InitialDiagnosisDate
 #   - ICD10Code
 #   - ICDOTopography
 #   - LocalizationSide
+#   - HistologyDate
+#   - ICDOMorphologyCode
+#   - Grading
 
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         group_by(PatientID) %>%
                             mutate(CountInitialEntries = n(),
-                                   CountDifferentCombinations = n_distinct(ICD10Code,
+                                   CountDifferentCombinations = n_distinct(InitialDiagnosisDate,
+                                                                           ICD10Code,
                                                                            ICDOTopographyCode,
-                                                                           LocalizationSide)) %>%
-                        group_by(PatientID, ICD10Code, ICDOTopographyCode, LocalizationSide) %>%
+                                                                           LocalizationSide,
+                                                                           HistologyDate,
+                                                                           ICDOMorphologyCode,
+                                                                           Grading)) %>%
+                        group_by(PatientID,
+                                 InitialDiagnosisDate,
+                                 ICD10Code,
+                                 ICDOTopographyCode,
+                                 LocalizationSide,
+                                 HistologyDate,
+                                 ICDOMorphologyCode,
+                                 Grading) %>%
                             mutate(CountDuplicates = n() - 1,
                                    JointIDs = case_when(CountDuplicates == 0 ~ list(NULL),
                                                         CountDuplicates > 0 ~ list(DiagnosisID))) %>%
-                            arrange(InitialDiagnosisDate) %>%
                             slice_head() %>%
                         ungroup()
 
-# Obtain number of duplicate entries for monitoring purposes
-CountDuplicates_Diagnosis <- sum(df_CDS_Diagnosis$CountDuplicates)
-
-# Number of patients that had duplicate diagnosis entries for monitoring purposes
+# For monitoring purposes, obtain:
+# a) number of duplicate entries and
+# b) number of patients that had duplicate diagnosis entries for monitoring purposes
+CountDuplicateDiagnoses <- sum(df_CDS_Diagnosis$CountDuplicates, na.rm = TRUE)
 CountPatientsWithDuplicates <- df_CDS_Diagnosis %>%
                                     filter(CountDuplicates > 0) %>%
                                     select(PatientID) %>%
@@ -654,8 +679,8 @@ CountPatientsWithDuplicates <- df_CDS_Diagnosis %>%
 
 
 
-# B) Classify multiple diagnosis entries
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# B) Classify associations between diagnosis entries
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # df_Aux_Diagnosis_MultipleEntries <- df_CDS_Diagnosis %>%
 #                                         filter(CountDifferentCombinations > 1)
@@ -665,48 +690,63 @@ CountPatientsWithDuplicates <- df_CDS_Diagnosis %>%
 #LookAt <- TestBefore[!(TestBefore %in% TestAfter)]
 
 
-# Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosEntries()
-df_Aux_Diagnosis_ClassifiedMultipleEntries <- df_CDS_Diagnosis %>%
+# Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosisAssociations()
+df_Aux_Diagnosis_ClassifiedMultipleEntries <- df_Aux_Diagnosis %>%
                                                   filter(CountDifferentCombinations > 1) %>%
                                                   group_by(PatientID) %>%
-                                                      group_modify(~ ClassifyDiagnosisEntries(.x))
-
-
+                                                      group_modify(~ ClassifyDiagnosisAssociations(.x,
+                                                                                                   RulesProfile = RulesProfile_Diagnosis))
 
 # Reassemble df_CDS_Diagnosis after processing of multiple diagnosis entries
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         filter(CountDifferentCombinations == 1) %>%
-                        bind_rows(df_Aux_Diagnosis_ClassifiedMultipleEntries)
+                        mutate(ReferenceDiagnosisID = DiagnosisID) %>%
+                        bind_rows(df_Aux_Diagnosis_ClassifiedMultipleEntries) %>%
+                        arrange(PatientID) %>%
+                        relocate(c(PatientID, ReferenceDiagnosisID), .before = DiagnosisID)
 
-# To do...
-CountJointDiagnoses <- NULL
-CountPatientsWithJointDiagnoses <- NULL
-
-
-
-# C) Adjust modified DiagnosisIDs in other tables
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Get table to re-map deleted DiagnosisIDs in other tables
-df_Aux_Diagnosis_IDMapping <- df_CDS_Diagnosis %>%
-                                  ungroup() %>%
-                                  filter(CountDuplicates > 0) %>%
-                                  select(PatientID, JointIDs, DiagnosisID) %>%
-                                  unnest(cols = c(JointIDs)) %>%
-                                  rename(all_of(c(OldDiagnosisID = "JointIDs",
-                                                  NewDiagnosisID = "DiagnosisID")))
+# For monitoring purposes, obtain:
+# a) number of associated diagnoses and
+# b) number of patients that had duplicate diagnosis entries for monitoring purposes
+CountAssociatedDiagnoses <- sum(df_CDS_Diagnosis$IsLikelyAssociated, na.rm = TRUE)
+CountPatientsWithAssociatedDiagnoses <- df_Aux_Diagnosis_ClassifiedMultipleEntries %>%
+                                            filter(IsLikelyAssociated == TRUE) %>%
+                                            select(PatientID) %>%
+                                            n_distinct()
 
 
+#
+# # C) Adjust modified DiagnosisIDs in other tables
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# # Get table to re-map deleted DiagnosisIDs in other tables
+# df_Aux_Diagnosis_IDListDuplicates <- df_CDS_Diagnosis %>%
+#                                           ungroup() %>%
+#                                           filter(CountDuplicates > 0) %>%
+#                                           select(PatientID, JointIDs, DiagnosisID) %>%
+#                                           unnest(cols = c(JointIDs)) %>%
+#                                           rename(all_of(c(OldDiagnosisID = "JointIDs",
+#                                                           NewDiagnosisID = "DiagnosisID"))) %>%
+#                                           filter(OldDiagnosisID != NewDiagnosisID)
+#
+# # Get table to enhance other tables by information about associated diagnoses
+# df_Aux_Diagnosis_IDListAssociations <- df_CDS_Diagnosis %>%
+#                                             ungroup() %>%
+#                                             filter(IsLikelyAssociated == TRUE) %>%
+#                                             select(PatientID, DiagnosisID, IsLikelyAssociated, ReferenceDiagnosisID)
+#
+#
+# # Ensure correct re-mapping of DiagnosisIDs in other tables
+#
+# df_CDS_Histology <- df_CDS_Histology %>%
+#                         AdjustDiagnosisIDs(df_Aux_Diagnosis_IDListDuplicates,
+#                                            df_Aux_Diagnosis_IDListAssociations)
 
-# Ensure correct re-mapping of DiagnosisIDs in other tables
 
-df_CDS_Histology <- df_CDS_Histology %>%
-                          left_join(df_Aux_Diagnosis_IDMapping, by = join_by(PatientID,
-                                                                             DiagnosisID == OldDiagnosisID)) %>%
-                          mutate(DiagnosisID = ifelse(!is.na(NewDiagnosisID),
-                                                      NewDiagnosisID,
-                                                      DiagnosisID)) %>%
-                          select(-NewDiagnosisID)
+# Test <- df_CDS_Histology %>%
+#             group_by(PatientID, DiagnosisID, ICDOMorphology, ICDOMorphologyCode, Grading) %>%#
+#                 mutate(CountDuplicates = n() - 1) %>%
+#             filter(CountDuplicates > 0)
 
 
 
@@ -714,13 +754,13 @@ df_CDS_Histology <- df_CDS_Histology %>%
 
 
 
-df_Work_Diagnosis <- CuratedDataSet$Diagnosis %>%
-                          left_join(CuratedDataSet$Histology, by = join_by(PatientID, DiagnosisID)) %>%
-                          group_by(DiagnosisID) %>%
-                              mutate(HistologiesPerDiagnosis = n(),
-                                     DifferentHistologiesPerTumor = n_distinct(ICDOMorphology, Grading)) %>%
-                              arrange(HistologyDate, HistologyID) %>%
-                              filter(row_number() == n())      # Keep only the last row of each diagnosis (should be the most recent Histology report)
+# df_Work_Diagnosis <- CuratedDataSet$Diagnosis %>%
+#                           left_join(CuratedDataSet$Histology, by = join_by(PatientID, DiagnosisID)) %>%
+#                           group_by(DiagnosisID) %>%
+#                               mutate(HistologiesPerDiagnosis = n(),
+#                                      DifferentHistologiesPerTumor = n_distinct(ICDOMorphology, Grading)) %>%
+#                               arrange(HistologyDate, HistologyID) %>%
+#                               filter(row_number() == n())      # Keep only the last row of each diagnosis (should be the most recent Histology report)
 
 
 

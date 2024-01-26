@@ -23,4 +23,7 @@ Meta_TableNames
 \description{
 A tibble containing meta data about corresponding table names in Raw Data Model (RDM) and Curated Data Model (CDM)
 }
+\author{
+Bastian Reiter
+}
 \keyword{datasets}

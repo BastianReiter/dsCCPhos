@@ -22,7 +22,32 @@
 #'   \item{CancerIsNeoplasmOfUncertainBehavior}{}
 #' }
 #' @source <https://github.com/BastianReiter/TinkerLab/tree/main/Development/Data>
+#' @author Bastian Reiter
 "Meta_CancerGrouping"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_DiagnosisAssociation.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Meta data on rule-based identification of associations between diagnosis entries
+#'
+#' A tibble containing rules
+#'
+#' @format ## `Meta_DiagnosisAssociation`
+#' Tibble
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{ProcessingStep}{}
+#'   \item{Feature}{}
+#'   \item{Value}{}
+#'   \item{ValueRank}{}
+#'   \item{EvaluationOrder}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_DiagnosisAssociation"
 
 
 
@@ -41,6 +66,7 @@
 #'   \item{TableName_Curated}{Corresponding table name in Curated Data Model}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
 "Meta_TableNames"
 
 
@@ -62,6 +88,7 @@
 #'   \item{FeatureName_Curated}{Corresponding feature name in Curated Data Model}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
 "Meta_FeatureNames"
 
 
@@ -87,4 +114,5 @@
 #'   \item{FactorRank}{Used to determine order in values}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
 "Meta_ValueSets"

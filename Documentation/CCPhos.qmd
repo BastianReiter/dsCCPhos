@@ -17,3 +17,9 @@ source("RSetup.R", local = knitr::knit_global())
 
 ### About CCPhos
 
+
+#### Challenges
+
+- Data that you can't see
+- Some reasoning of primary documentation unknown
+

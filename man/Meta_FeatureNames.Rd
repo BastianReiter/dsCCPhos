@@ -25,4 +25,7 @@ Meta_FeatureNames
 \description{
 A tibble containing meta data about corresponding feature names in Raw Data Model (RDM) and Curated Data Model (CDM)
 }
+\author{
+Bastian Reiter
+}
 \keyword{datasets}

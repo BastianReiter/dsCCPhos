@@ -29,4 +29,7 @@ Meta_ValueSets
 \description{
 A tibble containing meta data about eligible data values in Curated Data Model (CDM)
 }
+\author{
+Bastian Reiter
+}
 \keyword{datasets}
