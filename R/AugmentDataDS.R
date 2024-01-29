@@ -11,6 +11,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 AugmentDataDS <- function(Name_CurationOutput = "CurationOutput")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {

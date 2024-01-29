@@ -15,3 +15,6 @@ A data bases connection object
 \description{
 Takes CCP test data, loads it into a virtual data base and returns the data base connection object.
 }
+\author{
+Bastian Reiter
+}

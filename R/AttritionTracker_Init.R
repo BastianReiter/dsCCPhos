@@ -7,6 +7,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 AttritionTracker_Init <- function()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {

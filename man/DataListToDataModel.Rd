@@ -15,3 +15,6 @@ A list of data frames describing a data model
 \description{
 Take a list of data frames and return the underlying data model
 }
+\author{
+Bastian Reiter
+}

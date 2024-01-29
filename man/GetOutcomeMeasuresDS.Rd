@@ -18,3 +18,6 @@ Calculate clinical outcome measures (COM) from Augmented Data Set (ADS)
 \details{
 Server-side ASSIGN method
 }
+\author{
+Bastian Reiter
+}

@@ -12,3 +12,6 @@ A tibble
 \description{
 Initialize Attrition Tracker (auxiliary table to track sample sizes around data excluding operations)
 }
+\author{
+Bastian Reiter
+}

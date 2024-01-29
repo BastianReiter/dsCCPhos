@@ -15,3 +15,6 @@ Transforms Curated Data Set (CDS) into Augmented Data Set (ADS)
 \details{
 Server-side ASSIGN method
 }
+\author{
+Bastian Reiter
+}

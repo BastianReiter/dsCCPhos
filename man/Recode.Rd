@@ -17,3 +17,6 @@ A vector
 \description{
 Uses a dictionary in the form of a named vector to perform recoding on a target vector.
 }
+\author{
+Bastian Reiter
+}

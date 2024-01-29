@@ -22,3 +22,6 @@ A list of data frames
 \description{
 Make List of data frames describing a data model
 }
+\author{
+Bastian Reiter
+}

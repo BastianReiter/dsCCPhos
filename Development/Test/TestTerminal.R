@@ -11,6 +11,8 @@ DBConnection <- MakeTestDB(CCPTestData_Total)
 # Load raw test data from data base into WD
 RawDataSet <- LoadRawData(DBConnection)
 
+RulesProfile_DiagnosisAssociation = "Default"
+
 # Curate data
 CurationOutput <- dsCCPhos::CurateDataDS("RawDataSet")
 

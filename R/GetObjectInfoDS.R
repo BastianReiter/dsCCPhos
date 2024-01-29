@@ -11,6 +11,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 GetObjectInfoDS <- function(ObjectName)
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -10,6 +10,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 Recode <- function(TargetVector,
                    Dictionary)
 {

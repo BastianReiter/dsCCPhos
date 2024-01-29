@@ -19,3 +19,6 @@ A tibble
 \description{
 Track occurrence of a feature's unique values, their eligibility and frequency
 }
+\author{
+Bastian Reiter
+}

@@ -11,6 +11,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 GetCurationReportDS <- function(Name_CurationOutput = "CurationOutput")
 {
     if (is.character(Name_CurationOutput))

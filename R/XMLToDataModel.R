@@ -14,6 +14,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 XMLToDataModel <- function(XMLSchemaFilePath,
                            TableNodeElement = "container",
                            TableNameAttribute = "opal-table",

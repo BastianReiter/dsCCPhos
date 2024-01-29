@@ -18,3 +18,6 @@ What it does
 \details{
 Server-side AGGREGATE method
 }
+\author{
+Bastian Reiter
+}

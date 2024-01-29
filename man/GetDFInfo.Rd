@@ -21,3 +21,6 @@ A tibble containing information about a data frame's features
 \description{
 Returns information about a data frame's features and data types
 }
+\author{
+Bastian Reiter
+}

@@ -11,6 +11,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 GetValidationReportDS_RawData <- function(Name_RawDataSet = "RawDataSet")
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

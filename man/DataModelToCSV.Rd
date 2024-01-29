@@ -17,3 +17,6 @@ No return, creates a .csv-file.
 \description{
 DataModelToCSV
 }
+\author{
+Bastian Reiter
+}

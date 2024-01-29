@@ -18,3 +18,6 @@ Performs validation operations on Raw Data Set (RDS) and returns a report.
 \details{
 Server-side AGGREGATE method
 }
+\author{
+Bastian Reiter
+}

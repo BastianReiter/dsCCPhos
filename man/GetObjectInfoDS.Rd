@@ -18,3 +18,6 @@ Similar to dsBase::testObjExistsDS(). Tests whether a certain object exists phys
 \details{
 Server-side AGGREGATE method
 }
+\author{
+Bastian Reiter
+}

@@ -8,6 +8,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 DataModelToCSV <- function(DataModel,
                            OutputPath = "./DataModel.csv")
 {

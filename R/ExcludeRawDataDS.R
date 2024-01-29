@@ -1,13 +1,13 @@
 
-#' ExcludeCuratedDataDS
+#' ExcludeRawDataDS
 #'
-#' Exclude data from Curated Data Set
+#' Exclude data from Raw Data Set (RDS)
 #'
 #' Server-side ASSIGN method
 #'
-#' @param Name_CurationOutput String | Name of the list object created by CurateDataDS() | Default: 'CurationOutput'
+#' @param Name_RawDataSet String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
 #'
-#' @return The Curation Output with modified Curated Data Set
+#' @return Modified Raw Data Set object (list)
 #' @export
 #'
 #' @examples
@@ -34,8 +34,25 @@ else
 
 # Use require() to load package namespaces
 require(dplyr)
-require(lubridate)
-require(purrr)
-require(stringr)
+
+
+# Unpack list into data frames
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+df_RDS_BioSampling <- RawDataSet$BioSampling
+df_RDS_Diagnosis <- RawDataSet$Diagnosis
+df_RDS_Histology <- RawDataSet$Histology
+df_RDS_Metastasis <- RawDataSet$Metastasis
+df_RDS_MolecularDiagnostics <- RawDataSet$MolecularDiagnostics
+df_RDS_Patient <- RawDataSet$Patient
+df_RDS_Progress <- RawDataSet$Progress
+df_RDS_RadiationTherapy <- RawDataSet$RadiationTherapy
+df_RDS_Staging <- RawDataSet$Staging
+df_RDS_Surgery <- RawDataSet$Surgery
+df_RDS_SystemicTherapy <- RawDataSet$SystemicTherapy
+
+
+df_RDS_BioSampling <- df_RDS_BioSampling
+
+
 
 }

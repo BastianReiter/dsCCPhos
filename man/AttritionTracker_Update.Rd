@@ -26,3 +26,6 @@ A tibble (Attrition Tracker)
 \description{
 Adds entry to preformed Attrition Tracker
 }
+\author{
+Bastian Reiter
+}

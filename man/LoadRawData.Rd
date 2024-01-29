@@ -12,3 +12,6 @@ A list of tibbles containing raw data as described by the Raw Data Model
 \description{
 LoadRawData
 }
+\author{
+Bastian Reiter
+}

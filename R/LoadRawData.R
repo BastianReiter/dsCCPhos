@@ -5,6 +5,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 LoadRawData <- function(OpalDBConnection)
 {
     require(dplyr)

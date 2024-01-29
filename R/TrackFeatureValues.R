@@ -11,6 +11,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 TrackFeatureValues <- function(DataFrame,
                                Features,
                                CurationStage = NULL)

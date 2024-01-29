@@ -15,3 +15,6 @@ A tibble with finalized Attrition Tracker
 \description{
 AttritionTracker_Close
 }
+\author{
+Bastian Reiter
+}

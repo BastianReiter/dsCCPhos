@@ -9,6 +9,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 MakeTestDB <- function(TestData)
 {
     # Initialize data base connection object, with data base in memory

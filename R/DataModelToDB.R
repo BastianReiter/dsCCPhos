@@ -10,6 +10,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 DataModelToDB <- function(DataModel,
                           DBPath = ":memory:")
 {

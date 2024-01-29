@@ -40,15 +40,28 @@ use_data(Meta_ValueSets, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta Data: Diagnosis association rules
+# Meta Data: Diagnosis association rule set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_DiagnosisAssociation <- read_excel(path = "./Development/Data/MetaData/RuleSets.xlsx",
-                                        sheet = "DiagnosisAssociation",
-                                        skip = 2)
+RuleSet_DiagnosisAssociation <- read_excel(path = "./Development/Data/MetaData/RuleSets.xlsx",
+                                           sheet = "DiagnosisAssociation",
+                                           skip = 2)
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_DiagnosisAssociation, overwrite = TRUE)
+use_data(RuleSet_DiagnosisAssociation, overwrite = TRUE)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta Data: Diagnosis duplicates rule set
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+RuleSet_DiagnosisDuplicates <- read_excel(path = "./Development/Data/MetaData/RuleSets.xlsx",
+                                          sheet = "DiagnosisDuplicates",
+                                          skip = 2)
+
+# Save data in .rda-file and make it part of package
+use_data(RuleSet_DiagnosisDuplicates, overwrite = TRUE)
 
 
 

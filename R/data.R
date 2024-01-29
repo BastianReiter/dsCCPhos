@@ -28,26 +28,50 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_DiagnosisAssociation.rda
+# RuleSet_DiagnosisAssociation.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #' Meta data on rule-based identification of associations between diagnosis entries
 #'
 #' A tibble containing rules
 #'
-#' @format ## `Meta_DiagnosisAssociation`
+#' @format ## `RuleSet_DiagnosisAssociation`
 #' Tibble
 #' \describe{
 #'   \item{Profile}{}
-#'   \item{ProcessingStep}{}
 #'   \item{Feature}{}
 #'   \item{Value}{}
 #'   \item{ValueRank}{}
 #'   \item{EvaluationOrder}{}
+#'   \item{BlockConnector}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_DiagnosisAssociation"
+"RuleSet_DiagnosisAssociation"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# RuleSet_DiagnosisDuplicates.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Meta data on rule-based identification of duplicate diagnosis entries
+#'
+#' A tibble containing rules
+#'
+#' @format ## `RuleSet_DiagnosisDuplicates`
+#' Tibble
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{Feature}{}
+#'   \item{Value}{}
+#'   \item{ValueRank}{}
+#'   \item{EvaluationOrder}{}
+#'   \item{BlockConnector}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"RuleSet_DiagnosisDuplicates"
 
 
 

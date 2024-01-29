@@ -12,6 +12,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 AttritionTracker_Update <- function(AttritionTracker,
                                     NewSampleSize,
                                     InclusionComment = "",

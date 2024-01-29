@@ -646,60 +646,61 @@ df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
 
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         group_by(PatientID) %>%
-                            mutate(CountInitialEntries = n(),
-                                   CountDifferentCombinations = n_distinct(InitialDiagnosisDate,
-                                                                           ICD10Code,
-                                                                           ICDOTopographyCode,
-                                                                           LocalizationSide,
-                                                                           HistologyDate,
-                                                                           ICDOMorphologyCode,
-                                                                           Grading)) %>%
-                        group_by(PatientID,
-                                 InitialDiagnosisDate,
-                                 ICD10Code,
-                                 ICDOTopographyCode,
-                                 LocalizationSide,
-                                 HistologyDate,
-                                 ICDOMorphologyCode,
-                                 Grading) %>%
-                            mutate(CountDuplicates = n() - 1,
-                                   JointIDs = case_when(CountDuplicates == 0 ~ list(NULL),
-                                                        CountDuplicates > 0 ~ list(DiagnosisID))) %>%
-                            slice_head() %>%
+                            mutate(PatientCountInitialEntries = n(),
+                                   PatientCountDifferentCombinations = n_distinct(InitialDiagnosisDate,
+                                                                                  ICD10Code,
+                                                                                  ICDOTopographyCode,
+                                                                                  LocalizationSide,
+                                                                                  HistologyDate,
+                                                                                  ICDOMorphologyCode,
+                                                                                  Grading)) %>%
                         ungroup()
+
+
+df_Aux_Diagnosis_HandleDuplicates <- df_CDS_Diagnosis %>%
+                                          filter(PatientCountInitialEntries > 1) %>%
+                                          group_by(PatientID) %>%
+                                              group_modify(~ ClassifyDiagnosisAssociations(DiagnosisEntries = .x,
+                                                                                           RulesProfile = RulesProfile_DiagnosisAssociation))
+
+                        # group_by(PatientID,
+                        #          InitialDiagnosisDate,
+                        #          ICD10Code,
+                        #          ICDOTopographyCode,
+                        #          LocalizationSide,
+                        #          HistologyDate,
+                        #          ICDOMorphologyCode,
+                        #          Grading) %>%
+                        #     mutate(DiagnosisCountDuplicates = n() - 1,
+                        #            JointIDs = case_when(DiagnosisCountDuplicates == 0 ~ list(NULL),
+                        #                                 DiagnosisCountDuplicates > 0 ~ list(DiagnosisID))) %>%
+                        #     slice_head() %>%
+                        # ungroup()
 
 # For monitoring purposes, obtain:
 # a) number of duplicate entries and
 # b) number of patients that had duplicate diagnosis entries for monitoring purposes
-CountDuplicateDiagnoses <- sum(df_CDS_Diagnosis$CountDuplicates, na.rm = TRUE)
-CountPatientsWithDuplicates <- df_CDS_Diagnosis %>%
-                                    filter(CountDuplicates > 0) %>%
-                                    select(PatientID) %>%
-                                    n_distinct()
+# CountDuplicateDiagnoses <- sum(df_CDS_Diagnosis$DiagnosisCountDuplicates, na.rm = TRUE)
+# CountPatientsWithDuplicates <- df_CDS_Diagnosis %>%
+#                                     filter(DiagnosisCountDuplicates > 0) %>%
+#                                     select(PatientID) %>%
+#                                     n_distinct()
 
 
 
 # B) Classify associations between diagnosis entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# df_Aux_Diagnosis_MultipleEntries <- df_CDS_Diagnosis %>%
-#                                         filter(CountDifferentCombinations > 1)
-
-#TestBefore <- unique(df_Aux_Diagnosis_MultipleEntries$PatientID)
-#TestAfter <- unique(df_Aux_Diagnosis_ClassifiedMultipleEntries$PatientID)
-#LookAt <- TestBefore[!(TestBefore %in% TestAfter)]
-
-
 # Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosisAssociations()
-df_Aux_Diagnosis_ClassifiedMultipleEntries <- df_Aux_Diagnosis %>%
-                                                  filter(CountDifferentCombinations > 1) %>%
+df_Aux_Diagnosis_ClassifiedMultipleEntries <- df_CDS_Diagnosis %>%
+                                                  filter(PatientCountInitialEntries > 1) %>%
                                                   group_by(PatientID) %>%
-                                                      group_modify(~ ClassifyDiagnosisAssociations(.x,
-                                                                                                   RulesProfile = RulesProfile_Diagnosis))
+                                                      group_modify(~ ClassifyDiagnosisAssociations(DiagnosisEntries = .x,
+                                                                                                   RulesProfile = RulesProfile_DiagnosisAssociation))
 
 # Reassemble df_CDS_Diagnosis after processing of multiple diagnosis entries
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
-                        filter(CountDifferentCombinations == 1) %>%
+                        filter(PatientCountDifferentCombinations == 1) %>%
                         mutate(ReferenceDiagnosisID = DiagnosisID) %>%
                         bind_rows(df_Aux_Diagnosis_ClassifiedMultipleEntries) %>%
                         arrange(PatientID) %>%

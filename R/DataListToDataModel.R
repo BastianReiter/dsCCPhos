@@ -9,6 +9,7 @@
 #' @export
 #'
 #' @examples
+#' @author Bastian Reiter
 DataListToDataModel <- function(DataList)
 {
     require(dplyr)

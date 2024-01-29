@@ -17,3 +17,6 @@ A data base connection object
 \description{
 Make (virtual) data base from a data model
 }
+\author{
+Bastian Reiter
+}
