@@ -52,14 +52,14 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RuleSet_DiagnosisRedundancies.rda
+# RuleSet_DiagnosisRedundancy.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #' Meta data on rule-based identification of redundant diagnosis entries
 #'
 #' A tibble containing rules
 #'
-#' @format ## `RuleSet_DiagnosisRedundancies`
+#' @format ## `RuleSet_DiagnosisRedundancy`
 #' Tibble
 #' \describe{
 #'   \item{Profile}{}
@@ -71,7 +71,7 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"RuleSet_DiagnosisRedundancies"
+"RuleSet_DiagnosisRedundancy"
 
 
 

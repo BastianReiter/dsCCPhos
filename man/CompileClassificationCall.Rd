@@ -8,6 +8,7 @@ CompileClassificationCall(
   TargetFeature,
   PredictorFeatures,
   RuleSet,
+  RuleProfile,
   ValueIfNoRuleMet = NA
 )
 }
@@ -17,6 +18,8 @@ CompileClassificationCall(
 \item{PredictorFeatures}{Vector | Character vector containing the names of all determining / predictor features}
 
 \item{RuleSet}{Data frame | Contains predefined set of rules}
+
+\item{RuleProfile}{String | Profile name stated in rule set data frame}
 
 \item{ValueIfNoRuleMet}{String | Value (as string) of TargetFeature if no rules are fulfilled | Default = "NA"}
 }

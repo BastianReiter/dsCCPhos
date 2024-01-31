@@ -8,6 +8,7 @@
 #' @param TargetFeature String | Name of feature that is being engineered
 #' @param PredictorFeatures Vector | Character vector containing the names of all determining / predictor features
 #' @param RuleSet Data frame | Contains predefined set of rules
+#' @param RuleProfile String | Profile name stated in rule set data frame
 #' @param ValueIfNoRuleMet String | Value (as string) of TargetFeature if no rules are fulfilled | Default = "NA"
 #'
 #' @return String containing an unevaluated dplyr::case_when() expression
@@ -18,6 +19,7 @@
 CompileClassificationCall <- function(TargetFeature,
                                       PredictorFeatures,
                                       RuleSet,
+                                      RuleProfile,
                                       ValueIfNoRuleMet = NA)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
@@ -30,8 +32,10 @@ CompileClassificationCall <- function(TargetFeature,
     # RuleSet <- RuleSet_DiagnosisAssociation
     # ValueIfNoRuleMet <- NA_character_
 
+
+    # Filter relevant rules from given rule set
     RelevantRules <- RuleSet %>%
-                          filter(Feature == TargetFeature) %>%
+                          filter(Profile == RuleProfile & Feature == TargetFeature) %>%
                           arrange(EvaluationOrder)
 
     if (is.null(ValueIfNoRuleMet))

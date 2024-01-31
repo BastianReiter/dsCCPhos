@@ -6,8 +6,8 @@
 #' Server-side ASSIGN method
 #'
 #' @param Name_RawDataSet String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
-#' @param RulesProfile_DiagnosisAssociation String | Profile name defining rule set to be used for classification of diagnosis association | Default: 'Default'
-#' @param RulesProfile_DiagnosisRedundancies String | Profile name defining rule set to be used for classification of diagnosis redundancies | Default: 'Default'
+#' @param RulesProfile_DiagnosisAssociation String | Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{\link{RuleSet_DiagnosisAssociation}. | Default: 'Default'
+#' @param RulesProfile_DiagnosisRedundancy String | Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{\link{RuleSet_DiagnosisRedundancy}. | Default: 'Default'
 #'
 #' @return A list containing the Curated Data Set (CDS) and a curation report.
 #' @export
@@ -15,19 +15,31 @@
 #' @examples
 #' @author Bastian Reiter
 CurateDataDS <- function(Name_RawDataSet = "RawDataSet",
-                         RulesProfile_DiagnosisAssociation = "Default",
-                         RulesProfile_DiagnosisRedundancies = "Default")
+                         RuleProfile_DiagnosisAssociation = "Default",
+                         RuleProfile_DiagnosisRedundancy = "Default")
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ROUGH OVERVIEW
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#   1) Evaluation and parsing of input
-#   2) Transform feature names
-#   3) Definition of features to monitor during value transformation
-#   4) Value transforming operations
-#   5) Additional transforming operations / correction of inconsistencies
-#   6) Return statement
+#   SETUP
+#     - Evaluation and parsing of input
+#     - Loading of required package namespaces
+#
+#   MODUL 1)  Data Harmonization / Transformation
+#     - Transform feature names
+#     - Definition of features to monitor during value transformation
+#     - Value transforming operations
+#
+#   MODUL 2)  Process diagnosis data
+#     - Joining of df_CDS_Diagnosis and df_CDS_Histology
+#     - Classification and removal of redundant diagnosis entries
+#     - Classification and bundling of associated diagnosis entries
+#     - Replace DiagnosisIDs in other tables
+#
+#
+#   Return statement
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
@@ -62,6 +74,17 @@ options(dplyr.summarise.inform = FALSE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MODUL 1)  Data Harmonization / Transformation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Set up progress bar
+CountProgressItems <- 28
+ProgressBar <- progress_bar$new(format = "Harmonize data values [:bar] :percent in :elapsed  :spin",
+                                total = CountProgressItems, clear = FALSE, width= 100)
+ProgressBar$tick()
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Transform feature names
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -78,6 +101,8 @@ ls_CuratedDataSet <- purrr::map(.x = names(RawDataSet),
 
 # Re-set table names
 names(ls_CuratedDataSet) <- names(RawDataSet)
+
+ProgressBar$tick()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -158,6 +183,7 @@ ls_MonitorFeatures_All <- list(ls_MonitorFeatures_BioSampling,
                                ls_MonitorFeatures_Surgery,
                                ls_MonitorFeatures_SystemicTherapy)
 
+ProgressBar$tick()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -173,6 +199,7 @@ ls_Monitors_Raw <- purrr::map2(.x = ls_CuratedDataSet,
                                                                         CurationStage = "Raw")
                                     })
 
+ProgressBar$tick()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -207,6 +234,8 @@ df_CDS_BioSampling <- df_CDS_BioSampling %>%
                                  SampleAliquot = dsCCPhos::Recode(SampleAliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "BioSampling" & FeatureName == "SampleAliquot"),
                                                                                     set_names(Value_Curated, Value_Raw))))
 
+ProgressBar$tick()
+
 
 # Transform df_CDS_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -217,6 +246,8 @@ df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                                LocalizationSide = str_remove_all(LocalizationSide, " "),
                                LocalizationSide = dsCCPhos::Recode(LocalizationSide, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Diagnosis" & FeatureName == "LocalizationSide"),
                                                                                         set_names(Value_Curated, Value_Raw))))
+
+ProgressBar$tick()
 
 
 # Transform df_CDS_Histology
@@ -230,22 +261,28 @@ df_CDS_Histology <- df_CDS_Histology %>%
                                Grading = dsCCPhos::Recode(Grading, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Histology" & FeatureName == "Grading"),
                                                                       set_names(Value_Curated, Value_Raw))))
 
+ProgressBar$tick()
+
 
 # Transform df_CDS_Metastasis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_Metastasis <- df_CDS_Metastasis %>%
-                          mutate(MetastasisDiagnosisDate = lubridate::as_date(MetastasisDiagnosisDate, format = "%d.%m.%Y"),
+                          mutate(MetastasisDiagnosisDate = ymd(format(MetastasisDiagnosisDate, format = "%m-%d-%Y")),
                                  #--------------------------------------------------
                                  HasMetastasis = as.logical(HasMetastasis),
                                  #--------------------------------------------------
                                  MetastasisLocalization = str_to_upper(MetastasisLocalization),
                                  MetastasisLocalization = str_remove_all(MetastasisLocalization, " "))
 
+ProgressBar$tick()
+
 
 # Transform df_CDS_MolecularDiagnostics
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
-                                    mutate(MolecularDiagnosticsDate = lubridate::as_date(MolecularDiagnosticsDate, format = "%d.%m.%Y"))
+                                    mutate(MolecularDiagnosticsDate = ymd(format(MolecularDiagnosticsDate, format = "%m-%d-%Y")))
+
+ProgressBar$tick()
 
 
 # Transform df_CDS_Patient
@@ -256,16 +293,18 @@ df_CDS_Patient <- df_CDS_Patient %>%
                                Gender = dsCCPhos::Recode(Gender, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "Gender"),
                                                                     set_names(Value_Curated, Value_Raw))),
                                #----------------------------------------------------
-                               LastVitalStatusDate = lubridate::as_date(LastVitalStatusDate, format = "%m.%Y") + days(14),
+                               LastVitalStatusDate = ymd(format(LastVitalStatusDate, format = "%m-%d-%Y")),
                                #----------------------------------------------------
                                LastVitalStatus = dsCCPhos::Recode(LastVitalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "LastVitalStatus"),
                                                                                       set_names(Value_Curated, Value_Raw))))
+
+ProgressBar$tick()
 
 
 # Transform df_CDS_Progress
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_Progress <- df_CDS_Progress %>%
-                        mutate(ProgressReportDate = lubridate::as_date(ProgressReportDate, format = "%d.%m.%Y"),
+                        mutate(ProgressReportDate = ymd(format(ProgressReportDate, format = "%m-%d-%Y")),
                                #----------------------------------------------------
                                GlobalStatus = dsCCPhos::Recode(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Progress" & FeatureName == "GlobalStatus"),
                                                                                   set_names(Value_Curated, Value_Raw))),
@@ -279,6 +318,8 @@ df_CDS_Progress <- df_CDS_Progress %>%
                                MetastasisStatus = dsCCPhos::Recode(MetastasisStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Progress" & FeatureName == "MetastasisStatus"),
                                                                                           set_names(Value_Curated, Value_Raw))))
 
+ProgressBar$tick()
+
 
 # Transform df_CDS_RadiationTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -289,14 +330,16 @@ df_CDS_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                        RadiationTherapyIntention = dsCCPhos::Recode(RadiationTherapyIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "RadiationTherapy" & FeatureName == "RadiationTherapyIntention"),
                                                                                                                   set_names(Value_Curated, Value_Raw))),
                                        #----------------------------------------
-                                       RadiationTherapyStart = as_date(RadiationTherapyStart, format = "%d.%m.%Y"),
-                                       RadiationTherapyEnd = as_date(RadiationTherapyEnd, format = "%d.%m.%Y"))
+                                       RadiationTherapyStart = ymd(format(RadiationTherapyStart, format = "%m-%d-%Y")),
+                                       RadiationTherapyEnd = ymd(format(RadiationTherapyEnd, format = "%m-%d-%Y")))
+
+ProgressBar$tick()
 
 
 # Transform df_CDS_Staging
 #~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_Staging <- df_CDS_Staging %>%
-                      mutate(StagingReportDate = lubridate::as_date(StagingReportDate, format = "%d.%m.%Y"),
+                      mutate(StagingReportDate = ymd(format(StagingReportDate, format = "%m-%d-%Y")),
                              #------------------------------------------------------
                              UICCStage = str_to_upper(UICCStage),
                              UICCStage = str_remove_all(UICCStage, " "),
@@ -366,6 +409,7 @@ df_CDS_Staging <- df_CDS_Staging %>%
                              TNM_M_Prefix = dsCCPhos::Recode(TNM_M_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Staging" & FeatureName == "TNM_M_Prefix"),
                                                                               set_names(Value_Curated, Value_Raw))))
 
+ProgressBar$tick()
 
 
 # Transform df_CDS_Surgery
@@ -382,6 +426,8 @@ df_CDS_Surgery <- df_CDS_Surgery %>%
                              ResidualAssessmentTotal = dsCCPhos::Recode(ResidualAssessmentTotal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Surgery" & FeatureName == "ResidualAssessmentTotal"),
                                                                                               set_names(Value_Curated, Value_Raw))))
 
+ProgressBar$tick()
+
 
 # Transform df_CDS_SystemicTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -392,13 +438,15 @@ df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                      IsBoneMarrowTransplant = as.logical(IsBoneMarrowTransplant),
                                      #------------------------------------------
                                      SystemicTherapyIntention = dsCCPhos::Recode(SystemicTherapyIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "SystemicTherapy" & FeatureName == "SystemicTherapyIntention"),
-                                                                                                              set_names(Value_Curated, Value_Raw))),
+                                                                                                                set_names(Value_Curated, Value_Raw))),
                                      #------------------------------------------
                                      SystemicTherapyRelationToSurgery = dsCCPhos::Recode(SystemicTherapyRelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "SystemicTherapy" & FeatureName == "SystemicTherapyRelationToSurgery"),
-                                                                                                                              set_names(Value_Curated, Value_Raw))),
+                                                                                                                                set_names(Value_Curated, Value_Raw))),
                                      #------------------------------------------
-                                     SystemicTherapyStart = as_date(SystemicTherapyStart, format = "%d.%m.%Y"),
-                                     SystemicTherapyEnd = as_date(SystemicTherapyEnd, format = "%d.%m.%Y"))
+                                     SystemicTherapyStart = ymd(format(SystemicTherapyStart, format = "%m-%d-%Y")),
+                                     SystemicTherapyEnd = ymd(format(SystemicTherapyEnd, format = "%m-%d-%Y")))
+
+ProgressBar$tick()
 
 
 # Re-pack data frames into list
@@ -415,6 +463,7 @@ ls_CuratedDataSet <- list(BioSampling = df_CDS_BioSampling,
                        Surgery = df_CDS_Surgery,
                        SystemicTherapy = df_CDS_SystemicTherapy)
 
+ProgressBar$tick()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -430,6 +479,7 @@ ls_Monitors_Transformed <- map2(.x = ls_CuratedDataSet,
                                                                            CurationStage = "Transformed")
                                      })
 
+ProgressBar$tick()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -445,6 +495,8 @@ df_CDS_BioSampling <- df_CDS_BioSampling %>%
                                  SampleAliquot = factor(SampleAliquot,
                                                         levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "BioSampling" & FeatureName == "SampleAliquot")$Value_Curated))
 
+ProgressBar$tick()
+
 
 # Finalize df_CDS_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -453,6 +505,8 @@ df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                                                          levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Diagnosis" & FeatureName == "LocalizationSide")$Value_Curated,
                                                          labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Diagnosis" & FeatureName == "LocalizationSide")$Label_Curated))
 
+ProgressBar$tick()
+
 
 # Finalize df_CDS_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -460,6 +514,8 @@ df_CDS_Histology <- df_CDS_Histology %>%
                         mutate(Grading = factor(Grading,
                                                 levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Histology" & FeatureName == "Grading")$Value_Curated,
                                                 labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Histology" & FeatureName == "Grading")$Label_Curated))
+
+ProgressBar$tick()
 
 
 # Finalize df_CDS_Patient
@@ -470,6 +526,8 @@ df_CDS_Patient <- df_CDS_Patient %>%
                                                labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "Gender")$Label_Curated),
                                LastVitalStatus = factor(LastVitalStatus,
                                                         levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "LastVitalStatus")$Value_Curated))
+
+ProgressBar$tick()
 
 
 # Finalize df_CDS_Progress
@@ -488,6 +546,8 @@ df_CDS_Progress <- df_CDS_Progress %>%
                                                          levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Progress" & FeatureName == "MetastasisStatus")$Value_Curated,
                                                          labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Progress" & FeatureName == "MetastasisStatus")$Label_Curated))
 
+ProgressBar$tick()
+
 
 # Finalize df_CDS_RadiationTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -498,6 +558,8 @@ df_CDS_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                        RadiationTherapyIntention = factor(RadiationTherapyIntention,
                                                                           levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "RadiationTherapy" & FeatureName == "RadiationTherapyIntention")$Value_Curated,
                                                                           labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "RadiationTherapy" & FeatureName == "RadiationTherapyIntention")$Label_Curated))
+
+ProgressBar$tick()
 
 
 # Finalize df_CDS_Staging
@@ -522,6 +584,8 @@ df_CDS_Staging <- df_CDS_Staging %>%
                              TNM_rSymbol = factor(TNM_rSymbol,
                                                    levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Staging" & FeatureName == "TNM_rSymbol")$Value_Curated))
 
+ProgressBar$tick()
+
 
 # Finalize df_CDS_Surgery
 #~~~~~~~~~~~~~~~~~~~~~~~~
@@ -534,6 +598,8 @@ df_CDS_Surgery <- df_CDS_Surgery %>%
                              ResidualAssessmentTotal = factor(ResidualAssessmentTotal,
                                                               levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Surgery" & FeatureName == "ResidualAssessmentTotal")$Value_Curated))
 
+ProgressBar$tick()
+
 
 # Finalize df_CDS_SystemicTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -545,6 +611,7 @@ df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                                                        levels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "SystemicTherapy" & FeatureName == "SystemicTherapyIntention")$Value_Curated,
                                                                        labels = dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "SystemicTherapy" & FeatureName == "SystemicTherapyIntention")$Label_Curated))
 
+ProgressBar$tick()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -560,6 +627,7 @@ ls_Monitors_Final <- map2(.x = ls_CuratedDataSet,
                                                                      CurationStage = "Final")
                                })
 
+ProgressBar$tick()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -604,25 +672,23 @@ names(ls_MonitorSummaries) <- c("Monitor_BioSampling",
                                 "Monitor_Surgery",
                                 "Monitor_SystemicTherapy")
 
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ADDITIONAL TRANSFORMATIONS (Identification and correction of inconsistencies)
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ProgressBar$tick()
+ProgressBar$terminate()
 
 
 # df_CDS_Patient
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Clear redundant patient entries
 #-------------------------------------------------------------------------------
-df_Aux_Patient <- df_CDS_Patient %>%
-                      group_by(PatientID) %>%
-                          mutate(CountDifferentCombinations = n()) %>%
-                      filter(CountDifferentCombinations > 1)
+# df_Aux_Patient <- df_CDS_Patient %>%
+#                       group_by(PatientID) %>%
+#                           mutate(CountDifferentCombinations = n()) %>%
+#                       filter(CountDifferentCombinations > 1)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Process df_CDS_Diagnosis
+# MODUL 2)  Process diagnosis data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   A) Joining of df_CDS_Diagnosis and df_CDS_Histology
 #   B) Classification and removal of redundant diagnosis entries
@@ -645,14 +711,41 @@ df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                             mutate(PatientCountInitialEntries = n()) %>%
                         ungroup()
 
+# df_Aux_Diagnosis_IDMappingInitial <- df_CDS_Diagnosis %>%
+#                                           select(OldDiagnosisID,
+#                                                  DiagnosisID)
 
 
 # B) Classification and removal of redundant entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - In patients with multiple diagnosis entries:
-#     Use dsCCPhos-function ClassifyDiagnosisRedundants() to identify and consolidate redundant diagnosis entries
-#   - Rules for classification of redundancies are defined in customizable data object delivered with dsCCPhos
+#     Use dsCCPhos-function ClassifyDiagnosisRedundancy() to identify and consolidate redundant diagnosis entries
+#   - Rules for classification of redundancy are defined in customizable data object delivered with dsCCPhos
 #-------------------------------------------------------------------------------
+
+
+# Compile rule calls from data using dsCCPhos::CompileClassificationCall
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Names of features that are required to compile rule calls from dsCCPhos::RuleSet_DiagnosisRedundancy
+PredictorFeatures_DiagnosisRedundancy = c("CountDeviatingValues",
+                                          "InitialDiagnosisDate",
+                                          "ICD10Code",
+                                          "ICDOTopographyCode",
+                                          "LocalizationSide",
+                                          "HistologyDate",
+                                          "ICDOMorphologyCode",
+                                          "Grading")
+
+# Pass required information to dsCCPhos::CompileClassificationCall to compile rull calls (dplyr::case_when-Statements)
+Call_IsLikelyRedundant <- CompileClassificationCall(TargetFeature = "IsLikelyRedundant",
+                                                    PredictorFeatures = PredictorFeatures_DiagnosisRedundancy,
+                                                    RuleSet = dsCCPhos::RuleSet_DiagnosisRedundancy,
+                                                    RuleProfile = RuleProfile_DiagnosisRedundancy,
+                                                    ValueIfNoRuleMet = FALSE)
+# Make list of rule calls to pass them to function
+RuleCalls_DiagnosisRedundancy <- list(IsLikelyRedundant = Call_IsLikelyRedundant)
+
 
 # Set up progress bar
 CountProgressItems <- df_CDS_Diagnosis %>% filter(PatientCountInitialEntries > 1) %>% pull(PatientID) %>% n_distinct()
@@ -660,13 +753,13 @@ ProgressBar <- progress_bar$new(format = "Finding redundant diagnosis entries [:
                                 total = CountProgressItems, clear = FALSE, width= 100)
 
 
-# Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosisRedundancies()
+# Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosisRedundancy()
 df_Aux_Diagnosis_ClassifiedRedundancies <- df_CDS_Diagnosis %>%
                                                 filter(PatientCountInitialEntries > 1) %>%
                                                 group_by(PatientID) %>%
-                                                    group_modify(~ ClassifyDiagnosisRedundancies(DiagnosisEntries = .x,
-                                                                                                 RulesProfile = RulesProfile_DiagnosisRedundancies,
-                                                                                                 ProgressBarObject = ProgressBar)) %>%
+                                                    group_modify(~ ClassifyDiagnosisRedundancy(DiagnosisEntries = .x,
+                                                                                               RuleCalls = RuleCalls_DiagnosisRedundancy,
+                                                                                               ProgressBarObject = ProgressBar)) %>%
                                                 ungroup()
 
 # Reassemble df_CDS_Diagnosis after processing of redundant diagnosis entries
@@ -696,6 +789,95 @@ CountPatientsWithRedundancies <- df_CDS_Diagnosis %>%
 #   - Rules for classification of associated diagnosis entries are defined in customizable data object delivered with dsCCPhos
 #-------------------------------------------------------------------------------
 
+# Names of features that are required to compile rule calls from dsCCPhos::RuleSet_DiagnosisAssociation
+PredictorFeatures_DiagnosisAssociation <- c("ICD10Code",
+                                            "ICD10CodeShort",
+                                            "ICD10Group",
+                                            "ICDOTopographyCode",
+                                            "ICDOTopographyCodeShort",
+                                            "LocalizationSide",
+                                            "ICDOMorphologyCode",
+                                            "ICDOMorphologyCodeShort",
+                                            "Grading")
+
+# Compile rule calls (dplyr::case_when-Statements) dsCCPhos::CompileClassificationCall
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Call_IsLikelyAssociated <- CompileClassificationCall(TargetFeature = "IsLikelyAssociated",
+                                                     PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                     RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                     RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                     ValueIfNoRuleMet = FALSE)
+
+Call_InconsistencyCheck <- CompileClassificationCall(TargetFeature = "InconsistencyCheck",
+                                                     PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                     RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                     RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                     ValueIfNoRuleMet = "No apparent inconsistency")
+
+Call_ImplausibilityCheck <- CompileClassificationCall(TargetFeature = "ImplausibilityCheck",
+                                                      PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                      RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                      RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                      ValueIfNoRuleMet = "No apparent implausibility")
+
+Call_Relation_ICD10 <- CompileClassificationCall(TargetFeature = "Relation_ICD10",
+                                                 PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                 RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                 RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                 ValueIfNoRuleMet = NA_character_)
+
+Call_Relation_ICDOTopography <- CompileClassificationCall(TargetFeature = "Relation_ICDOTopography",
+                                                          PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                          RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                          RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                          ValueIfNoRuleMet = NA_character_)
+
+Call_Relation_LocalizationSide <- CompileClassificationCall(TargetFeature = "Relation_LocalizationSide",
+                                                            PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                            RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                            RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                            ValueIfNoRuleMet = NA_character_)
+
+Call_Relation_ICDOMorphology <- CompileClassificationCall(TargetFeature = "Relation_ICDOMorphology",
+                                                            PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                            RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                            RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                            ValueIfNoRuleMet = NA_character_)
+
+Call_Relation_Grading <- CompileClassificationCall(TargetFeature = "Relation_Grading",
+                                                   PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                   RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                   RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                   ValueIfNoRuleMet = NA_character_)
+
+Call_IsLikelyProgression <- CompileClassificationCall(TargetFeature = "IsLikelyProgression",
+                                                      PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                      RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                      RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                      ValueIfNoRuleMet = NA)
+
+Call_IsLikelyRecoding <- CompileClassificationCall(TargetFeature = "IsLikelyRecoding",
+                                                   PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
+                                                   RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
+                                                   RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                   ValueIfNoRuleMet = NA)
+
+
+# Make list of rule calls to pass them to function
+RuleCalls_DiagnosisAssociation <- list(IsLikelyAssociated = Call_IsLikelyAssociated,
+                                       InconsistencyCheck = Call_InconsistencyCheck,
+                                       ImplausibilityCheck = Call_ImplausibilityCheck,
+                                       Relation_ICD10 = Call_Relation_ICD10,
+                                       Relation_ICDOTopography = Call_Relation_ICDOTopography,
+                                       Relation_LocalizationSide = Call_Relation_LocalizationSide,
+                                       Relation_ICDOMorphology = Call_Relation_ICDOMorphology,
+                                       Relation_Grading = Call_Relation_Grading,
+                                       IsLikelyProgression = Call_IsLikelyProgression,
+                                       IsLikelyRecoding = Call_IsLikelyRecoding)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # Set up progress bar
 CountProgressItems <- df_CDS_Diagnosis %>% filter(PatientCountDistinctEntries > 1) %>% pull(PatientID) %>% n_distinct()
 ProgressBar <- progress_bar$new(format = "Classifying associated diagnosis entries [:bar] :percent in :elapsed  :spin",
@@ -705,9 +887,9 @@ ProgressBar <- progress_bar$new(format = "Classifying associated diagnosis entri
 df_Aux_Diagnosis_ClassifiedAssociations <- df_CDS_Diagnosis %>%
                                                 filter(PatientCountDistinctEntries > 1) %>%
                                                 group_by(PatientID) %>%
-                                                    group_modify(~ ClassifyDiagnosisAssociations(DiagnosisEntries = .x,
-                                                                                                 RulesProfile = RulesProfile_DiagnosisAssociation,
-                                                                                                 ProgressBarObject = ProgressBar)) %>%
+                                                    group_modify(~ ClassifyDiagnosisAssociation(DiagnosisEntries = .x,
+                                                                                                RuleCalls = RuleCalls_DiagnosisAssociation,
+                                                                                                ProgressBarObject = ProgressBar)) %>%
                                                 ungroup()
 
 # Reassemble df_CDS_Diagnosis after processing of associated diagnosis entries
@@ -742,6 +924,7 @@ df_Aux_Diagnosis_IDMappingRedundancies <- df_CDS_Diagnosis %>%
                                                               NewDiagnosisID = "DiagnosisID"))) %>%
                                               filter(OldDiagnosisID != NewDiagnosisID)
 
+df_Aux_Diagnosi
 
 
 # Get table to enhance other tables by information about associated diagnoses

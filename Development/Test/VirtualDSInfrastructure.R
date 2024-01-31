@@ -17,10 +17,10 @@ library(resourcer)
 
 
 
-load("./Development/Data/TestData/CCPTestData_A.RData")
-load("./Development/Data/TestData/CCPTestData_B.RData")
-load("./Development/Data/TestData/CCPTestData_C.RData")
-load("./Development/Data/TestData/CCPTestData_D.RData")
+# load("./Development/Data/TestData/CCPTestData_A.RData")
+# load("./Development/Data/TestData/CCPTestData_B.RData")
+# load("./Development/Data/TestData/CCPTestData_C.RData")
+# load("./Development/Data/TestData/CCPTestData_D.RData")
 
 
 load("./Development/Data/RealData/CCPTestData_Total.RData")
@@ -32,8 +32,7 @@ load("./Development/Data/RealData/CCPTestData_C.RData")
 
 Server_SiteTotal <- newDSLiteServer(tables = CCPTestData_Total,
                                     config = DSLite::defaultDSConfiguration(include = c("dsBase",
-                                                                                        "dsCCPhos",
-                                                                                        "dsSynthetic")))
+                                                                                        "dsCCPhos")))
 
 
 Server_SiteA <- newDSLiteServer(tables = CCPTestData_A,
@@ -91,13 +90,6 @@ CCPConnections <- DSI::datashield.login(logins = LoginData,
 datashield.tables(CCPConnections)
 
 
-# Test with ds.mean()
-Test <- ds.mean(x = "Patient$geburtsdatum",
-                type = "both",
-                datasources = CCPConnections)
-
-
-
 datashield.assign(CCPConnections, symbol = "BioSampling", value = "BioSampling")
 datashield.assign(CCPConnections, symbol = "Diagnosis", value = "Diagnosis")
 datashield.assign(CCPConnections, symbol = "Histology", value = "Histology")
@@ -109,6 +101,12 @@ datashield.assign(CCPConnections, symbol = "RadiationTherapy", value = "Radiatio
 datashield.assign(CCPConnections, symbol = "Staging", value = "Staging")
 datashield.assign(CCPConnections, symbol = "Surgery", value = "Surgery")
 datashield.assign(CCPConnections, symbol = "SystemicTherapy", value = "SystemicTherapy")
+
+
+# Test with ds.mean()
+Test <- ds.mean(x = "Metastasis$datum_fernmetastasen",
+                type = "both",
+                datasources = CCPConnections)
 
 
 
@@ -129,23 +127,23 @@ ds.list(x = c("BioSampling",
 
 
 # Get validation report of Raw Data Set (RDS)
-ValidationReportRDS <- ds.GetValidationReportDS_RawData(Name_RawDataSet = "RawDataSet",
-                                                        DataSources = CCPConnections)
+ValidationReportRDS <- ds.GetValidationReport_RawData(Name_RawDataSet = "RawDataSet",
+                                                      DataSources = CCPConnections)
 
 
 # Transform Raw Data Set (RDS) into Curated Data Set (CDS)
-ds.CurateData(Name_RawDataSet = "RawDataSet",
-              Name_Output = "CurationOutput",
-              DataSources = CCPConnections)
+dsCCPhosClient::ds.CurateData(Name_RawDataSet = "RawDataSet",
+                              Name_Output = "CurationOutput",
+                              DataSources = CCPConnections)
 
 
 # Get Curation reports
-CurationReports <- ds.CurationReport(Name_CurationOutput = "CurationOutput",
-                                     DataSources = CCPConnections)
+CurationReports <- ds.GetCurationReport(Name_CurationOutput = "CurationOutput",
+                                        DataSources = CCPConnections)
 
 
 # Get validation report of Curated Data Set (CDS)
-ValidationReportRDS <- ds.GetValidationReportDS_RawData(Name_RawDataSet = "RawDataSet",
+ValidationReportRDS <- ds.GetValidationReport_RawData(Name_RawDataSet = "RawDataSet",
                                                         DataSources = CCPConnections)
 
 
@@ -155,6 +153,12 @@ dsCCPhosClient::ds.AugmentData(Name_CurationOutput = "CurationOutput",
                                DataSources = CCPConnections)
 
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Log out from all servers
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DSI::datashield.logout(CCPConnections)
 
 
 

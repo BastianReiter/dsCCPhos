@@ -1,12 +1,12 @@
 
-#' ClassifyDiagnosisRedundancies
+#' ClassifyDiagnosisRedundancy
 #'
 #' Auxiliary function within \code{\link{CurateDataDS}}
 #'
 #' In patients with multiple diagnosis entries: Identify and classify redundant diagnosis entries.
 #'
 #' @param DiagnosisEntries Data frame (partially curated) that (usually) contains multiple diagnosis entries
-#' @param RulesProfile String | Profile name of rule set defined in \code{\link{RuleSet_DiagnosisRedundancies}
+#' @param RuleCalls List | List of unevaluated cplyr::case_when-Statements compiled from rules defined in \code{\link{RuleSet_DiagnosisRedundancy}
 #' @param ProgressBarObject Optionally pass object of type progress::progress_bar to display progress
 #'
 #' @return Data frame of classified redundant diagnosis entries
@@ -14,9 +14,9 @@
 #'
 #' @examples
 #' @author Bastian Reiter
-ClassifyDiagnosisRedundancies <- function(DiagnosisEntries,
-                                          RulesProfile = "Default",
-                                          ProgressBarObject = NULL)
+ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
+                                        RuleCalls,
+                                        ProgressBarObject = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     require(dplyr)
@@ -36,27 +36,19 @@ ClassifyDiagnosisRedundancies <- function(DiagnosisEntries,
     if (!is.null(ProgressBarObject)) { ProgressBarObject$tick() }
 
 
-    # Load meta data
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # a) Rule set for classification of redundant diagnosis entries
-    RuleSet_DiagnosisRedundancies <- dsCCPhos::RuleSet_DiagnosisRedundancies %>%
-                                          filter(Profile == RulesProfile)
-
-    # b) Vector of names of features that determine identification of redundant diagnosis entry
-    PredictorFeatures_DiagnosisRedundancies = c("InitialDiagnosisDate",
-                                                "ICD10Code",
-                                                "ICDOTopographyCode",
-                                                "LocalizationSide",
-                                                "HistologyDate",
-                                                "ICDOMorphologyCode",
-                                                "Grading")
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+    # Create vector of names of features that determine identification of redundant diagnosis entry
+    PredictorFeatures = c("InitialDiagnosisDate",
+                          "ICD10Code",
+                          "ICDOTopographyCode",
+                          "LocalizationSide",
+                          "HistologyDate",
+                          "ICDOMorphologyCode",
+                          "Grading")
 
     # Arrange diagnosis entries by InitialDiagnosisDate and lowest number of relevant NAs
     DiagnosisEntries <- DiagnosisEntries %>%
                             rowwise() %>%
-                            mutate(CountRelevantNAs = sum(is.na(across(all_of(PredictorFeatures_DiagnosisRedundancies))))) %>%
+                            mutate(CountRelevantNAs = sum(is.na(across(all_of(PredictorFeatures))))) %>%
                             ungroup() %>%
                             arrange(InitialDiagnosisDate, CountRelevantNAs)
 
@@ -70,7 +62,7 @@ ClassifyDiagnosisRedundancies <- function(DiagnosisEntries,
                       filter(DiagnosisID != Reference$DiagnosisID)
 
     # Add CountDeviatingValues (calculated below) to vector of predicting feature names
-    PredictorFeatures_DiagnosisRedundancies <- c("CountDeviatingValues", PredictorFeatures_DiagnosisRedundancies)
+    PredictorFeatures <- c("CountDeviatingValues", PredictorFeatures)
 
     # Initiation of Output data frame
     Output <- NULL
@@ -86,15 +78,12 @@ ClassifyDiagnosisRedundancies <- function(DiagnosisEntries,
             # Apply rules on identification of redundant diagnosis entries set by predefined data frame. Creates TRUE values in new variable 'IsLikelyRedundant'.
             Candidates <- Candidates %>%
                               rowwise() %>%
-                                  mutate(CountDeviatingValues = CountDeviations(CandidateEntry = pick(all_of(setdiff(PredictorFeatures_DiagnosisRedundancies, "CountDeviatingValues"))),
+                                  mutate(CountDeviatingValues = CountDeviations(CandidateEntry = pick(all_of(setdiff(PredictorFeatures, "CountDeviatingValues"))),
                                                                                 ReferenceEntry = Reference,
-                                                                                ComparedFeatures = setdiff(PredictorFeatures_DiagnosisRedundancies, "CountDeviatingValues"))) %>%
+                                                                                ComparedFeatures = setdiff(PredictorFeatures, "CountDeviatingValues"))) %>%
 
                               ungroup() %>%
-                              mutate(IsLikelyRedundant = eval(parse(text = CompileClassificationCall(TargetFeature = "IsLikelyRedundant",
-                                                                                                     PredictorFeatures = PredictorFeatures_DiagnosisRedundancies,
-                                                                                                     RuleSet = RuleSet_DiagnosisRedundancies,
-                                                                                                     ValueIfNoRuleMet = FALSE))))
+                              mutate(IsLikelyRedundant = eval(parse(text = RuleCalls[["IsLikelyRedundant"]])))
 
             # Filter for diagnoses classified as redundancies
             # Collect DiagnosisIDs and number of redundancies
@@ -109,7 +98,7 @@ ClassifyDiagnosisRedundancies <- function(DiagnosisEntries,
             JointDiagnosis <- bind_rows(Reference, Redundancies) %>%
                                   select(-c(CountDeviatingValues,
                                             IsLikelyRedundant)) %>%
-                                  fill(everything(), .direction = "down") %>%
+                                  fill(everything(), .direction = "down") %>%      # Partly responsible for slow function performance
                                   fill(everything(), .direction = "up") %>%
                                   filter(DiagnosisID == Reference$DiagnosisID)
 

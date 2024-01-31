@@ -53,15 +53,15 @@ use_data(RuleSet_DiagnosisAssociation, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta data: Diagnosis redundancies rule set
+# Meta data: Diagnosis redundancy rule set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RuleSet_DiagnosisRedundancies <- read_excel(path = "./Development/Data/MetaData/RuleSets.xlsx",
-                                            sheet = "DiagnosisRedundancies",
-                                            skip = 2)
+RuleSet_DiagnosisRedundancy <- read_excel(path = "./Development/Data/MetaData/RuleSets.xlsx",
+                                          sheet = "DiagnosisRedundancy",
+                                          skip = 2)
 
 # Save data in .rda-file and make it part of package
-use_data(RuleSet_DiagnosisRedundancies, overwrite = TRUE)
+use_data(RuleSet_DiagnosisRedundancy, overwrite = TRUE)
 
 
 
