@@ -25,10 +25,10 @@ CompileClassificationCall <- function(TargetFeature,
     require(stringr)
 
     # For testing purposes
-    TargetFeature <- "IsLikelyDuplicate"
-    PredictorFeatures <- PredictorFeatures_DiagnosisDuplicates
-    RuleSet <- RuleSet_DiagnosisDuplicates
-    ValueIfNoRuleMet <- FALSE
+    # TargetFeature <- "Relation_ICD10"
+    # PredictorFeatures <- PredictorFeatures_DiagnosisAssociation
+    # RuleSet <- RuleSet_DiagnosisAssociation
+    # ValueIfNoRuleMet <- NA_character_
 
     RelevantRules <- RuleSet %>%
                           filter(Feature == TargetFeature) %>%

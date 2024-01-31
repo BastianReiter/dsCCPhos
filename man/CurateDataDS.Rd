@@ -6,13 +6,16 @@
 \usage{
 CurateDataDS(
   Name_RawDataSet = "RawDataSet",
-  RulesProfile_DiagnosisAssociation = "Default"
+  RulesProfile_DiagnosisAssociation = "Default",
+  RulesProfile_DiagnosisRedundancies = "Default"
 )
 }
 \arguments{
 \item{Name_RawDataSet}{String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'}
 
 \item{RulesProfile_DiagnosisAssociation}{String | Profile name defining rule set to be used for classification of diagnosis association | Default: 'Default'}
+
+\item{RulesProfile_DiagnosisRedundancies}{String | Profile name defining rule set to be used for classification of diagnosis redundancies | Default: 'Default'}
 }
 \value{
 A list containing the Curated Data Set (CDS) and a curation report.

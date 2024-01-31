@@ -17,6 +17,7 @@ Imports:
     gt,
     gtExtras,
     lubridate,
+    progress,
     readr,
     readxl,
     RPostgres,

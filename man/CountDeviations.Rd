@@ -5,15 +5,15 @@
 \title{CountDeviations}
 \usage{
 CountDeviations(
-  ReferenceEntry,
   CandidateEntry,
+  ReferenceEntry,
   ComparedFeatures = colnames(ReferenceEntry)
 )
 }
 \arguments{
-\item{ReferenceEntry}{A data frame row}
+\item{CandidateEntry}{A data frame with one row}
 
-\item{CandidateEntry}{A data frame row}
+\item{ReferenceEntry}{A data frame with one row}
 
 \item{ComparedFeatures}{Vector}
 }

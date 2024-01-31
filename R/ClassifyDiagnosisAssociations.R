@@ -11,6 +11,7 @@
 #'                    \item "Rule-based" (Default)
 #'                    \item "ML-Model" }
 #' @param RulesProfile String | Profile name of rule set defined in \code{\link{RuleSet_DiagnosisAssociation}
+#' @param ProgressBarObject Optionally pass object of type progress::progress_bar to display progress
 #'
 #' @return Data frame enhanced with classified diagnosis associations
 #' @export
@@ -19,7 +20,8 @@
 #' @author Bastian Reiter
 ClassifyDiagnosisAssociations <- function(DiagnosisEntries,
                                           Method = "Rule-based",
-                                          RulesProfile = "Default")
+                                          RulesProfile = "Default",
+                                          ProgressBarObject = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     require(dplyr)
@@ -32,6 +34,11 @@ ClassifyDiagnosisAssociations <- function(DiagnosisEntries,
     # DiagnosisEntries <- df_CDS_Diagnosis %>% filter(PatientID == "Pat_10186")
     # RulesProfile = "Default"
     # print(DiagnosisEntries$DiagnosisID[1])
+
+
+    # Update progress bar object, if assigned in function call
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if (!is.null(ProgressBarObject)) { ProgressBarObject$tick() }
 
 
     # Load meta data
@@ -61,10 +68,10 @@ ClassifyDiagnosisAssociations <- function(DiagnosisEntries,
 
     # Enhance diagnosis entries by auxiliary variables
     DiagnosisEntries <- DiagnosisEntries %>%
-                            arrange(InitialDiagnosisDate) %>%
+                            arrange(InitialDiagnosisDate, HistologyDate) %>%
                             mutate(ICD10CodeShort = case_when(str_starts(ICD10Code, "C") ~ str_sub(ICD10Code, end = 3),
                                                               str_starts(ICD10Code, "D") ~ str_sub(ICD10Code, end = 5),
-                                                              TRUE ~ ICD10Code),
+                                                              TRUE ~ str_sub(ICD10Code, end = 3)),
                                    ICDOTopographyCodeShort = str_sub(ICDOTopographyCode, end = 3),
                                    ICDOMorphologyCodeShort = str_sub(ICDOMorphologyCode, end = 4)) %>%
                             left_join(Meta_ICD10Group, by = join_by(ICD10CodeShort))
@@ -72,10 +79,11 @@ ClassifyDiagnosisAssociations <- function(DiagnosisEntries,
 
     # First reference diagnosis
     Reference <- DiagnosisEntries %>%
-                      slice_min(tibble(InitialDiagnosisDate, HistologyDate)) %>%      # Select oldest diagnosis (or diagnoses)
+                      slice_min(InitialDiagnosisDate) %>%     # Select oldest diagnosis (or diagnoses)
                       arrange(desc(ICD10Code)) %>%      # If there are more than one diagnoses with the same date, prefer the one that starts with "D" over one that starts with "C" (to account for line in progression)
                       first() %>%
-                      mutate(ReferenceDiagnosisID = DiagnosisID)
+                      mutate(ReferenceDiagnosisID = DiagnosisID,
+                             IsLikelyAssociated = FALSE)
 
     # First set of candidates that are compared to reference diagnosis
     Candidates <- DiagnosisEntries %>%
@@ -112,25 +120,35 @@ ClassifyDiagnosisAssociations <- function(DiagnosisEntries,
                                                                                                      ValueIfNoRuleMet = "No apparent implausibility"))),
                                    Relation_ICD10 = eval(parse(text = CompileClassificationCall(TargetFeature = "Relation_ICD10",
                                                                                                 PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
-                                                                                                RuleSet = RuleSet_DiagnosisAssociation))),
+                                                                                                RuleSet = RuleSet_DiagnosisAssociation,
+                                                                                                ValueIfNoRuleMet = NA_character_))),
                                    Relation_ICDOTopography = eval(parse(text = CompileClassificationCall(TargetFeature = "Relation_ICDOTopography",
                                                                                                          PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
-                                                                                                         RuleSet = RuleSet_DiagnosisAssociation))),
+                                                                                                         RuleSet = RuleSet_DiagnosisAssociation,
+                                                                                                         ValueIfNoRuleMet = NA_character_))),
                                    Relation_LocalizationSide = eval(parse(text = CompileClassificationCall(TargetFeature = "Relation_LocalizationSide",
                                                                                                            PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
-                                                                                                           RuleSet = RuleSet_DiagnosisAssociation))),
+                                                                                                           RuleSet = RuleSet_DiagnosisAssociation,
+                                                                                                           ValueIfNoRuleMet = NA_character_))),
                                    Relation_ICDOMorphology = eval(parse(text = CompileClassificationCall(TargetFeature = "Relation_ICDOMorphology",
                                                                                                          PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
-                                                                                                         RuleSet = RuleSet_DiagnosisAssociation))),
+                                                                                                         RuleSet = RuleSet_DiagnosisAssociation,
+                                                                                                         ValueIfNoRuleMet = NA_character_))),
                                    Relation_Grading = eval(parse(text = CompileClassificationCall(TargetFeature = "Relation_Grading",
                                                                                                   PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
-                                                                                                  RuleSet = RuleSet_DiagnosisAssociation))),
+                                                                                                  RuleSet = RuleSet_DiagnosisAssociation,
+                                                                                                  ValueIfNoRuleMet = NA_character_))),
                                    IsLikelyProgression = eval(parse(text = CompileClassificationCall(TargetFeature = "IsLikelyProgression",
                                                                                                      PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                                                                      RuleSet = RuleSet_DiagnosisAssociation))),
                                    IsLikelyRecoding = eval(parse(text = CompileClassificationCall(TargetFeature = "IsLikelyRecoding",
                                                                                                   PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
-                                                                                                  RuleSet = RuleSet_DiagnosisAssociation))))
+                                                                                                  RuleSet = RuleSet_DiagnosisAssociation)))) %>%
+                      nest(Association = c(InconsistencyCheck,
+                                           ImplausibilityCheck,
+                                           starts_with(c("Relation")),
+                                           IsLikelyProgression,
+                                           IsLikelyRecoding))
 
 
         # Add both Reference diagnosis entry and associated diagnosis entries to Output data frame
@@ -141,8 +159,8 @@ ClassifyDiagnosisAssociations <- function(DiagnosisEntries,
         # Assign new reference diagnosis
         Reference <- Candidates %>%
                           filter(IsLikelyAssociated == FALSE) %>%
-                          slice_max(InitialDiagnosisDate) %>%
-                          arrange(ICD10Code) %>%
+                          slice_min(tibble(InitialDiagnosisDate, HistologyDate)) %>%
+                          arrange(desc(ICD10Code)) %>%      # If there are more than one diagnoses with the same date, prefer the one that starts with "D" over one that starts with "C" (to account for line in progression)
                           first() %>%
                           mutate(ReferenceDiagnosisID = DiagnosisID)
 
@@ -156,13 +174,8 @@ ClassifyDiagnosisAssociations <- function(DiagnosisEntries,
     Output <- Output %>%
                   select(-ICD10CodeShort,
                          -ICD10Group,
-                         -ICDOTopographyCodeShort)
-                  nest(Association = c(InconsistencyCheck,
-                                       ImplausibilityCheck,
-                                       starts_with(c("Relation")),
-                                       IsLikelyProgression,
-                                       IsLikelyRecoding)) %>%
-                  mutate(Association = ifelse(is.na(IsLikelyAssociated),
+                         -ICDOTopographyCodeShort) %>%
+                  mutate(Association = ifelse(IsLikelyAssociated == FALSE,
                                               list(),
                                               Association)) %>%
                   relocate(ReferenceDiagnosisID, .before = DiagnosisID)
