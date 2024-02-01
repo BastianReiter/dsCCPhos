@@ -270,7 +270,7 @@ ProgressBar$tick()
 # Transform df_CDS_Metastasis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_Metastasis <- df_CDS_Metastasis %>%
-                          mutate(MetastasisDiagnosisDate = format(ymd(MetastasisDiagnosisDate), format = "%m-%d-%Y"),
+                          mutate(MetastasisDiagnosisDate = as_date(ymd(MetastasisDiagnosisDate), format = "%m-%d-%Y"),
                                  #--------------------------------------------------
                                  HasMetastasis = as.logical(HasMetastasis),
                                  #--------------------------------------------------
@@ -283,7 +283,7 @@ ProgressBar$tick()
 # Transform df_CDS_MolecularDiagnostics
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
-                                    mutate(MolecularDiagnosticsDate = format(ymd(MolecularDiagnosticsDate), format = "%m-%d-%Y"))
+                                    mutate(MolecularDiagnosticsDate = as_date(ymd(MolecularDiagnosticsDate), format = "%m-%d-%Y"))
 
 ProgressBar$tick()
 
@@ -296,7 +296,7 @@ df_CDS_Patient <- df_CDS_Patient %>%
                                Gender = dsCCPhos::Recode(Gender, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "Gender"),
                                                                     set_names(Value_Curated, Value_Raw))),
                                #----------------------------------------------------
-                               LastVitalStatusDate = format(ymd(LastVitalStatusDate), format = "%m-%d-%Y"),
+                               LastVitalStatusDate = as_date(ymd(LastVitalStatusDate), format = "%m-%d-%Y"),
                                #----------------------------------------------------
                                LastVitalStatus = dsCCPhos::Recode(LastVitalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Patient" & FeatureName == "LastVitalStatus"),
                                                                                       set_names(Value_Curated, Value_Raw))))
@@ -307,7 +307,7 @@ ProgressBar$tick()
 # Transform df_CDS_Progress
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_Progress <- df_CDS_Progress %>%
-                        mutate(ProgressReportDate = format(ymd(ProgressReportDate), format = "%m-%d-%Y"),
+                        mutate(ProgressReportDate = as_date(ymd(ProgressReportDate), format = "%m-%d-%Y"),
                                #----------------------------------------------------
                                GlobalStatus = dsCCPhos::Recode(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Progress" & FeatureName == "GlobalStatus"),
                                                                                   set_names(Value_Curated, Value_Raw))),
@@ -333,8 +333,8 @@ df_CDS_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                        RadiationTherapyIntention = dsCCPhos::Recode(RadiationTherapyIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "RadiationTherapy" & FeatureName == "RadiationTherapyIntention"),
                                                                                                                   set_names(Value_Curated, Value_Raw))),
                                        #----------------------------------------
-                                       RadiationTherapyStart = format(ymd(RadiationTherapyStart), format = "%m-%d-%Y"),
-                                       RadiationTherapyEnd = format(ymd(RadiationTherapyEnd), format = "%m-%d-%Y"))
+                                       RadiationTherapyStart = as_date(ymd(RadiationTherapyStart), format = "%m-%d-%Y"),
+                                       RadiationTherapyEnd = as_date(ymd(RadiationTherapyEnd), format = "%m-%d-%Y"))
 
 ProgressBar$tick()
 
@@ -342,7 +342,7 @@ ProgressBar$tick()
 # Transform df_CDS_Staging
 #~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_Staging <- df_CDS_Staging %>%
-                      mutate(StagingReportDate = format(ymd(StagingReportDate), format = "%m-%d-%Y"),
+                      mutate(StagingReportDate = as_date(ymd(StagingReportDate), format = "%m-%d-%Y"),
                              #------------------------------------------------------
                              UICCStage = str_to_upper(UICCStage),
                              UICCStage = str_remove_all(UICCStage, " "),
@@ -448,8 +448,8 @@ df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                      SystemicTherapyRelationToSurgery = dsCCPhos::Recode(SystemicTherapyRelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "SystemicTherapy" & FeatureName == "SystemicTherapyRelationToSurgery"),
                                                                                                                                 set_names(Value_Curated, Value_Raw))),
                                      #------------------------------------------
-                                     SystemicTherapyStart = format(ymd(SystemicTherapyStart), format = "%m-%d-%Y"),
-                                     SystemicTherapyEnd = format(ymd(SystemicTherapyEnd), format = "%m-%d-%Y"))
+                                     SystemicTherapyStart = as_date(ymd(SystemicTherapyStart), format = "%m-%d-%Y"),
+                                     SystemicTherapyEnd = as_date(ymd(SystemicTherapyEnd), format = "%m-%d-%Y"))
 
 ProgressBar$tick()
 
@@ -710,6 +710,7 @@ ProgressBar$terminate()
 #   - Add auxiliary features for filtering purposes
 #-------------------------------------------------------------------------------
 
+# Create custom histology ID in case it is not contained in raw data
 df_CDS_Histology <- df_CDS_Histology %>%
                         mutate(HistologyID == row_number())
 
