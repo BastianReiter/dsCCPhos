@@ -56,7 +56,6 @@ library(devtools)
 
 # General / Auxiliary functions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# use_r("AdjustDiagnosisIDs")
 # use_r("AttritionTracker_Close")
 # use_r("AttritionTracker_Init")
 # use_r("AttritionTracker_Update")
@@ -72,12 +71,14 @@ library(devtools)
 # use_r("MakeTestDB")
 # use_r("LoadRawData")
 # use_r("Recode")
+# use_r("ReplaceDiagnosisIDs")
 # use_r("TrackFeatureValues")
 # use_r("XMLToDataModel")
 
 
 # dataSHIELD AGGREGATE functions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# use_r("GetCohortDescriptionDS")
 # use_r("GetCurationReportDS")
 # use_r("GetOutcomeMeasuresDS")
 # use_r("GetObjectInfoDS")

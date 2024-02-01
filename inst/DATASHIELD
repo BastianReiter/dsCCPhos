@@ -1,6 +1,7 @@
 AggregateMethods:
     GetCurationReportDS,
-    GetObjectInfoDS
+    GetObjectInfoDS,
+    GetValidationReportDS_RawData
 AssignMethods:
     AugmentDataDS,
     CurateDataDS

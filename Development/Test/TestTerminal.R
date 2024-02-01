@@ -15,10 +15,12 @@ RuleProfile_DiagnosisRedundancy = "Default"
 RuleProfile_DiagnosisAssociation = "Default"
 
 # Curate data
-CurationOutput <- dsCCPhos::CurateDataDS("RawDataSet")
+CurationOutput <- dsCCPhos::CurateDataDS(Name_RawDataSet = "RawDataSet",
+                                         RuleProfile_DiagnosisAssociation = "Default",
+                                         RuleProfile_DiagnosisRedundancy = "Default")
 
-# Save curated data set for test purposes
-#save(CurationOutput$CuratedDataSet, file = "./Development/Data/RealData/CCPCuratedDataSet.Rdata")
+# Save curated data set for testing purposes
+#save(CurationOutput, file = "./Development/Data/RealData/CCPCurationOutput.Rdata")
 
 # Augment data based on curation output
 AugmentationOutput <- dsCCPhos::AugmentDataDS("CurationOutput")

@@ -121,9 +121,10 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
 
     # Process Output data frame
     Output <- Output %>%
-                  select(-ICD10CodeShort,
-                         -ICD10Group,
-                         -ICDOTopographyCodeShort) %>%
+                  select(-c(ICD10CodeShort,
+                            ICD10Group,
+                            ICDOTopographyCodeShort,
+                            ICDOMorphologyCodeShort)) %>%
                   mutate(Association = ifelse(IsLikelyAssociated == FALSE,
                                               list(),
                                               Association)) %>%

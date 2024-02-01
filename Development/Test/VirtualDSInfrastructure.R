@@ -1,4 +1,9 @@
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Virtual dataSHIELD infrastructure for testing purposes -
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # Install own dataSHIELD packages
 #devtools::install_github(repo = "BastianReiter/dsCCPhos")
 #devtools::install_github(repo = "BastianReiter/dsCCPhosClient")
@@ -17,23 +22,30 @@ library(resourcer)
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Load test data in local environment
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # load("./Development/Data/TestData/CCPTestData_A.RData")
 # load("./Development/Data/TestData/CCPTestData_B.RData")
 # load("./Development/Data/TestData/CCPTestData_C.RData")
 # load("./Development/Data/TestData/CCPTestData_D.RData")
 
 
-load("./Development/Data/RealData/CCPTestData_Total.RData")
+#load("./Development/Data/RealData/CCPTestData_Total.RData")
 load("./Development/Data/RealData/CCPTestData_A.RData")
 load("./Development/Data/RealData/CCPTestData_B.RData")
 load("./Development/Data/RealData/CCPTestData_C.RData")
 
 
 
-Server_SiteTotal <- newDSLiteServer(tables = CCPTestData_Total,
-                                    config = DSLite::defaultDSConfiguration(include = c("dsBase",
-                                                                                        "dsCCPhos")))
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Setting up virtual servers with included test data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Server_SiteTotal <- newDSLiteServer(tables = CCPTestData_Total,
+#                                     config = DSLite::defaultDSConfiguration(include = c("dsBase",
+#                                                                                         "dsCCPhos")))
 
 Server_SiteA <- newDSLiteServer(tables = CCPTestData_A,
                                 config = DSLite::defaultDSConfiguration(include = c("dsBase",
@@ -47,7 +59,6 @@ Server_SiteC <- newDSLiteServer(tables = CCPTestData_C,
                                 config = DSLite::defaultDSConfiguration(include = c("dsBase",
                                                                                     "dsCCPhos")))
 
-
 # Check out some server properties
 Server_SiteA$config()
 Server_SiteA$profile()
@@ -56,13 +67,17 @@ Server_SiteA$aggregateMethods()
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Establish connection to virtual servers
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # Returns an environment
 LoginBuilder <- DSI::newDSLoginBuilder(.silent = FALSE)
 
 
-LoginBuilder$append(server = "SiteTotal",
-                    url = "Server_SiteTotal",
-                    driver = "DSLiteDriver")
+# LoginBuilder$append(server = "SiteTotal",
+#                     url = "Server_SiteTotal",
+#                     driver = "DSLiteDriver")
 
 LoginBuilder$append(server = "SiteA",
                     url = "Server_SiteA",
@@ -76,59 +91,93 @@ LoginBuilder$append(server = "SiteC",
                     url = "Server_SiteC",
                     driver = "DSLiteDriver")
 
-
-# Returns a data frame of login data to different Sites
+# Returns a data frame of login data to servers
 LoginData <- LoginBuilder$build()
-
 
 # Get list of DSConnection objects of all servers
 CCPConnections <- DSI::datashield.login(logins = LoginData,
                                         assign = TRUE)
 
 
-# List all available tables in Sites
-datashield.tables(CCPConnections)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Explore server configurations
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# List all available dataSHIELD methods on servers
+DSI::datashield.methods(conns = CCPConnections)
+
+# Alternatively use DSI::datashield.method_status() to get more comparable overview
+# AGGREGATE functions
+DSI::datashield.method_status(conns = CCPConnections,
+                              type = "aggregate")
+
+# ASSIGN functions
+DSI::datashield.method_status(conns = CCPConnections,
+                              type = "assign")
+
+# Get info about installed packages on servers
+DSI::datashield.pkg_status(conns = CCPConnections)
 
 
-datashield.assign(CCPConnections, symbol = "BioSampling", value = "BioSampling")
-datashield.assign(CCPConnections, symbol = "Diagnosis", value = "Diagnosis")
-datashield.assign(CCPConnections, symbol = "Histology", value = "Histology")
-datashield.assign(CCPConnections, symbol = "Metastasis", value = "Metastasis")
-datashield.assign(CCPConnections, symbol = "MolecularDiagnostics", value = "MolecularDiagnostics")
-datashield.assign(CCPConnections, symbol = "Patient", value = "Patient")
-datashield.assign(CCPConnections, symbol = "Progress", value = "Progress")
-datashield.assign(CCPConnections, symbol = "RadiationTherapy", value = "RadiationTherapy")
-datashield.assign(CCPConnections, symbol = "Staging", value = "Staging")
-datashield.assign(CCPConnections, symbol = "Surgery", value = "Surgery")
-datashield.assign(CCPConnections, symbol = "SystemicTherapy", value = "SystemicTherapy")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Prepare data objects in server R sessions
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Goal: Assignment of list object "RawDataSet" on all R server sessions
+#-------------------------------------------------------------------------------
+
+# Get overview of accessible tables on servers
+DSI::datashield.tables(conns = CCPConnections)
+
+# Get table names of CCP core data set
+CCPTableNames_Raw <- dsCCPhos::Meta_TableNames$TableName_Raw
+CCPTableNames_Curated <- dsCCPhos::Meta_TableNames$TableName_Curated
+
+# Check if all tables are accessible on all servers
+ls_TableCheck <- purrr::map(as.list(CCPTableNames_Curated),
+                            function(tbl)
+                            {
+                              datashield.table_status(conns = CCPConnections,
+                                                      table = tbl)
+                            })
+
+# Turn list into data.frame
+df_TableCheck <- do.call(rbind, ls_TableCheck)
 
 
-# Test with ds.mean()
+# Make tables from data repository accessible in R session
+for(i in 1:length(CCPTableNames_Curated))
+{
+  datashield.assign(conns = CCPConnections,
+                    symbol = CCPTableNames_Curated[i],
+                    value = CCPTableNames_Curated[i])
+}
+
+# Consolidate all raw data tables in one list object called "RawDataSet"
+ds.list(x = CCPTableNames_Curated,
+        newobj = "RawDataSet",
+        datasources = CCPConnections)
+
+# Make sure assignment was successful on all servers
+ds.GetObjectInfo(ObjectName = "RawDataSet",
+                 DataSources = CCPConnections)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Ready for working with dsCCPhos
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# First test with dsBase-function
 Test <- ds.mean(x = "Metastasis$datum_fernmetastasen",
                 type = "both",
                 datasources = CCPConnections)
 
 
-
-# Assign Raw Data Set (RDS) object
-ds.list(x = c("BioSampling",
-              "Diagnosis",
-              "Histology",
-              "Metastasis",
-              "MolecularDiagnostics",
-              "Patient",
-              "Progress",
-              "RadiationTherapy",
-              "Staging",
-              "Surgery",
-              "SystemicTherapy"),
-        newobj = "RawDataSet",
-        datasources = CCPConnections)
-
-
 # Get validation report of Raw Data Set (RDS)
-ValidationReportRDS <- ds.GetValidationReport_RawData(Name_RawDataSet = "RawDataSet",
-                                                      DataSources = CCPConnections)
+# ValidationReportRDS <- ds.GetValidationReport_RDS(Name_RawDataSet = "RawDataSet",
+#                                                       DataSources = CCPConnections)
 
 
 # Transform Raw Data Set (RDS) into Curated Data Set (CDS)
@@ -141,16 +190,23 @@ dsCCPhosClient::ds.CurateData(Name_RawDataSet = "RawDataSet",
 CurationReports <- ds.GetCurationReport(Name_CurationOutput = "CurationOutput",
                                         DataSources = CCPConnections)
 
+# Exemplary look at a curation report table
+View(CurationReports$SiteA$Monitor_Staging)
+
 
 # Get validation report of Curated Data Set (CDS)
-ValidationReportRDS <- ds.GetValidationReport_RawData(Name_RawDataSet = "RawDataSet",
-                                                        DataSources = CCPConnections)
+# ValidationReportCDS <- ds.GetValidationReport_CDS(Name_CurationOutput = "CurationOutput",
+#                                                   DataSources = CCPConnections)
 
 
-# Augment data (based on curated data)
+
+# Try out data augmentation method
 dsCCPhosClient::ds.AugmentData(Name_CurationOutput = "CurationOutput",
                                Name_Output = "AugmentationOutput",
                                DataSources = CCPConnections)
+
+
+
 
 
 
@@ -167,18 +223,18 @@ DSI::datashield.logout(CCPConnections)
 
 # Generate synthetic data using package dsSynthetic (which in turn makes use of packages synthpop and simstudy)
 
-library(dsSyntheticClient)
-
-SyntheticData <- ds.syn(data = "Diagnosis")
-
-                        method = "cart",
-                        m = 1,
-                        seed = 123)
-
-SyntheticData <- SyntheticData$SiteTotal$Warning
-
-
-SyntheticData
+# library(dsSyntheticClient)
+#
+# SyntheticData <- ds.syn(data = "Diagnosis")
+#
+#                         method = "cart",
+#                         m = 1,
+#                         seed = 123)
+#
+# SyntheticData <- SyntheticData$SiteTotal$Warning
+#
+#
+# SyntheticData
 
 
 

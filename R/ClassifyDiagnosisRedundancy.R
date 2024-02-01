@@ -91,7 +91,7 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
                               filter(IsLikelyRedundant == TRUE) %>%
                               mutate(CountRedundancies = n(),
                                      RedundantIDs = list(DiagnosisID),
-                                     RedundantOldIDs = list(OldDiagnosisID))
+                                     RedundantOriginalIDs = list(OriginalDiagnosisID))
 
             # If there are missings in Reference diagnosis, take values from redundant entries if available there
             # and consolidate in one joint diagnosis entry

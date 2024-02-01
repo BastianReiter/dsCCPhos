@@ -16,6 +16,32 @@ AugmentDataDS <- function(Name_CurationOutput = "CurationOutput")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# OVERVIEW
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#   SETUP
+#     - Evaluation and parsing of input
+#     - Loading of required package namespaces
+#     - Unpacking Curated Data Set (CDS)
+#
+#   MODUL 1)  Creation of df_ADS_Events
+#       - Diagnosis-related
+#       - Patient-related
+#
+#   MODUL 2)  Creation of df_ADS_Diagnosis
+#       - Consolidate information from df_ADS_Events
+#
+#   MODUL 3)  Creation of df_ADS_Patient
+#       - Consolidate information from df_ADS_Events and df_ADS_Diagnosis
+#
+
+
+#
+#
+#   Return statement
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -75,11 +101,6 @@ df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
 #                     \_______________/
 
 
-df_ADS_Patient <- df_CDS_Patient %>%
-                      left_join(df_CDS_Diagnosis, by = join_by(PatientID))
-
-
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Processing of CDS tables
@@ -128,9 +149,17 @@ df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Generate df_ADS_Events
+# MODUL 1)  Generate df_ADS_Events
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Diagnosis-related events
+
+
+# Set up progress bar
+CountProgressItems <- 14
+ProgressBar <- progress_bar$new(format = "Generating diagnosis-related events [:bar] :percent in :elapsed  :spin",
+                                total = CountProgressItems, clear = FALSE, width= 100)
+ProgressBar$tick()
+
 
 
 # Initiate df_ADS_Events, integrating patient-specific and initial diagnosis events
@@ -141,7 +170,7 @@ df_ADS_Events <- df_CDS_Patient %>%
                       right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
                       group_by(PatientID, DiagnosisID) %>%
                           mutate(EventType = "Point",
-                                 EventDate = InitialDiagnosisDate,
+                                 EventDate = as_date(InitialDiagnosisDate, format = "%m-%d-%Y"),
                                  EventDateEnd = NULL,      # For events of type "Period"
                                  EventClass = "Diagnosis",
                                  EventSubclass = "Initial diagnosis",
@@ -153,13 +182,15 @@ df_ADS_Events <- df_CDS_Patient %>%
                                  DiagnosisID,
                                  InitialDiagnosisDate,
                                  starts_with("Event"))
+ProgressBar$tick()
+
 
 # Initiation 2: Last known vital status
 df_Events_LastVitalStatus <- df_CDS_Patient %>%
                                   right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
                                   group_by(PatientID, DiagnosisID) %>%
                                       mutate(EventType = "Point",
-                                             EventDate = LastVitalStatusDate,
+                                             EventDate = as_date(LastVitalStatusDate, format = "%m-%d-%Y"),
                                              EventClass = "Vital Status",
                                              EventSubclass = case_when(LastVitalStatus == "Deceased" ~ "Death",
                                                                        LastVitalStatus == "Alive" ~ "Alive",
@@ -172,10 +203,13 @@ df_Events_LastVitalStatus <- df_CDS_Patient %>%
                                          DiagnosisID,
                                          InitialDiagnosisDate,
                                          starts_with("Event"))
+ProgressBar$tick()
+
 
 # Initiation 3: Row-bind data frames from Initiation 1 and 2
 df_ADS_Events <- df_ADS_Events %>%
                       bind_rows(df_Events_LastVitalStatus)
+ProgressBar$tick()
 
 
 
@@ -185,7 +219,7 @@ df_Events_BioSampling <- df_CDS_BioSampling %>%
                               group_by(PatientID) %>%
                                   arrange(SampleTakingDate, .by_group = TRUE) %>%
                                   mutate(EventType = "Point",
-                                         EventDate = SampleTakingDate,
+                                         EventDate = as_date(SampleTakingDate, format = "%m-%d-%Y"),
                                          EventClass = "Diagnostics",
                                          EventSubclass = "Sample Taking",
                                          EventRankWithinSubclass = row_number(),
@@ -201,6 +235,7 @@ df_Events_BioSampling <- df_CDS_BioSampling %>%
                               ungroup() %>%
                               select(PatientID,
                                      starts_with("Event"))
+ProgressBar$tick()
 
 
 
@@ -210,21 +245,22 @@ df_Events_Histology <- df_CDS_Histology %>%
                             group_by(PatientID, DiagnosisID) %>%
                                 arrange(HistologyDate, HistologyID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
-                                       EventDate = HistologyDate,
+                                       EventDate = as_date(HistologyDate, format = "%m-%d-%Y"),
                                        EventClass = "Diagnostics",
                                        EventSubclass = "Histology",
                                        EventRankWithinSubclass = row_number(),
                                        EventOrderSignificance = case_when(row_number() == 1 ~ "First Histology",
                                                                           row_number() == n() ~ "Last Histology",
                                                                           TRUE ~ NA)) %>%
-                                nest(EventDetails = c(ICDOMorphology,
-                                                      ICDOMorphologyCode,
+                                nest(EventDetails = c(ICDOMorphologyCode,
                                                       ICDOMorphologyVersion,
-                                                      Grading)) %>%
+                                                      Grading,
+                                                      ICDOMorphologyComment)) %>%
                             ungroup() %>%
                             select(PatientID,
                                    DiagnosisID,
                                    starts_with("Event"))
+ProgressBar$tick()
 
 
 
@@ -234,7 +270,7 @@ df_Events_Metastasis <- df_CDS_Metastasis %>%
                             group_by(PatientID, DiagnosisID) %>%
                                 arrange(MetastasisDiagnosisDate, MetastasisID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
-                                       EventDate = MetastasisDiagnosisDate,
+                                       EventDate = as_date(MetastasisDiagnosisDate, format = "%m-%d-%Y"),
                                        EventClass = "Diagnosis",
                                        EventSubclass = "Metastasis",
                                        EventRankWithinSubclass = row_number(),
@@ -247,6 +283,7 @@ df_Events_Metastasis <- df_CDS_Metastasis %>%
                             select(PatientID,
                                    DiagnosisID,
                                    starts_with("Event"))
+ProgressBar$tick()
 
 
 
@@ -256,7 +293,7 @@ df_Events_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
                                       group_by(PatientID, DiagnosisID) %>%
                                           arrange(MolecularDiagnosticsDate, .by_group = TRUE) %>%
                                           mutate(EventType = "Point",
-                                                 EventDate = MolecularDiagnosticsDate,
+                                                 EventDate = as_date(MolecularDiagnosticsDate, format = "%m-%d-%Y"),
                                                  EventClass = "Diagnostics",
                                                  EventSubclass = "Molecular Diagnostics",
                                                  EventRankWithinSubclass = row_number(),
@@ -270,6 +307,7 @@ df_Events_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
                                       select(PatientID,
                                              DiagnosisID,
                                              starts_with("Event"))
+ProgressBar$tick()
 
 
 
@@ -279,7 +317,7 @@ df_Events_Progress <- df_CDS_Progress %>%
                           group_by(PatientID, DiagnosisID) %>%
                               arrange(ProgressReportDate, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
-                                     EventDate = ProgressReportDate,
+                                     EventDate = as_date(ProgressReportDate, format = "%m-%d-%Y"),
                                      EventClass = "Diagnosis",
                                      EventSubclass = "Progress",
                                      EventRankWithinSubclass = row_number(),
@@ -295,6 +333,7 @@ df_Events_Progress <- df_CDS_Progress %>%
                           select(PatientID,
                                  DiagnosisID,
                                  starts_with("Event"))
+ProgressBar$tick()
 
 
 
@@ -304,8 +343,8 @@ df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                   group_by(PatientID, DiagnosisID) %>%
                                       arrange(RadiationTherapyStart, .by_group = TRUE) %>%
                                       mutate(EventType = "Period",
-                                             EventDate = RadiationTherapyStart,
-                                             EventDateEnd = RadiationTherapyEnd,
+                                             EventDate = as_date(RadiationTherapyStart, format = "%m-%d-%Y"),
+                                             EventDateEnd = as_date(RadiationTherapyEnd, format = "%m-%d-%Y"),
                                              EventClass = "Therapy",
                                              EventSubclass = "Radiation Therapy",
                                              EventRankWithinSubclass = row_number(),
@@ -318,6 +357,7 @@ df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                   select(PatientID,
                                          DiagnosisID,
                                          starts_with("Event"))
+ProgressBar$tick()
 
 
 
@@ -327,7 +367,7 @@ df_Events_Staging <- df_CDS_Staging %>%
                           group_by(PatientID, DiagnosisID) %>%
                               arrange(StagingReportDate, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
-                                     EventDate = StagingReportDate,
+                                     EventDate = as_date(StagingReportDate, format = "%m-%d-%Y"),
                                      EventClass = "Diagnosis",
                                      EventSubclass = "Staging",
                                      EventRankWithinSubclass = row_number(),
@@ -349,6 +389,7 @@ df_Events_Staging <- df_CDS_Staging %>%
                           select(PatientID,
                                  DiagnosisID,
                                  starts_with("Event"))
+ProgressBar$tick()
 
 
 
@@ -358,7 +399,7 @@ df_Events_Surgery <- df_CDS_Surgery %>%
                           group_by(PatientID, DiagnosisID) %>%
                               arrange(SurgeryDate, SurgeryID, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
-                                     EventDate = SurgeryDate,
+                                     EventDate = as_date(SurgeryDate, format = "%m-%d-%Y"),
                                      EventClass = "Therapy",
                                      EventSubclass = "Surgery",
                                      EventRankWithinSubclass = row_number(),
@@ -373,6 +414,7 @@ df_Events_Surgery <- df_CDS_Surgery %>%
                           select(PatientID,
                                  DiagnosisID,
                                  starts_with("Event"))
+ProgressBar$tick()
 
 
 
@@ -382,8 +424,8 @@ df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                   group_by(PatientID, DiagnosisID, SystemicTherapySubclass) %>%
                                       arrange(SystemicTherapyStart, .by_group = TRUE) %>%
                                       mutate(EventType = "Period",
-                                             EventDate = SystemicTherapyStart,
-                                             EventDateEnd = SystemicTherapyEnd,
+                                             EventDate = as_date(SystemicTherapyStart, format = "%m-%d-%Y"),
+                                             EventDateEnd = as_date(SystemicTherapyEnd, format = "%m-%d-%Y"),
                                              EventClass = "Therapy",
                                              EventSubclass = SystemicTherapySubclass,
                                              EventRankWithinSubclass = row_number(),
@@ -397,6 +439,8 @@ df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                   select(PatientID,
                                          DiagnosisID,
                                          starts_with("Event"))
+ProgressBar$tick()
+
 
 
 # Consolidate Event-oriented data from CDS tables
@@ -433,15 +477,27 @@ df_ADS_Events <- df_ADS_Events %>%
                              EventRankWithinSubclass,
                              EventOrderSignificance,
                              EventDetails)
+ProgressBar$tick()
+ProgressBar$terminate()
 
 
 
-Test <- df_ADS_Events %>%
-            unnest(cols = c(EventDetails))
+# Test <- df_ADS_Events %>%
+#             unnest(cols = c(EventDetails))
+
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Construct patient-specific endpoints for clinical outcome measures from event history
+# MODUL 2)  Generate df_ADS_Diagnosis
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# df_Events_Summary <- df_ADS_Events %>%
+#                           group_by(DiagnosisID) %>%
+#                               mutate(TimeDiagnosisToDeath = ifelse())
+
+
+# Construct diagnosis-related endpoints for clinical outcome measures from event history
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 #   - Overall survival (OS)
@@ -455,18 +511,39 @@ Test <- df_ADS_Events %>%
 #
 #
 
+df_DiagnosisSummary_Histology <- df_CDS_Histology %>%
+                                      group_by(DiagnosisID) %>%
+                                      summarize(CountSubdiagnoses = n_distinct(SubDiagnosisID),
+                                                CountHistologyReports = n_distinct(HistologyID))
 
 
-df_Events_Summary <- df_ADS_Events %>%
-                          group_by(PatientID) %>%
-                              mutate(TimeDiagnosisToDeath = ifelse())
+df_ADS_Diagnosis <- df_CDS_Diagnosis %>%
+                        left_join(df_DiagnosisSummary_Histology, by = join_by(DiagnosisID))
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MODUL 3)  Generate df_ADS_Patient
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+df_PatientSummary_Diagnosis <- df_CDS_Diagnosis %>%
+                                    group_by(PatientID) %>%
+                                    summarize(CountDiagnoses = n_distinct(DiagnosisID))
+
+
+df_ADS_Patient <- df_CDS_Patient %>%
+                       left_join(df_PatientSummary_Diagnosis, by = join_by(PatientID))
 
 
 
-return(list(ADS_Events = df_ADS_Events))
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# RETURN STATEMENT
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+return(list(ADS_Patient = df_ADS_Patient,
+            ADS_Diagnosis = df_ADS_Diagnosis,
+            ADS_Events = df_ADS_Events))
 }
 
 
