@@ -30,6 +30,7 @@ CurateDataDS <- function(Name_RawDataSet = "RawDataSet",
 #     - Transform feature names
 #     - Definition of features to monitor during value transformation
 #     - Value transforming operations
+#     - Compilation of curation report
 #
 #   MODUL 2)  Process diagnosis data
 #     - Joining of df_CDS_Diagnosis and df_CDS_Histology
@@ -38,7 +39,7 @@ CurateDataDS <- function(Name_RawDataSet = "RawDataSet",
 #     - Replace DiagnosisIDs in other tables
 #
 #
-#   Return statement
+#   Return list containing Curated Data Set (CDS) and Curation Report
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,7 +92,7 @@ ProgressBar$tick()
 ls_CuratedDataSet <- purrr::map(.x = names(RawDataSet),
                                 .f = function(TableName)
                                      {
-                                         # Create named vector to look up matching feature names in meta data
+                                         # Create named vector to look up matching feature names in meta data ("OldName = 'NewName'")
                                          vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Raw
                                          names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Curated
 
@@ -253,7 +254,9 @@ ProgressBar$tick()
 # Transform df_CDS_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_Histology <- df_CDS_Histology %>%
-                        mutate(HistologyID = as.integer(str_extract(HistologyID, "\\d+")),      # Extract integer number from string in HistologyID. Serves as surrogate for chronological order of events.
+                        mutate(HistologyID = ifelse("HistologyID" %in% names(df_CDS_Histology),      # If column exists, extract integer number from string in HistologyID. Serves as surrogate for chronological order of events.
+                                                    as.integer(str_extract(HistologyID, "\\d+")),
+                                                    NA),
                                #----------------------------------------------------
                                Grading = str_to_upper(Grading),
                                Grading = str_remove_all(Grading, " "),
@@ -415,7 +418,9 @@ ProgressBar$tick()
 # Transform df_CDS_Surgery
 #~~~~~~~~~~~~~~~~~~~~~~~~~
 df_CDS_Surgery <- df_CDS_Surgery %>%
-                      mutate(SurgeryID = as.integer(str_extract(SurgeryID, "\\d+")),      # Extract integer number from string in SurgeryID. Serves as surrogate for chronological order of events.
+                      mutate(SurgeryID = ifelse("SurgeryID" %in% names(df_CDS_Surgery),      # If column exists, extract integer number from string in SurgeryID. Serves as surrogate for chronological order of events.
+                                                as.integer(str_extract(SurgeryID, "\\d+")),
+                                                NA),
                              #----------------------------------------------------
                              SurgeryIntention = dsCCPhos::Recode(SurgeryIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, TableName_Curated == "Surgery" & FeatureName == "SurgeryIntention"),
                                                                                       set_names(Value_Curated, Value_Raw))),
@@ -704,6 +709,11 @@ ProgressBar$terminate()
 #   - Create composed ID ('DiagnosisID / HistologyID')
 #   - Add auxiliary features for filtering purposes
 #-------------------------------------------------------------------------------
+
+df_CDS_Histology <- df_CDS_Histology %>%
+                        mutate(HistologyID == row_number())
+
+
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         left_join(df_CDS_Histology, by = join_by(PatientID, DiagnosisID)) %>%
                         mutate(OriginalDiagnosisID = DiagnosisID,
@@ -782,6 +792,9 @@ CountPatientsWithRedundancies <- df_CDS_Diagnosis %>%
                                       filter(CountRedundancies > 0) %>%
                                       pull(PatientID) %>%
                                       n_distinct()
+
+# Output monitoring message
+cat("Found ", CountDiagnosisRedundancies, " redundancies related to ", CountPatientsWithRedundancies, " patient IDs.")
 
 
 # Replace IDs (Original DiagnosisID and not newly composed one) of redundant diagnosis entries in related tables
@@ -939,6 +952,9 @@ CountPatientsWithAssociatedDiagnoses <- df_Aux_Diagnosis_ClassifiedAssociations 
                                             filter(IsLikelyAssociated == TRUE) %>%
                                             pull(PatientID) %>%
                                             n_distinct()
+
+# Output monitoring message
+cat("Classified ", CountAssociatedDiagnoses, " associated diagnosis entries related to ", CountPatientsWithAssociatedDiagnoses, " patient IDs.")
 
 
 # Create table for DiagnosisID replacement in related tables

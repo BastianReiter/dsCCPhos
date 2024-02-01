@@ -11,13 +11,19 @@ DBConnection <- MakeTestDB(CCPTestData_Total)
 # Load raw test data from data base into WD
 RawDataSet <- LoadRawData(DBConnection)
 
-RuleProfile_DiagnosisRedundancy = "Default"
-RuleProfile_DiagnosisAssociation = "Default"
+View(RawDataSet$Diagnosis)
+
+# RuleProfile_DiagnosisRedundancy = "Default"
+# RuleProfile_DiagnosisAssociation = "Default"
 
 # Curate data
 CurationOutput <- dsCCPhos::CurateDataDS(Name_RawDataSet = "RawDataSet",
                                          RuleProfile_DiagnosisAssociation = "Default",
                                          RuleProfile_DiagnosisRedundancy = "Default")
+
+View(CurationOutput$CurationReport$Monitor_Staging)
+
+View(CurationOutput$CuratedDataSet$Diagnosis)
 
 # Save curated data set for testing purposes
 #save(CurationOutput, file = "./Development/Data/RealData/CCPCurationOutput.Rdata")
@@ -26,6 +32,14 @@ CurationOutput <- dsCCPhos::CurateDataDS(Name_RawDataSet = "RawDataSet",
 AugmentationOutput <- dsCCPhos::AugmentDataDS("CurationOutput")
 
 View(AugmentationOutput$ADS_Events)
+
+View(tidyr::unnest(AugmentationOutput$ADS_Events, cols = c(EventDetails)))
+
+View(AugmentationOutput$ADS_Diagnosis)
+
+View(AugmentationOutput$ADS_Patient)
+
+
 
 
 
