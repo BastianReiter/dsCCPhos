@@ -1,0 +1,12 @@
+name: Trigger DKTK RServer rebuild
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+    trigger-update:
+        runs-on: ubuntu-22.04
+
+        steps:
+          - run: curl -X POST --fail -F token=${{ secrets.R_SERVER_GITLAB_TOKEN }} -F ref=main https://git.verbis.dkfz.de/api/v4/projects/teiler%2Fdktk-rserver/trigger/pipeline
