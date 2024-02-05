@@ -1,53 +1,53 @@
 
 library(dplyr)
 library(readr)
+library(stringr)
 
 
-df_BioSampling <- read_csv(file = "./Development/Data/TestData/CSV/sample.csv",
-                           col_types = cols(entnahmedatum = col_date(),
-                                            status = col_character(),
-                                            projektbezeichnung = col_character(),
-                                            aliquot = col_character())) %>%
+
+df_BioSampling <- read_csv(file = "./Development/Data/TestData/CSV/sample/data.csv",
+                           col_types = cols(.default = "c")) %>%
                       rename("sample-id" = entity_id)
 
-df_Diagnosis <- read_csv(file = "./Development/Data/TestData/CSV/diagnosis.csv",
-                         col_types = cols("seitenlokalisation_nach_adt-gekid" = col_character())) %>%
+df_Diagnosis <- read_csv(file = "./Development/Data/TestData/CSV/diagnosis/data.csv",
+                         col_types = cols(.default = "c")) %>%
                     rename("diagnosis-id" = entity_id)
 
-df_Histology <- read_csv(file = "./Development/Data/TestData/CSV/histology.csv",
-                         col_types = cols(grading = col_character())) %>%
+df_Histology <- read_csv(file = "./Development/Data/TestData/CSV/histology/data.csv",
+                         col_types = cols(.default = "c")) %>%
                     rename("histology-id" = entity_id)
 
-df_Metastasis <- read_csv(file = "./Development/Data/TestData/CSV/metastasis.csv") %>%
+df_Metastasis <- read_csv(file = "./Development/Data/TestData/CSV/metastasis/data.csv",
+                          col_types = cols(.default = "c")) %>%
                       rename("metastasis-id" = entity_id)
 
-df_MolecularDiagnostics <- read_csv(file = "./Development/Data/TestData/CSV/molecular-marker.csv",
-                                    col_types = cols(zusaetzliche_alternative_dokumentation = col_character())) %>%
+df_MolecularDiagnostics <- read_csv(file = "./Development/Data/TestData/CSV/molecular-marker/data.csv",
+                                    col_types = cols(.default = "c")) %>%
                               rename("mol-marker-id" = entity_id)
 
-df_Patient <- read_csv(file = "./Development/Data/TestData/CSV/patient.csv",
-                       col_types = cols("dktk-id-global" = col_character(),
-                                        "dktk-id-lokal" = col_character(),
-                                        todesursachen = col_character())) %>%
+df_Patient <- read_csv(file = "./Development/Data/TestData/CSV/patient/data.csv",
+                       col_types = cols(.default = "c")) %>%
                   rename("patient-id" = entity_id)
 
-df_Progress <- read_csv(file = "./Development/Data/TestData/CSV/progress.csv") %>%
+df_Progress <- read_csv(file = "./Development/Data/TestData/CSV/progress/data.csv",
+                        col_types = cols(.default = "c")) %>%
                     rename("progress-id" = entity_id)
 
-df_RadiationTherapy <- read_csv(file = "./Development/Data/TestData/CSV/radiation-therapy.csv",
-                                col_types = cols(strahlentherapie_stellung_zu_operativer_therapie = col_character(),
-                                                 intention_strahlentherapie = col_character())) %>%
+df_RadiationTherapy <- read_csv(file = "./Development/Data/TestData/CSV/radiation-therapy/data.csv",
+                                col_types = cols(.default = "c")) %>%
                             rename("radiation-therapy-id" = entity_id)
 
-df_Staging <- read_csv(file = "./Development/Data/TestData/CSV/tnm.csv") %>%
+df_Staging <- read_csv(file = "./Development/Data/TestData/CSV/tnm/data.csv",
+                       col_types = cols(.default = "c")) %>%
                   rename("tnm-id" = entity_id)
 
-df_Surgery <- read_csv(file = "./Development/Data/TestData/CSV/surgery.csv",
-                       col_types = cols("ops-code" = col_character(),
-                                        "OPS-Version" = col_character())) %>%
+df_Surgery <- read_csv(file = "./Development/Data/TestData/CSV/surgery/data.csv",
+                       col_types = cols(.default = "c")) %>%
                   rename("surgery-id" = entity_id)
 
-df_SystemicTherapy <- read_csv(file = "./Development/Data/TestData/CSV/system-therapy.csv")
+df_SystemicTherapy <- read_csv(file = "./Development/Data/TestData/CSV/system-therapy/data.csv",
+                               col_types = cols(.default = "c")) %>%
+                          rename("systemic-therapy-id" = entity_id)
 
 
 
@@ -65,15 +65,13 @@ CCPTestData_Total <- list(BioSampling = df_BioSampling,
                           SystemicTherapy = df_SystemicTherapy)
 
 
-PatientsPerSite <- floor(nrow(df_Patient) / 4)
+PatientsPerSite <- floor(nrow(df_Patient) / 3)
 
 vc_PatientIDs_A <- sample(df_Patient$"patient-id", PatientsPerSite)
 df_Patient_Rest <- filter(df_Patient, !(df_Patient$"patient-id" %in% vc_PatientIDs_A))
 vc_PatientIDs_B <- sample(df_Patient_Rest$"patient-id", PatientsPerSite)
 df_Patient_Rest <- filter(df_Patient_Rest, !(df_Patient_Rest$"patient-id" %in% vc_PatientIDs_B))
 vc_PatientIDs_C <- sample(df_Patient_Rest$"patient-id", PatientsPerSite)
-df_Patient_Rest <- filter(df_Patient_Rest, !(df_Patient_Rest$"patient-id" %in% vc_PatientIDs_C))
-vc_PatientIDs_D <- sample(df_Patient_Rest$"patient-id", PatientsPerSite)
 
 
 
@@ -116,25 +114,10 @@ CCPTestData_C <- list(BioSampling = filter(df_BioSampling, df_BioSampling$"patie
                       SystemicTherapy = filter(df_SystemicTherapy, df_SystemicTherapy$"patient-id" %in% vc_PatientIDs_C))
 
 
-CCPTestData_D <- list(BioSampling = filter(df_BioSampling, df_BioSampling$"patient-id" %in% vc_PatientIDs_D),
-                      Diagnosis = filter(df_Diagnosis, df_Diagnosis$"patient-id" %in% vc_PatientIDs_D),
-                      Histology = filter(df_Histology, df_Histology$"patient-id" %in% vc_PatientIDs_D),
-                      Metastasis = filter(df_Metastasis, df_Metastasis$"patient-id" %in% vc_PatientIDs_D),
-                      MolecularDiagnostics = filter(df_MolecularDiagnostics, df_MolecularDiagnostics$"patient-id" %in% vc_PatientIDs_D),
-                      Patient = filter(df_Patient, df_Patient$"patient-id" %in% vc_PatientIDs_D),
-                      Progress = filter(df_Progress, df_Progress$"patient-id" %in% vc_PatientIDs_D),
-                      RadiationTherapy = filter(df_RadiationTherapy, df_RadiationTherapy$"patient-id" %in% vc_PatientIDs_D),
-                      Staging = filter(df_Staging, df_Staging$"patient-id" %in% vc_PatientIDs_D),
-                      Surgery = filter(df_Surgery, df_Surgery$"patient-id" %in% vc_PatientIDs_D),
-                      SystemicTherapy = filter(df_SystemicTherapy, df_SystemicTherapy$"patient-id" %in% vc_PatientIDs_D))
-
-
-
 save(CCPTestData_Total, file = "./Development/Data/TestData/CCPTestData_Total.Rdata")
 save(CCPTestData_A, file = "./Development/Data/TestData/CCPTestData_A.Rdata")
 save(CCPTestData_B, file = "./Development/Data/TestData/CCPTestData_B.Rdata")
 save(CCPTestData_C, file = "./Development/Data/TestData/CCPTestData_C.Rdata")
-save(CCPTestData_D, file = "./Development/Data/TestData/CCPTestData_D.Rdata")
 
 
 

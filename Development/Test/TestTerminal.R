@@ -3,7 +3,7 @@
 library(dsCCPhos)
 
 # Load test data into WD
-load("./Development/Data/RealData/CCPTestData_Total.RData")
+load("./Development/Data/TestData/CCPTestData_Total.RData")
 
 # Create virtual data base with test data
 DBConnection <- MakeTestDB(CCPTestData_Total)
@@ -11,15 +11,17 @@ DBConnection <- MakeTestDB(CCPTestData_Total)
 # Load raw test data from data base into WD
 RawDataSet <- LoadRawData(DBConnection)
 
-View(RawDataSet$Diagnosis)
+View(RawDataSet$MolecularDiagnostics)
 
-# RuleProfile_DiagnosisRedundancy = "Default"
-# RuleProfile_DiagnosisAssociation = "Default"
+RuleProfile_RawDataTransformation = "Default"
+RuleProfile_DiagnosisRedundancy = "Default"
+RuleProfile_DiagnosisAssociation = "Default"
 
 # Curate data
 CurationOutput <- dsCCPhos::CurateDataDS(Name_RawDataSet = "RawDataSet",
-                                         RuleProfile_DiagnosisAssociation = "Default",
-                                         RuleProfile_DiagnosisRedundancy = "Default")
+                                         RuleProfile_RawDataTransformation = "Default",
+                                         RuleProfile_DiagnosisRedundancy = "Default",
+                                         RuleProfile_DiagnosisAssociation = "Default")
 
 View(CurationOutput$CurationReport$Monitor_Staging)
 

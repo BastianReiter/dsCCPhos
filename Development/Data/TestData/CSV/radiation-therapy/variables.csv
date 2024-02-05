@@ -1,0 +1,8 @@
+"name","valueType","entityType","mimeType","unit","occurrenceGroup","repeatable","categories"
+"diagnosis-id","text","RadiationTherapy",,,,"false",""
+"patient-id","text","RadiationTherapy",,,,"false",""
+"strahlentherapie","text","RadiationTherapy",,,,"false",""
+"strahlentherapie_stellung_zu_operativer_therapie","text","RadiationTherapy",,,,"false",""
+"intention_strahlentherapie","text","RadiationTherapy",,,,"false",""
+"strahlentherapie_beginn","text","RadiationTherapy",,,,"false",""
+"strahlentherapie_ende","text","RadiationTherapy",,,,"false",""

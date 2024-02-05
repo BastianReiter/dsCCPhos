@@ -82,7 +82,7 @@
     <attribute csv-column="system-therapy-id" primary-key="true" opal-value-type="text" val-fhir-path="MedicationStatement.id" anonym="Sys" op="EXTRACT_RELATIVE_ID"/>
     <attribute csv-column="diagnosis-id" opal-value-type="text" val-fhir-path="MedicationStatement.reasonReference.reference.value" anonym="Dia"/>
     <attribute csv-column="patient-id" opal-value-type="text" val-fhir-path="MedicationStatement.subject.reference.value" anonym="Pat" />
-    <attribute csv-column="systemische_therapie_stellung_zu_operativer_therapie" opal-value-type="text" val-fhir-path="MedicationStatement.extension('http://dktk.dkfz.de/fhir/StructureDefinition/onco-core-Extension-StellungZurOp').value.coding.code.value"/>
+    <attribute csv-column="systemische_therapie_stellung_zu_op_therapie" opal-value-type="text" val-fhir-path="MedicationStatement.extension('http://dktk.dkfz.de/fhir/StructureDefinition/onco-core-Extension-StellungZurOp').value.coding.code.value"/>
     <attribute csv-column="intention_chemotherapie" opal-value-type="text" val-fhir-path="MedicationStatement.extension('http://dktk.dkfz.de/fhir/StructureDefinition/onco-core-Extension-SYSTIntention').value.coding.code.value"/>
     <attribute csv-column="therapieart" opal-value-type="text" val-fhir-path="MedicationStatement.category.coding.code.value"/>
     <attribute csv-column="systemische_therapie_beginn" opal-value-type="date" val-fhir-path="MedicationStatement.effective.start.value"/>

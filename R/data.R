@@ -76,6 +76,32 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# RuleSet_RawDataTransformation.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Meta data on rule-based transformation of raw data
+#'
+#' A tibble containing rules
+#'
+#' @format ## `RuleSet_RawDataTransformation`
+#' Tibble
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{Table}{}
+#'   \item{Feature}{}
+#'   \item{EvaluationOrder}{}
+#'   \item{Operation}{}
+#'   \item{REP_OriginalValue}{}
+#'   \item{REP_NewValue}{}
+#'   \item{Comment}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"RuleSet_RawDataTransformation"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Meta_TableNames.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -1,6 +1,0 @@
-"name","valueType","entityType","mimeType","unit","occurrenceGroup","repeatable","categories"
-"diagnosis-id","text","Metastasis",,,,"false",""
-"patient-id","text","Metastasis",,,,"false",""
-"datum_fernmetastasen","text","Metastasis",,,,"false",""
-"fernmetastasen_vorhanden","text","Metastasis",,,,"false",""
-"lokalisation_fernmetastasen","text","Metastasis",,,,"false",""

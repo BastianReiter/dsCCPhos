@@ -15,7 +15,7 @@ ReplaceDiagnosisIDs(Table, IDMapping)
 Data frame with replaced DiagnosisIDs
 }
 \description{
-After classification of redundant diagnosis entries, replace DiagnosisIDs in related table.
+After classification of redundant and associated diagnosis entries, replace DiagnosisIDs in related table.
 }
 \author{
 Bastian Reiter
