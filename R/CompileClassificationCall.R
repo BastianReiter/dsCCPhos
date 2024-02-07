@@ -1,7 +1,7 @@
 
 #' CompileClassificationCall
 #'
-#' Auxiliary function within \code{\link{ClassifyDiagnosisAssociations}}
+#' Auxiliary function within \code{\link{ClassifyDiagnosisAssociation}}
 #'
 #' Based on a predefined rule set data frame, compile a dplyr::case_when() expression and return it as a string
 #'
