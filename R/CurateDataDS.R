@@ -87,9 +87,12 @@ ProgressBar <- progress_bar$new(format = "Harmonizing data [:bar] :percent in :e
 ProgressBar$tick()
 
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Transform feature names
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ls_CuratedDataSet <- RawDataSet
 
 ls_CuratedDataSet <- purrr::map(.x = names(RawDataSet),
                                 .f = function(TableName)
@@ -106,6 +109,7 @@ ls_CuratedDataSet <- purrr::map(.x = names(RawDataSet),
 names(ls_CuratedDataSet) <- names(RawDataSet)
 
 ProgressBar$tick()
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -189,6 +193,7 @@ ls_MonitorFeatures_All <- list(ls_MonitorFeatures_BioSampling,
 ProgressBar$tick()
 
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MONITORING: Track feature values of raw data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -203,6 +208,7 @@ ls_Monitors_Raw <- purrr::map2(.x = ls_CuratedDataSet,
                                     })
 
 ProgressBar$tick()
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -444,6 +450,7 @@ ls_CuratedDataSet <- list(BioSampling = df_CDS_BioSampling,
 ProgressBar$tick()
 
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MONITORING: Track feature values after Transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -458,6 +465,7 @@ ls_Monitors_Transformed <- map2(.x = ls_CuratedDataSet,
                                      })
 
 ProgressBar$tick()
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -575,6 +583,7 @@ ls_CuratedDataSet <- list(BioSampling = df_CDS_BioSampling,
 ProgressBar$tick()
 
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MONITORING: Track Feature Values after Finalized Harmonization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -589,6 +598,7 @@ ls_Monitors_Final <- map2(.x = ls_CuratedDataSet,
                                })
 
 ProgressBar$tick()
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -637,6 +647,8 @@ ProgressBar$tick()
 ProgressBar$terminate()
 
 
+
+
 # df_CDS_Patient
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Clear redundant patient entries
@@ -668,7 +680,7 @@ ProgressBar$terminate()
 
 # Create custom histology ID in case it is not contained in raw data
 df_CDS_Histology <- df_CDS_Histology %>%
-                        mutate(HistologyID == row_number())
+                        mutate(HistologyID = row_number())
 
 
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
