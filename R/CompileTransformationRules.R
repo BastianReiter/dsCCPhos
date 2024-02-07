@@ -5,7 +5,7 @@
 #'
 #' Based on a predefined rule set data frame, compile argument expressions for dplyr::mutate()
 #'
-#' @param TargetTable String | Name of table that contains features to be transformed
+#' @param TableName String | Name of table that contains features to be transformed
 #' @param RuleSet Data frame | Contains predefined set of transformation rules
 #' @param RuleProfile String | Profile name stated in rule set data frame
 #'
@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' @author Bastian Reiter
-CompileTransformationRules <- function(TargetTable,
+CompileTransformationRules <- function(TableName,
                                        RuleSet,
                                        RuleProfile)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,14 +23,14 @@ CompileTransformationRules <- function(TargetTable,
     require(stringr)
 
     # For testing purposes
-    # TargetTable <- "Histology"
+    # TableName <- "Histology"
     # RuleSet <- dsCCPhos::RuleSet_RawDataTransformation
     # RuleProfile <- "Default"
 
 
     # Filter relevant rules from given rule set
     RelevantRules <- RuleSet %>%
-                          filter(Profile == RuleProfile & Table == TargetTable) %>%
+                          filter(Profile == RuleProfile & Table == TableName) %>%
                           arrange(EvaluationOrder)
 
     if (nrow(RelevantRules) == 0)

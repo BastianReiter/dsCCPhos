@@ -4,10 +4,10 @@
 \alias{CompileTransformationRules}
 \title{CompileTransformationRules}
 \usage{
-CompileTransformationRules(TargetTable, RuleSet, RuleProfile)
+CompileTransformationRules(TableName, RuleSet, RuleProfile)
 }
 \arguments{
-\item{TargetTable}{String | Name of table that contains features to be transformed}
+\item{TableName}{String | Name of table that contains features to be transformed}
 
 \item{RuleSet}{Data frame | Contains predefined set of transformation rules}
 

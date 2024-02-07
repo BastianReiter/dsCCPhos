@@ -25,7 +25,7 @@ TransformData <- function(DataFrame,
     # RuleProfile = "Default"
 
     # Compile rules with dsCCPhos::CompileTransformationRules
-    TransformationRules <- CompileTransformationRules(TargetTable = TableName,
+    TransformationRules <- CompileTransformationRules(TableName,
                                                       RuleSet,
                                                       RuleProfile)
 

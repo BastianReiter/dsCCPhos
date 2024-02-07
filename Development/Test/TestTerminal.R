@@ -3,10 +3,10 @@
 library(dsCCPhos)
 
 # Load test data into WD
-load("./Development/Data/TestData/CCPTestData_Total.RData")
+load("./Development/Data/TestData/CCPTestData_B.RData")
 
 # Create virtual data base with test data
-DBConnection <- MakeTestDB(CCPTestData_Total)
+DBConnection <- MakeTestDB(CCPTestData_B)
 
 # Load raw test data from data base into WD
 RawDataSet <- LoadRawData(DBConnection)
