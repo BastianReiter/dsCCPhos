@@ -1,7 +1,0 @@
-"name","valueType","entityType","mimeType","unit","occurrenceGroup","repeatable","categories"
-"diagnosis-id","text","MolecularMarker",,,,"false",""
-"patient-id","text","MolecularMarker",,,,"false",""
-"marker_datum","text","MolecularMarker",,,,"false",""
-"marker_name","text","MolecularMarker",,,,"false",""
-"marker_status","text","MolecularMarker",,,,"false",""
-"zusaetzliche_alternative_dokumentation","text","MolecularMarker",,,,"false",""

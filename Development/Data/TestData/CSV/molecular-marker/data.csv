@@ -1,5 +1,0 @@
-"entity_id","diagnosis-id","patient-id","marker_datum","marker_name","marker_status","zusaetzliche_alternative_dokumentation"
-"Mol_1",,"Pat_1","2020-01-14T08:55:50+01:00","BRA","Mutation",
-"Mol_2",,"Pat_1","2020-01-14T08:55:50+01:00","RAF","Mutation",
-"Mol_3",,"Pat_1","2020-01-14T08:55:50+01:00","BRAF","Mutation",
-"Mol_4","Dia_6","Pat_1","2020-09-03T15:27:14+02:00","falscherName","f",
