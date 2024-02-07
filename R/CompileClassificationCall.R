@@ -107,7 +107,7 @@ CompileClassificationCall <- function(TargetFeature,
                                    ")")
             }
 
-            # Sort out Block parts that are NA and consolidate in a string
+            # Sort out Block parts that are NA and consolidate in a single string
             Block <- paste0(vc_Blockparts[!is.na(vc_Blockparts)], collapse = "")
 
             # Add Block string to other Blocks

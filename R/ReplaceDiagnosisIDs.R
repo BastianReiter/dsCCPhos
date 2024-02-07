@@ -17,13 +17,16 @@ ReplaceDiagnosisIDs <- function(Table,
 {
     require(dplyr)
 
-    Table <- Table %>%
-                  left_join(IDMapping, by = join_by(PatientID,
-                                                    DiagnosisID == OldDiagnosisID)) %>%
-                  mutate(DiagnosisID = ifelse(!is.na(NewDiagnosisID),
-                                              NewDiagnosisID,
-                                              DiagnosisID)) %>%
-                  select(-NewDiagnosisID)
+    if (nrow(Table) > 0)
+    {
+        Table <- Table %>%
+                      left_join(IDMapping, by = join_by(PatientID,
+                                                        DiagnosisID == OldDiagnosisID)) %>%
+                      mutate(DiagnosisID = ifelse(!is.na(NewDiagnosisID),
+                                                  NewDiagnosisID,
+                                                  DiagnosisID)) %>%
+                      select(-NewDiagnosisID)
+    }
 
     return(Table)
 }

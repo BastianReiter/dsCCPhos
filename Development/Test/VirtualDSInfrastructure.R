@@ -26,16 +26,15 @@ library(resourcer)
 # Load test data in local environment
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# load("./Development/Data/TestData/CCPTestData_A.RData")
-# load("./Development/Data/TestData/CCPTestData_B.RData")
-# load("./Development/Data/TestData/CCPTestData_C.RData")
-# load("./Development/Data/TestData/CCPTestData_D.RData")
+load("./Development/Data/TestData/CCPTestData_A.RData")
+load("./Development/Data/TestData/CCPTestData_B.RData")
+load("./Development/Data/TestData/CCPTestData_C.RData")
 
 
 #load("./Development/Data/RealData/CCPTestData_Total.RData")
-load("./Development/Data/RealData/CCPTestData_A.RData")
-load("./Development/Data/RealData/CCPTestData_B.RData")
-load("./Development/Data/RealData/CCPTestData_C.RData")
+#load("./Development/Data/RealData/CCPTestData_A.RData")
+#load("./Development/Data/RealData/CCPTestData_B.RData")
+#load("./Development/Data/RealData/CCPTestData_C.RData")
 
 
 

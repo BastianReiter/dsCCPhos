@@ -40,6 +40,18 @@ use_data(Meta_ValueSets, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta data: Raw Data Transformation rule set
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+RuleSet_RawDataTransformation <- read_excel(path = "./Development/Data/MetaData/RuleSets.xlsx",
+                                            sheet = "RawDataTransformation")
+
+# Save data in .rda-file and make it part of package
+use_data(RuleSet_RawDataTransformation, overwrite = TRUE)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Meta data: Diagnosis association rule set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
