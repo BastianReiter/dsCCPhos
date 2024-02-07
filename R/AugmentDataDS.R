@@ -492,9 +492,9 @@ ProgressBar$terminate()
 # MODUL 2)  Generate df_ADS_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# df_Events_Summary <- df_ADS_Events %>%
-#                           group_by(DiagnosisID) %>%
-#                               mutate(TimeDiagnosisToDeath = ifelse())
+df_DiagnosisSummary_Events <- df_ADS_Events %>%
+                                  group_by(DiagnosisID) %>%
+                                      mutate(TimeDiagnosisToDeath = ifelse())
 
 
 # Construct diagnosis-related endpoints for clinical outcome measures from event history
