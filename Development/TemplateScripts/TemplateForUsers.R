@@ -1,15 +1,14 @@
 
 # Install own dataSHIELD packages
-#devtools::install_github(repo = "BastianReiter/dsCCPhos")
-#devtools::install_github(repo = "BastianReiter/dsCCPhosClient")
-
-
+devtools::install_github(repo = "BastianReiter/dsCCPhos")
+devtools::install_github(repo = "BastianReiter/dsCCPhosClient")
 
 # Load needed packages
 library(dsBaseClient)
 library(dsCCPhosClient)
 library(DSI)
 library(DSOpal)
+library(dsCCPhos)
 
 # Beam settings
 set_config(use_proxy(url = "http://beam-connect", port = 8062))
@@ -29,12 +28,12 @@ LoginBuilder <- DSI::newDSLoginBuilder(.silent = FALSE)
 # Append credentials for server "Sissy"
 LoginBuilder$append(server = "Sissy",
                     url = "https://dktk-datashield-test/opal/",
-                    token = "80e589f1-c670-413e-a593-3bbf6f64cf4b")
+                    token = "751b90dc-7440-4d73-b1a6-4af73106119b")
 
 # Append credentials for server "Franz"
 LoginBuilder$append(server = "Franz",
                     url = "https://dktk-test/opal/",
-                    token = "a02f3a81-1a49-48c8-9df2-c3225e564cc5")
+                    token = "5d5f914b-88da-4a19-935b-dd426db4f62e")
 
 # Returns a data frame of login data to different Sites
 LoginData <- LoginBuilder$build()
@@ -80,7 +79,7 @@ CCPTableNames_Raw <- dsCCPhos::Meta_TableNames$TableName_Raw
 CCPTableNames_Curated <- dsCCPhos::Meta_TableNames$TableName_Curated
 
 # Enter Opal project name
-ProjectName <- "PROJECT-."
+ProjectName <- "PROJECT-TEST_20231220_X1."
 
 # Check if all tables are accessible on all servers
 ls_TableCheck <- purrr::map(as.list(CCPTableNames_Raw),
@@ -125,6 +124,10 @@ ds.CurateData(Name_RawData = "RawDataSet",
               DataSources = CCPConnections)
 
 
+CurationReports <- dsCCPhosClient::ds.GetCurationReport(Name_CurationOutput = "CurationOutput",
+                                                        DataSources = CCPConnections)
+
+View(CurationReports$Sissy$Monitor_Staging)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,5 +135,4 @@ ds.CurateData(Name_RawData = "RawDataSet",
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DSI::datashield.logout(CCPConnections)
-
 

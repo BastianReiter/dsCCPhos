@@ -3,13 +3,13 @@
 #'
 #' Auxiliary function within \code{\link{CurateDataDS}}
 #'
-#' In patients with multiple diagnosis entries: Identify and classify redundant diagnosis entries.
+#' In patients with multiple diagnosis entries: Identify, classify and remove redundant diagnosis entries.
 #'
 #' @param DiagnosisEntries Data frame (partially curated) that (usually) contains multiple diagnosis entries
 #' @param RuleCalls List | List of unevaluated cplyr::case_when-Statements compiled from rules defined in \code{\link{RuleSet_DiagnosisRedundancy}
 #' @param ProgressBarObject Optionally pass object of type progress::progress_bar to display progress
 #'
-#' @return Data frame of classified redundant diagnosis entries
+#' @return Data frame of consolidated diagnosis entries
 #' @export
 #'
 #' @examples

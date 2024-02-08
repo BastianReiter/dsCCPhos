@@ -34,15 +34,19 @@ CurateDataDS <- function(Name_RawDataSet = "RawDataSet",
 #     - Value transforming operations
 #     - Compilation of curation report
 #
-#   MODUL 2)  Process diagnosis data
+#   MODUL 2) Process patient data
+#     - Remove redundant entries
+#
+#   MODUL 3)  Process diagnosis data
 #     - Joining of df_CDS_Diagnosis and df_CDS_Histology
 #     - Classification and removal of redundant diagnosis entries
 #     - Classification and bundling of associated diagnosis entries
-#     - Replace DiagnosisIDs in other tables
+#     - Update DiagnosisIDs in other tables
+#
+#   MODUL 4)  Process other tables
 #
 #
 #   Return list containing Curated Data Set (CDS) and Curation Report
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
@@ -648,6 +652,12 @@ ProgressBar$terminate()
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MODUL 2)  Process patient data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Removal of duplicated / redundant entries
+#-------------------------------------------------------------------------------
+
 
 # df_CDS_Patient
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -661,7 +671,7 @@ ProgressBar$terminate()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 2)  Process diagnosis data
+# MODUL 3)  Process diagnosis data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   A) Joining of df_CDS_Diagnosis and df_CDS_Histology to get coherent diagnosis data
 #   B) Classification and removal of redundant diagnosis entries
@@ -908,10 +918,15 @@ df_Aux_Diagnosis_ClassifiedAssociations <- df_CDS_Diagnosis %>%
 # Reassemble df_CDS_Diagnosis after processing of associated diagnosis entries
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         filter(PatientCountDistinctEntries == 1) %>%
-                        mutate(ReferenceDiagnosisID = DiagnosisID) %>%
+                        mutate(ReferenceDiagnosisID = DiagnosisID,
+                               IsLikelyAssociated = FALSE) %>%
                         bind_rows(df_Aux_Diagnosis_ClassifiedAssociations) %>%
+                        mutate(IsReferenceEntry = (ReferenceDiagnosisID == DiagnosisID),
+                                                  .after = DiagnosisID) %>%
                         arrange(PatientID) %>%
-                        relocate(c(PatientID, ReferenceDiagnosisID), .before = DiagnosisID)
+                        relocate(c(PatientID, ReferenceDiagnosisID), .before = DiagnosisID) %>%
+                        rename(all_of(c(SubDiagnosisID = "DiagnosisID",
+                                        DiagnosisID = "ReferenceDiagnosisID")))
 
 # For monitoring purposes, obtain:
 # a) number of associated diagnosis entries and
@@ -929,35 +944,73 @@ cat("Classified ", CountAssociatedDiagnoses, " associated diagnosis entries rela
 # Create table for DiagnosisID replacement in related tables
 df_Aux_Diagnosis_IDMappingAssociations <- df_CDS_Diagnosis %>%
                                               ungroup() %>%
-                                              select(PatientID, OriginalDiagnosisID, ReferenceDiagnosisID) %>%
+                                              select(PatientID, OriginalDiagnosisID, DiagnosisID, SubDiagnosisID) %>%
                                               rename(all_of(c(OldDiagnosisID = "OriginalDiagnosisID",
-                                                              NewDiagnosisID = "ReferenceDiagnosisID"))) %>%
+                                                              NewDiagnosisID = "DiagnosisID"))) %>%
                                               distinct()
 
-# Replace DiagnosisIDs in all related tables with ReferenceDiagnosisID to associate entries
-df_CDS_Metastasis <- df_CDS_Metastasis %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations)
-df_CDS_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations)
-df_CDS_Progress <- df_CDS_Progress %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations)
-df_CDS_RadiationTherapy <- df_CDS_RadiationTherapy %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations)
-df_CDS_Staging <- df_CDS_Staging %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations)
-df_CDS_Surgery <- df_CDS_Surgery %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations)
-df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations)
+# Update related tables
+#~~~~~~~~~~~~~~~~~~~~~~
+#     - Replace DiagnosisIDs to associate entries (and add SubDiagnosisIDs in same move)
+#     - Rearrange column order
+#----------------------
+df_CDS_Metastasis <- df_CDS_Metastasis %>%
+                          ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                          relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = MetastasisID)
+
+if (nrow(df_CDS_MolecularDiagnostics) > 0)
+{
+    df_CDS_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
+                                        ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                                        relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = MolecularDiagnosticsID)
+}
+
+df_CDS_Progress <- df_CDS_Progress %>%
+                        ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                        relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = ProgressID)
+
+df_CDS_RadiationTherapy <- df_CDS_RadiationTherapy %>%
+                                ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                                relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = RadiationTherapyID)
+
+df_CDS_Staging <- df_CDS_Staging %>%
+                      ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                      relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = StagingID)
+
+df_CDS_Surgery <- df_CDS_Surgery %>%
+                      ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                      relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = SurgeryID)
+
+df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
+                              ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                              relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = SystemicTherapyID)
 
 
 
-# D) Rename columns in df_CDS_Diagnosis and reconstruct df_CDS_Histology from df_CDS_Diagnosis
+# D) Reconstruct df_CDS_Histology from df_CDS_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Remove OriginalDiagnosisID column (not needed anymore)
 df_CDS_Diagnosis <-  df_CDS_Diagnosis %>%
-                          select(-OriginalDiagnosisID) %>%
-                          rename(all_of(c(SubDiagnosisID = "DiagnosisID",
-                                          DiagnosisID = "ReferenceDiagnosisID")))
+                          select(-OriginalDiagnosisID)
 
 # Reconstruct df_CDS_Histology
 df_CDS_Histology <- df_CDS_Diagnosis %>%
                         select(all_of(c("SubDiagnosisID", names(df_CDS_Histology)))) %>%
                         relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = HistologyID)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MODUL 4)  Process other tables
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Remove redundant entries
+#-------------------------------------------------------------------------------
+
+
+#  -  Still To Do  -
+
+
 
 
 

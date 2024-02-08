@@ -27,7 +27,7 @@ CompileClassificationCall(
 String containing an unevaluated dplyr::case_when() expression
 }
 \description{
-Auxiliary function within \code{\link{ClassifyDiagnosisAssociations}}
+Auxiliary function within \code{\link{ClassifyDiagnosisAssociation}}
 }
 \details{
 Based on a predefined rule set data frame, compile a dplyr::case_when() expression and return it as a string
