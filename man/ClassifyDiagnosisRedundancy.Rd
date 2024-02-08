@@ -16,13 +16,13 @@ ClassifyDiagnosisRedundancy(
 \item{ProgressBarObject}{Optionally pass object of type progress::progress_bar to display progress}
 }
 \value{
-Data frame of classified redundant diagnosis entries
+Data frame of consolidated diagnosis entries
 }
 \description{
 Auxiliary function within \code{\link{CurateDataDS}}
 }
 \details{
-In patients with multiple diagnosis entries: Identify and classify redundant diagnosis entries.
+In patients with multiple diagnosis entries: Identify, classify and remove redundant diagnosis entries.
 }
 \author{
 Bastian Reiter

@@ -11,7 +11,7 @@ DBConnection <- MakeTestDB(CCPTestData_B)
 # Load raw test data from data base into WD
 RawDataSet <- LoadRawData(DBConnection)
 
-View(RawDataSet$MolecularDiagnostics)
+View(RawDataSet$Metastasis)
 
 RuleProfile_RawDataTransformation = "Default"
 RuleProfile_DiagnosisRedundancy = "Default"
@@ -28,7 +28,7 @@ View(CurationOutput$CurationReport$Monitor_Staging)
 View(CurationOutput$CuratedDataSet$Diagnosis)
 
 # Save curated data set for testing purposes
-#save(CurationOutput, file = "./Development/Data/RealData/CCPCurationOutput.Rdata")
+#save(CurationOutput, file = "./Development/Data/TestData/CCPCurationOutput.Rdata")
 
 # Augment data based on curation output
 AugmentationOutput <- dsCCPhos::AugmentDataDS("CurationOutput")

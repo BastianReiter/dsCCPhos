@@ -5,12 +5,19 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Install own dataSHIELD packages
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #devtools::install_github(repo = "BastianReiter/dsCCPhos")
 #devtools::install_github(repo = "BastianReiter/dsCCPhosClient")
 #devtools::install_github(repo = "BastianReiter/TinkerLab")
 
+# Install additional datashield-packages
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #devtools::install_github("tombisho/dsSynthetic", dependencies = TRUE)
 #devtools::install_github("tombisho/dsSyntheticClient", dependencies = TRUE)
+
+#devtools::install_github("neelsoumya/dsSurvival")
+#devtools::install_github("neelsoumya/dsSurvivalClient")
+
 
 # Load needed packages
 library(dsBase)
@@ -18,7 +25,6 @@ library(dsBaseClient)
 library(dsCCPhos)
 library(dsCCPhosClient)
 library(DSLite)
-library(resourcer)
 
 
 
@@ -150,7 +156,8 @@ for(i in 1:length(CCPTableNames_Curated))
 {
   datashield.assign(conns = CCPConnections,
                     symbol = CCPTableNames_Curated[i],
-                    value = CCPTableNames_Curated[i])
+                    value = CCPTableNames_Curated[i],
+                    id.name = "_id")
 }
 
 # Consolidate all raw data tables in one list object called "RawDataSet"
@@ -203,6 +210,7 @@ View(CurationReports$SiteA$Monitor_Staging)
 dsCCPhosClient::ds.AugmentData(Name_CurationOutput = "CurationOutput",
                                Name_Output = "AugmentationOutput",
                                DataSources = CCPConnections)
+
 
 
 
