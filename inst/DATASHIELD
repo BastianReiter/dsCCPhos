@@ -1,7 +1,10 @@
 AggregateMethods:
+    GetCohortDescriptionDS,
     GetCurationReportDS,
     GetObjectInfoDS,
     GetValidationReportDS_RawData
 AssignMethods:
     AugmentDataDS,
-    CurateDataDS
+    CurateDataDS,
+    UnpackAugmentedDataSetDS,
+    UnpackCuratedDataSetDS

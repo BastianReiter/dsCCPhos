@@ -28,14 +28,12 @@ AugmentDataDS <- function(Name_CurationOutput = "CurationOutput")
 #       - Diagnosis-related
 #       - Patient-related
 #
-#   MODUL 2)  Creation of df_ADS_Diagnosis
+#   MODUL 2)  Creation of df_ADS_Diagnoses
 #       - Consolidate information from df_ADS_Events
 #
-#   MODUL 3)  Creation of df_ADS_Patient
-#       - Consolidate information from df_ADS_Events and df_ADS_Diagnosis
+#   MODUL 3)  Creation of df_ADS_Patients
+#       - Consolidate information from df_ADS_Events and df_ADS_Diagnoses
 #
-
-
 #
 #
 #   Return statement
@@ -89,11 +87,11 @@ df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
 # Augmented Data Set (ADS)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                      ________________
-#                     / df_ADS_Patient \
+#                     / df_ADS_Patients \
 #                     \________________/
 #
 #                      __________________
-#                     / df_ADS_Diagnosis \
+#                     / df_ADS_Diagnoses \
 #                     \__________________/
 #
 #                      _______________
@@ -158,14 +156,14 @@ df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MODUL 1)  Generate df_ADS_Events
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Diagnosis-related events
 
 
-# Set up progress bar
+#--- Set up progress bar -------------------------------------------------------
 CountProgressItems <- 14
 ProgressBar <- progress_bar$new(format = "Generating diagnosis-related events [:bar] :percent in :elapsed  :spin",
-                                total = CountProgressItems, clear = FALSE, width= 100)
+                                total = CountProgressItems, clear = FALSE, width = 100)
 ProgressBar$tick()
+#-------------------------------------------------------------------------------
 
 
 
@@ -285,7 +283,7 @@ df_Events_Metastasis <- df_CDS_Metastasis %>%
                                                                           row_number() == n() ~ "Last Metastasis Diagnosis",
                                                                           TRUE ~ NA)) %>%
                                 nest(EventDetails = c(HasMetastasis,
-                                                       MetastasisLocalization)) %>%
+                                                      MetastasisLocalization)) %>%
                             ungroup() %>%
                             select(PatientID,
                                    DiagnosisID,
@@ -467,10 +465,13 @@ df_ADS_Events <- df_ADS_Events %>%
                                 df_Events_Staging,
                                 df_Events_Surgery,
                                 df_Events_SystemicTherapy) %>%
+                      group_by(PatientID) %>%
+                          fill(DateOfBirth,
+                               .direction = "downup") %>%
                       group_by(PatientID, DiagnosisID) %>%
                           arrange(EventDate, .by_group = TRUE) %>%
-                          fill(DateOfBirth,
-                               InitialDiagnosisDate) %>%
+                          fill(InitialDiagnosisDate,
+                               .direction = "downup") %>%
                           mutate(EventRank = row_number(),
                                  EventDaysSinceDiagnosis = round(as.numeric(difftime(EventDate, InitialDiagnosisDate, units = "days")), digits = 1),
                                  EventPatientAge = floor(time_length(difftime(EventDate, DateOfBirth), unit = "years"))) %>%
@@ -504,8 +505,18 @@ ProgressBar$terminate()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 2)  Generate df_ADS_Diagnosis
+# MODUL 2)  Generate df_ADS_Diagnoses
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#--- Set up progress bar -------------------------------------------------------
+CountProgressItems <- 4
+ProgressBar <- progress_bar$new(format = "Composing diagnosis-specific data [:bar] :percent in :elapsed  :spin",
+                                total = CountProgressItems, clear = FALSE, width = 100)
+ProgressBar$tick()
+#-------------------------------------------------------------------------------
+
+
 
 df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
                                       unnest(cols = c(EventDetails)) %>%
@@ -514,15 +525,26 @@ df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
                                                                             ProgressBarObject = NULL)) %>%
                                       ungroup()
 
+ProgressBar$tick()
+
 
 df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
-                            left_join(df_CDS_Staging, join_by(PatientID, DiagnosisID, SubDiagnosisID))
+                            left_join(df_CDS_Staging, by = join_by(PatientID, DiagnosisID, SubDiagnosisID)) %>%
+                            group_by(DiagnosisID) %>%
+                                arrange(StagingReportDate) %>%
+                                slice_head() %>%
+                            ungroup()
+
+ProgressBar$tick()
 
 
-df_ADS_Diagnosis <- df_Aux_DiagnosisData %>%
-                        left_join(df_Aux_DiagnosisSummary_Events) %>%
+df_ADS_Diagnoses <- df_Aux_DiagnosisData %>%
+                        left_join(df_Aux_DiagnosisSummary_Events, by = join_by(PatientID, DiagnosisID)) %>%
                         filter(is.na(TimeDiagnosisToDeath) | TimeDiagnosisToDeath >= 0) %>%
                         ungroup()
+
+ProgressBar$tick()
+ProgressBar$terminate()
 
 
 
@@ -546,23 +568,43 @@ df_ADS_Diagnosis <- df_Aux_DiagnosisData %>%
 #                                                 CountHistologyReports = n_distinct(HistologyID))
 #
 #
-# df_ADS_Diagnosis <- df_CDS_Diagnosis %>%
+# df_ADS_Diagnoses <- df_CDS_Diagnosis %>%
 #                         left_join(df_DiagnosisSummary_Histology, by = join_by(DiagnosisID))
 #
 #
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 3)  Generate df_ADS_Patient
+# MODUL 3)  Generate df_ADS_Patients
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-df_PatientSummary_Diagnosis <- df_CDS_Diagnosis %>%
-                                    group_by(PatientID) %>%
-                                    summarize(CountDiagnoses = n_distinct(DiagnosisID))
+#--- Set up progress bar -------------------------------------------------------
+CountProgressItems <- 3
+ProgressBar <- progress_bar$new(format = "Composing patient-specific data [:bar] :percent in :elapsed  :spin",
+                                total = CountProgressItems, clear = FALSE, width = 100)
+ProgressBar$tick()
+#-------------------------------------------------------------------------------
 
 
-df_ADS_Patient <- df_CDS_Patient %>%
-                       left_join(df_PatientSummary_Diagnosis, by = join_by(PatientID))
+
+df_Aux_PatientSummary_Diagnosis <- df_CDS_Diagnosis %>%
+                                        group_by(PatientID) %>%
+                                            summarize(CountDiagnoses = n_distinct(DiagnosisID)) %>%
+                                        ungroup()
+
+ProgressBar$tick()
+
+
+df_ADS_Patients <- df_CDS_Patient %>%
+                        left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID)) %>%
+                        left_join(df_ADS_Diagnoses, by = join_by(PatientID)) %>%
+                        group_by(PatientID) %>%
+                            arrange(InitialDiagnosisDate) %>%
+                            slice_head() %>%
+                        ungroup()
+
+ProgressBar$tick()
+ProgressBar$terminate()
 
 
 
@@ -570,9 +612,9 @@ df_ADS_Patient <- df_CDS_Patient %>%
 # RETURN STATEMENT
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-return(list(ADS_Patient = df_ADS_Patient,
-            ADS_Diagnosis = df_ADS_Diagnosis,
-            ADS_Events = df_ADS_Events))
+return(list(Patients = df_ADS_Patients,
+            Diagnoses = df_ADS_Diagnoses,
+            Events = df_ADS_Events))
 }
 
 

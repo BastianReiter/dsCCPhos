@@ -28,22 +28,23 @@ CurateDataDS <- function(Name_RawDataSet = "RawDataSet",
 #     - Evaluation and parsing of input
 #     - Loading of required package namespaces
 #
-#   MODUL 1)  Data Harmonization / Transformation
+#   MODUL 1)  Transformation of feature names
+#
+#   MODUL 2)  Primary table cleaning
+#     - Remove entries that are not linked to related tables
+#     - Remove duplicate entries
+#
+#   MODUL 3)  Data Harmonization / Transformation
 #     - Transform feature names
 #     - Definition of features to monitor during value transformation
 #     - Value transforming operations
 #     - Compilation of curation report
 #
-#   MODUL 2) Process patient data
-#     - Remove redundant entries
-#
-#   MODUL 3)  Process diagnosis data
+#   MODUL 4)  Process diagnosis data
 #     - Joining of df_CDS_Diagnosis and df_CDS_Histology
 #     - Classification and removal of redundant diagnosis entries
 #     - Classification and bundling of associated diagnosis entries
 #     - Update DiagnosisIDs in other tables
-#
-#   MODUL 4)  Process other tables
 #
 #
 #   Return list containing Curated Data Set (CDS) and Curation Report
@@ -63,7 +64,7 @@ else
 }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# - Start of function proceedings -
+# Package requirements and global settings
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Use require() to load package namespaces
@@ -80,24 +81,13 @@ require(tidyr)
 options(dplyr.summarise.inform = FALSE)
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 1)  Data Harmonization / Transformation
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Set up progress bar
-CountProgressItems <- 29
-ProgressBar <- progress_bar$new(format = "Harmonizing data [:bar] :percent in :elapsed  :spin",
-                                total = CountProgressItems, clear = FALSE, width= 100)
-ProgressBar$tick()
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Transform feature names
+# MODUL 1)  Transformation of feature names
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_CuratedDataSet <- RawDataSet
-
+# Looping through tables of Raw Data Set to rename features
 ls_CuratedDataSet <- purrr::map(.x = names(RawDataSet),
                                 .f = function(TableName)
                                      {
@@ -112,12 +102,241 @@ ls_CuratedDataSet <- purrr::map(.x = names(RawDataSet),
 # Re-set table names
 names(ls_CuratedDataSet) <- names(RawDataSet)
 
+
+# Unpack list into data frames
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+df_CDS_BioSampling <- ls_CuratedDataSet$BioSampling
+df_CDS_Diagnosis <- ls_CuratedDataSet$Diagnosis
+df_CDS_Histology <- ls_CuratedDataSet$Histology
+df_CDS_Metastasis <- ls_CuratedDataSet$Metastasis
+df_CDS_MolecularDiagnostics <- ls_CuratedDataSet$MolecularDiagnostics
+df_CDS_Patient <- ls_CuratedDataSet$Patient
+df_CDS_Progress <- ls_CuratedDataSet$Progress
+df_CDS_RadiationTherapy <- ls_CuratedDataSet$RadiationTherapy
+df_CDS_Staging <- ls_CuratedDataSet$Staging
+df_CDS_Surgery <- ls_CuratedDataSet$Surgery
+df_CDS_SystemicTherapy <- ls_CuratedDataSet$SystemicTherapy
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MODUL 2)  Primary table cleaning
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Remove entries that are not linked to related tables
+#   - Remove duplicate entries
+#-------------------------------------------------------------------------------
+
+# Set up progress bar
+CountProgressItems <- 12
+ProgressBar <- progress_bar$new(format = "Cleaning table entries [:bar] :percent in :elapsed  :spin",
+                                total = CountProgressItems, clear = FALSE, width = 100)
+ProgressBar$tick()
+
+
+#--- Patient -------------------------------------------------------------------
+
+# Get vector of PatientIDs that are linked with one or more DiagnosisIDs
+vc_EligiblePatientIDs <- df_CDS_Patient %>%
+                              left_join(df_CDS_Diagnosis, by = join_by(PatientID)) %>%
+                              filter(!is.na(DiagnosisID)) %>%
+                              pull(PatientID)
+
+# Filter out patient entries with no related diagnosis data and keep only distinct rows (removal of duplicates)
+df_CDS_Patient <- df_CDS_Patient %>%
+                      filter(PatientID %in% vc_EligiblePatientIDs) %>%
+                      distinct()
+
+ProgressBar$tick()
+
+
+#--- Diagnosis -----------------------------------------------------------------
+
+# Get vector of DiagnosisIDs that are linked with a PatientID
+vc_EligibleDiagnosisIDs <- df_CDS_Diagnosis %>%
+                                    left_join(df_CDS_Patient, by = join_by(PatientID)) %>%
+                                    filter(!is.na(PatientID)) %>%
+                                    pull(DiagnosisID)
+
+# Filter out diagnosis entries with no related patient data and keep only distinct rows (removal of duplicates)
+df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
+                        filter(DiagnosisID %in% vc_EligibleDiagnosisIDs) %>%
+                        distinct(across(-DiagnosisID), .keep_all = TRUE)      # Keep only rows that are distinct (everywhere but DiagnosisID)
+
+ProgressBar$tick()
+
+
+#--- Histology -----------------------------------------------------------------
+
+# Get vector of HistologyIDs that are linked with a PatientID / DiagnosisID
+vc_EligibleHistologyIDs <- df_CDS_Histology %>%
+                                left_join(df_CDS_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                filter(!is.na(DiagnosisID)) %>%
+                                pull(HistologyID)
+
+# Filter out histology entries with no related diagnosis data and keep only distinct rows (removal of duplicates)
+df_CDS_Histology <- df_CDS_Histology %>%
+                        filter(HistologyID %in% vc_EligibleHistologyIDs) %>%
+                        distinct(across(-HistologyID), .keep_all = TRUE)
+
+ProgressBar$tick()
+
+
+#--- BioSampling ---------------------------------------------------------------
+
+# Get vector of SampleIDs that are linked with a PatientID
+vc_EligibleSampleIDs <- df_CDS_BioSampling %>%
+                                  left_join(df_CDS_Patient, by = join_by(PatientID)) %>%
+                                  filter(!is.na(PatientID)) %>%
+                                  pull(SampleID)
+
+# Filter out...
+df_CDS_BioSampling <- df_CDS_BioSampling %>%
+                          filter(SampleID %in% vc_EligibleSampleIDs) %>%
+                          distinct()
+
+ProgressBar$tick()
+
+
+#--- Metastasis ----------------------------------------------------------------
+
+# Get vector of MetastasisIDs that are linked with a PatientID / DiagnosisID
+vc_EligibleMetastasisIDs <- df_CDS_Metastasis %>%
+                                left_join(df_CDS_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                filter(!is.na(DiagnosisID)) %>%
+                                pull(MetastasisID)
+
+# Filter out...
+df_CDS_Metastasis <- df_CDS_Metastasis %>%
+                          filter(MetastasisID %in% vc_EligibleMetastasisIDs) %>%
+                          distinct(across(-MetastasisID), .keep_all = TRUE)
+
+ProgressBar$tick()
+
+
+#--- MolecularDiagnostics ------------------------------------------------------
+
+# Get vector of MolecularDiagnosticsIDs that are linked with a PatientID / DiagnosisID
+vc_EligibleMolecularDiagnosticsIDs <- df_CDS_MolecularDiagnostics %>%
+                                          left_join(df_CDS_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                          filter(!is.na(DiagnosisID)) %>%
+                                          pull(MolecularDiagnosticsID)
+
+# Filter out...
+df_CDS_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
+                                    filter(MolecularDiagnosticsID %in% vc_EligibleMolecularDiagnosticsIDs) %>%
+                                    distinct(across(-MolecularDiagnosticsID), .keep_all = TRUE)
+
+ProgressBar$tick()
+
+
+#--- Progress ------------------------------------------------------------------
+
+# Get vector of ProgressIDs that are linked with a PatientID / DiagnosisID
+vc_EligibleProgressIDs <- df_CDS_Progress %>%
+                              left_join(df_CDS_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                              filter(!is.na(DiagnosisID)) %>%
+                              pull(ProgressID)
+
+# Filter out...
+df_CDS_Progress <- df_CDS_Progress %>%
+                        filter(ProgressID %in% vc_EligibleProgressIDs) %>%
+                        distinct(across(-ProgressID), .keep_all = TRUE)
+
+ProgressBar$tick()
+
+
+#--- RadiationTherapy ----------------------------------------------------------
+
+# Get vector of RadiationTherapyIDs that are linked with a PatientID / DiagnosisID
+vc_EligibleRadiationTherapyIDs <- df_CDS_RadiationTherapy %>%
+                                      left_join(df_CDS_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                      filter(!is.na(DiagnosisID)) %>%
+                                      pull(RadiationTherapyID)
+
+# Filter out...
+df_CDS_RadiationTherapy <- df_CDS_RadiationTherapy %>%
+                                filter(RadiationTherapyID %in% vc_EligibleRadiationTherapyIDs) %>%
+                                distinct(across(-RadiationTherapyID), .keep_all = TRUE)
+
+ProgressBar$tick()
+
+
+#--- Staging -------------------------------------------------------------------
+
+# Get vector of StagingIDs that are linked with a PatientID / DiagnosisID
+vc_EligibleStagingIDs <- df_CDS_Staging %>%
+                              left_join(df_CDS_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                              filter(!is.na(DiagnosisID)) %>%
+                              pull(StagingID)
+
+# Filter out...
+df_CDS_Staging <- df_CDS_Staging %>%
+                      filter(StagingID %in% vc_EligibleStagingIDs) %>%
+                      distinct(across(-StagingID), .keep_all = TRUE)
+
+ProgressBar$tick()
+
+
+#--- Surgery -------------------------------------------------------------------
+
+# Get vector of SurgeryIDs that are linked with a PatientID / DiagnosisID
+vc_EligibleSurgeryIDs <- df_CDS_Surgery %>%
+                              left_join(df_CDS_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                              filter(!is.na(DiagnosisID)) %>%
+                              pull(SurgeryID)
+
+# Filter out...
+df_CDS_Surgery <- df_CDS_Surgery %>%
+                      filter(SurgeryID %in% vc_EligibleSurgeryIDs) %>%
+                      distinct(across(-SurgeryID), .keep_all = TRUE)
+
+ProgressBar$tick()
+
+
+#--- Systemic Therapy ----------------------------------------------------------
+
+# Get vector of SystemicTherapyIDs that are linked with a PatientID / DiagnosisID
+vc_EligibleSystemicTherapyIDs <- df_CDS_SystemicTherapy %>%
+                                      left_join(df_CDS_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                      filter(!is.na(DiagnosisID)) %>%
+                                      pull(SystemicTherapyID)
+
+# Filter out...
+df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
+                              filter(SystemicTherapyID %in% vc_EligibleSystemicTherapyIDs) %>%
+                              distinct(across(-SystemicTherapyID), .keep_all = TRUE)
+
+ProgressBar$tick()
+ProgressBar$terminate()
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MODUL 3)  Data Harmonization / Transformation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   A) Definition of features to monitor during Transformation
+#   B) Value transformation
+#        - Harmonization and correction
+#        - Recoding
+#        - Formatting
+#   C) Finalize transformation of data
+#        - Removing of ineligible values
+#        - Optional conversion to factor
+#-------------------------------------------------------------------------------
+
+
+# Set up progress bar
+CountProgressItems <- 28
+ProgressBar <- progress_bar$new(format = "Harmonizing data [:bar] :percent in :elapsed  :spin",
+                                total = CountProgressItems, clear = FALSE, width= 100)
 ProgressBar$tick()
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Definition of features to monitor during Curation (Transformation)
+# Modul 3 A)  Definition of features to monitor during Transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Object syntax: List of vectors
 #     - Vector names = Name of feature to be monitored during Curation (Transformation)
@@ -216,29 +435,14 @@ ProgressBar$tick()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CURATION: Value transforming Operations
+# Modul 3 B)  Value transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Order of operations in each raw data frame:
 #   1) Harmonizing and correctional transformation of data values using dsCCPhos::TransformData()
 #   2) Recoding data using dsCCPhos::RecodeData()
 #         - dsCCPhos::RecodeData() uses a dictionary in the form of a named vector to perform recoding on a target vector
 #   3) Data formatting instructions
-
-
-# Unpack list into data frames
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_CDS_BioSampling <- ls_CuratedDataSet$BioSampling
-df_CDS_Diagnosis <- ls_CuratedDataSet$Diagnosis
-df_CDS_Histology <- ls_CuratedDataSet$Histology
-df_CDS_Metastasis <- ls_CuratedDataSet$Metastasis
-df_CDS_MolecularDiagnostics <- ls_CuratedDataSet$MolecularDiagnostics
-df_CDS_Patient <- ls_CuratedDataSet$Patient
-df_CDS_Progress <- ls_CuratedDataSet$Progress
-df_CDS_RadiationTherapy <- ls_CuratedDataSet$RadiationTherapy
-df_CDS_Staging <- ls_CuratedDataSet$Staging
-df_CDS_Surgery <- ls_CuratedDataSet$Surgery
-df_CDS_SystemicTherapy <- ls_CuratedDataSet$SystemicTherapy
-
+#-------------------------------------------------------------------------------
 
 
 # Transform df_CDS_BioSampling
@@ -345,7 +549,8 @@ df_CDS_Progress <- df_CDS_Progress %>%
                                MetastasisStatus = dsCCPhos::RecodeData(MetastasisStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "MetastasisStatus"),
                                                                                               set_names(Value_Curated, Value_Raw)))) %>%
                         #--- Formatting ----------------------------------------
-                        mutate(ProgressReportDate = format(as_datetime(ProgressReportDate), format = "%Y-%m-%d"))
+                        mutate(ProgressReportDate = format(as_datetime(ProgressReportDate), format = "%Y-%m-%d"),
+                               LocalRelapseDate = format(as_datetime(LocalRelapseDate), format = "%Y-%m-%d"))
 
 ProgressBar$tick()
 
@@ -473,7 +678,7 @@ ProgressBar$tick()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
+# Modul 3 C)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - (Optional) Exclusion of ineligible data (including data that could not be transformed)
 #   - (Optional) Conversion to ordered factor
@@ -652,26 +857,9 @@ ProgressBar$terminate()
 
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 2)  Process patient data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Removal of duplicated / redundant entries
-#-------------------------------------------------------------------------------
-
-
-# df_CDS_Patient
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Clear redundant patient entries
-#-------------------------------------------------------------------------------
-# df_Aux_Patient <- df_CDS_Patient %>%
-#                       group_by(PatientID) %>%
-#                           mutate(CountDifferentCombinations = n()) %>%
-#                       filter(CountDifferentCombinations > 1)
-
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 3)  Process diagnosis data
+# MODUL 4)  Process diagnosis data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   A) Joining of df_CDS_Diagnosis and df_CDS_Histology to get coherent diagnosis data
 #   B) Classification and removal of redundant diagnosis entries
@@ -682,16 +870,11 @@ ProgressBar$terminate()
 #-------------------------------------------------------------------------------
 
 
-# A) Join df_CDS_Diagnosis and df_CDS_Histology
+# Modul 4 A) Join df_CDS_Diagnosis and df_CDS_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Create composed ID ('DiagnosisID / HistologyID')
 #   - Add auxiliary features for filtering purposes
 #-------------------------------------------------------------------------------
-
-# Create custom histology ID in case it is not contained in raw data
-df_CDS_Histology <- df_CDS_Histology %>%
-                        mutate(HistologyID = row_number())
-
 
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         left_join(df_CDS_Histology, by = join_by(PatientID, DiagnosisID)) %>%
@@ -702,12 +885,9 @@ df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                             mutate(PatientCountInitialEntries = n()) %>%
                         ungroup()
 
-# df_Aux_Diagnosis_IDMappingInitial <- df_CDS_Diagnosis %>%
-#                                           select(OriginalDiagnosisID,
-#                                                  DiagnosisID)
 
 
-# B) Classification and removal of redundant entries
+# Modul 4 B) Classification and removal of redundant entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - In patients with multiple diagnosis entries:
 #     Use dsCCPhos-function ClassifyDiagnosisRedundancy() to identify and consolidate redundant diagnosis entries
@@ -716,8 +896,8 @@ df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
 #-------------------------------------------------------------------------------
 
 
-# Compile rule calls from data using dsCCPhos::CompileClassificationCall
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Compile rule calls from data in dsCCPhos::RuleSet_DiagnosisRedundany using dsCCPhos::CompileClassificationCall
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Names of features that are required to compile rule calls from dsCCPhos::RuleSet_DiagnosisRedundancy
 PredictorFeatures_DiagnosisRedundancy = c("CountDeviatingValues",
@@ -804,7 +984,8 @@ df_CDS_Diagnosis <-  df_CDS_Diagnosis %>%
                                     CountRedundancies))
 
 
-# C) Classify associations between diagnosis entries
+
+# Modul 4 C) Classify associations between diagnosis entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - In patients with multiple distinct diagnosis entries:
 #     Use dsCCPhos-function ClassifyDiagnosisAssociations() to plausibly distinguish pseudo-different from actually different diagnoses
@@ -898,8 +1079,6 @@ RuleCalls_DiagnosisAssociation <- list(IsLikelyAssociated = Call_IsLikelyAssocia
                                        IsLikelyProgression = Call_IsLikelyProgression,
                                        IsLikelyRecoding = Call_IsLikelyRecoding)
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 # Set up progress bar
 CountProgressItems <- df_CDS_Diagnosis %>% filter(PatientCountDistinctEntries > 1) %>% pull(PatientID) %>% n_distinct()
@@ -950,10 +1129,10 @@ df_Aux_Diagnosis_IDMappingAssociations <- df_CDS_Diagnosis %>%
                                               distinct()
 
 # Update related tables
-#~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #     - Replace DiagnosisIDs to associate entries (and add SubDiagnosisIDs in same move)
 #     - Rearrange column order
-#----------------------
+#-------------------------------------------------------------------------------
 df_CDS_Metastasis <- df_CDS_Metastasis %>%
                           ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
                           relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = MetastasisID)
@@ -987,7 +1166,7 @@ df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
 
 
 
-# D) Reconstruct df_CDS_Histology from df_CDS_Diagnosis
+# Modul 4 D) Reconstruct df_CDS_Histology from df_CDS_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Remove OriginalDiagnosisID column (not needed anymore)
@@ -998,17 +1177,6 @@ df_CDS_Diagnosis <-  df_CDS_Diagnosis %>%
 df_CDS_Histology <- df_CDS_Diagnosis %>%
                         select(all_of(c("SubDiagnosisID", names(df_CDS_Histology)))) %>%
                         relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = HistologyID)
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 4)  Process other tables
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Remove redundant entries
-#-------------------------------------------------------------------------------
-
-
-#  -  Still To Do  -
 
 
 
