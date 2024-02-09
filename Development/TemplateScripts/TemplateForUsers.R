@@ -119,15 +119,42 @@ ds.GetObjectInfo(ObjectName = "RawDataSet",
 # Use dsCCPhos functionality to process data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Transform Raw Data Set (RDS) into Curated Data Set (CDS)
 ds.CurateData(Name_RawData = "RawDataSet",
               Name_Output = "CurationOutput",
               DataSources = CCPConnections)
 
 
+# Get Curation reports
 CurationReports <- dsCCPhosClient::ds.GetCurationReport(Name_CurationOutput = "CurationOutput",
                                                         DataSources = CCPConnections)
 
+# Exemplary look at a curation report table
 View(CurationReports$Sissy$Monitor_Staging)
+
+
+# Make tables of Curated Data Set directly addressable by unpacking them into R server session
+dsCCPhosClient::ds.UnpackCuratedDataSet(Name_CurationOutput = "CurationOutput",
+                                        DataSources = CCPConnections)
+
+
+# For monitoring purposes: List all current objects in server-sided R sessions
+DSI::datashield.symbols(conns = CCPConnections)
+
+
+# Transfrom Curated Data Set (CDS) into Augmented Data Set (ADS)
+ds.AugmentData(Name_CurationOutput = "CurationOutput",
+               Name_Output = "AugmentationOutput",
+               DataSources = CCPConnections)
+
+# Make tables of Augmented Data Set directly addressable by unpacking them into R server session
+dsCCPhosClient::ds.UnpackAugmentedDataSet(Name_AugmentationOutput = "AugmentationOutput",
+                                          DataSources = CCPConnections)
+
+# ... Check out the new objects
+DSI::datashield.symbols(conns = CCPConnections)
+
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

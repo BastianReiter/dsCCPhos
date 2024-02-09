@@ -25,4 +25,14 @@ GetCohortDescriptionDS <- function(Name_AugmentationOutput = "AugmentationOutput
     }
 
 
+    AugmentedDataSet <- AugmentationOutput$AugmentedDataSet
+
+    require(dplyr)
+    require(TinkerLab)
+
+
+
+
+
+
 }

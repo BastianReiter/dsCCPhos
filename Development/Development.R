@@ -97,6 +97,8 @@ library(devtools)
 # use_r("ExcludeRawDataDS")
 # use_r("ExcludeAugmentedDataDS")
 # use_r("ExcludeCuratedDataDS")
+# use_r("UnpackAugmentationOutputDS")
+# use_r("UnpackCurationOutputDS")
 
 
 

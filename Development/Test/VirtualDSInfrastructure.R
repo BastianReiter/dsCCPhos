@@ -65,10 +65,10 @@ Server_SiteC <- newDSLiteServer(tables = CCPTestData_C,
                                                                                     "dsCCPhos")))
 
 # Check out some server properties
-Server_SiteA$config()
-Server_SiteA$profile()
-Server_SiteA$assignMethods()
-Server_SiteA$aggregateMethods()
+# Server_SiteA$config()
+# Server_SiteA$profile()
+# Server_SiteA$assignMethods()
+# Server_SiteA$aggregateMethods()
 
 
 
@@ -176,9 +176,9 @@ ds.GetObjectInfo(ObjectName = "RawDataSet",
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # First test with dsBase-function
-Test <- ds.mean(x = "Metastasis$datum_fernmetastasen",
-                type = "both",
-                datasources = CCPConnections)
+# Test <- ds.mean(x = "Metastasis$datum_fernmetastasen",
+#                 type = "both",
+#                 datasources = CCPConnections)
 
 
 # Get validation report of Raw Data Set (RDS)
@@ -193,11 +193,22 @@ dsCCPhosClient::ds.CurateData(Name_RawDataSet = "RawDataSet",
 
 
 # Get Curation reports
-CurationReports <- ds.GetCurationReport(Name_CurationOutput = "CurationOutput",
-                                        DataSources = CCPConnections)
+CurationReports <- dsCCPhosClient::ds.GetCurationReport(Name_CurationOutput = "CurationOutput",
+                                                        DataSources = CCPConnections)
 
 # Exemplary look at a curation report table
 View(CurationReports$SiteA$Monitor_Staging)
+
+
+# Make tables from Curated Data Set directly addressable by unpacking them into R server session
+dsCCPhosClient::ds.UnpackCuratedDataSet(Name_CurationOutput = "CurationOutput",
+                                        DataSources = CCPConnections)
+
+
+# List all objects in server-sided R sessions
+DSI::datashield.symbols(conns = CCPConnections)
+
+
 
 
 # Get validation report of Curated Data Set (CDS)
@@ -212,7 +223,9 @@ dsCCPhosClient::ds.AugmentData(Name_CurationOutput = "CurationOutput",
                                DataSources = CCPConnections)
 
 
-
+# Make tables from Augmented Data Set directly addressable by unpacking them into R server session
+dsCCPhosClient::ds.UnpackAugmentedDataSet(Name_AugmentationOutput = "AugmentationOutput",
+                                          DataSources = CCPConnections)
 
 
 

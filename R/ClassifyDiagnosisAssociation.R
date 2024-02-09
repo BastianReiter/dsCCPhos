@@ -26,7 +26,8 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
 
 
     # For function testing purposes
-    # DiagnosisEntries <- df_CDS_Diagnosis %>% filter(PatientID == "Pat_10186")
+    # DiagnosisEntries <- df_CDS_Diagnosis %>% filter(PatientID == "Pat_100167")
+    # RuleCalls <- RuleCalls_DiagnosisAssociation
     # RulesProfile = "Default"
     # print(DiagnosisEntries$DiagnosisID[1])
 
@@ -69,11 +70,6 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
     # Initiation of Output data frame
     Output <- NULL
 
-    if (nrow(Candidates) == 0)      # In case the input data frame consists of one single diagnosis entry the loop below will not be executed, therefore the Output is simply the one diagnosis entry
-    {
-        Output <- Reference
-    }
-
     # Loop through all remaining "unassociated" diagnoses, as long as there are still candidates for potential association
     while (nrow(Candidates) > 0)
     {
@@ -93,11 +89,11 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
                                    Relation_Grading = eval(parse(text = RuleCalls[["Relation_Grading"]])),
                                    IsLikelyProgression = eval(parse(text = RuleCalls[["IsLikelyProgression"]])),
                                    IsLikelyRecoding = eval(parse(text = RuleCalls[["IsLikelyRecoding"]]))) %>%
-                      nest(Association = c(InconsistencyCheck,
-                                           ImplausibilityCheck,
-                                           starts_with(c("Relation")),
-                                           IsLikelyProgression,
-                                           IsLikelyRecoding))
+                            nest(Association = c(InconsistencyCheck,
+                                                 ImplausibilityCheck,
+                                                 starts_with(c("Relation")),
+                                                 IsLikelyProgression,
+                                                 IsLikelyRecoding))
 
 
         # Add both Reference diagnosis entry and associated diagnosis entries to Output data frame
@@ -118,6 +114,14 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
                           filter(IsLikelyAssociated == FALSE) %>%
                           filter(DiagnosisID != Reference$DiagnosisID)
     }
+
+
+    # In case the original input data frame consists of one single diagnosis entry, the loop above will not be executed, therefore the Output is simply the one diagnosis entry
+    # In case the loop ended but there is still a Reference row, it will be added to the Output
+
+    Output <- bind_rows(Output,
+                        Reference)
+
 
     # Process Output data frame
     Output <- Output %>%

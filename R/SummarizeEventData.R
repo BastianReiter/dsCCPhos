@@ -25,7 +25,7 @@ SummarizeEventData <- function(EventEntries,
 
     # For function testing purposes
     # EventEntries <- df_ADS_Events %>%
-    #                     filter(PatientID == "Pat_100058") %>%
+    #                     filter(PatientID == "Pat_105431") %>%
     #                     unnest(cols = c(EventDetails))
 
 

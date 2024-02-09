@@ -28,33 +28,13 @@ View(CurationOutput$CurationReport$Monitor_Staging)
 View(CurationOutput$CuratedDataSet$Diagnosis)
 
 # Save curated data set for testing purposes
-#save(CurationOutput, file = "./Development/Data/TestData/CCPCurationOutput.Rdata")
+# save(CurationOutput, file = "./Development/Data/TestData/CCPCurationOutput.Rdata")
 
 # Augment data based on curation output
 AugmentationOutput <- dsCCPhos::AugmentDataDS("CurationOutput")
 
 View(AugmentationOutput$ADS_Events)
 
-View(tidyr::unnest(AugmentationOutput$ADS_Events, cols = c(EventDetails)))
-
-View(AugmentationOutput$ADS_Diagnosis)
-
-View(AugmentationOutput$ADS_Patient)
 
 
 
-
-
-
-
-
-# Missings <- purrr::map(CCPTestData_Total, function(df) {
-#                                               MissingColumns <- names(df)[which(colSums(is.na(df)) == nrow(df))]
-#
-#
-# })
-#
-#
-# Missings <- unlist(Missings)
-#
-# names(Missings) <- NULL
