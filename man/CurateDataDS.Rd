@@ -5,20 +5,23 @@
 \title{CurateDataDS}
 \usage{
 CurateDataDS(
-  Name_RawDataSet = "RawDataSet",
-  RuleProfile_RawDataTransformation = "Default",
-  RuleProfile_DiagnosisRedundancy = "Default",
-  RuleProfile_DiagnosisAssociation = "Default"
+  RawDataSetName.S = "RawDataSet",
+  RuleProfile_RawDataTransformation.S = "Default",
+  RuleProfile_DiagnosisRedundancy.S = "Default",
+  RuleProfile_DiagnosisAssociation.S = "Default"
 )
 }
 \arguments{
-\item{Name_RawDataSet}{String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'}
+\item{RawDataSetName.S}{String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'}
 }
 \value{
-A list containing two lists: The Curated Data Set (CDS) and a curation report.
+A list containing the following objects:
+\itemize{\item CuratedDataSet (list)
+\item CurationReport (list)
+\item CurationMessages (list)}
 }
 \description{
-Takes Raw Data Set (RDS) and transforms it into Curated Data Set (CDS) while tracing transformation operations.
+Takes Raw Data Set (RDS) and transforms it into Curated Data Set (CDS) while tracing data transformation.
 }
 \details{
 Server-side ASSIGN method

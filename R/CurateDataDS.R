@@ -1,24 +1,27 @@
 
 #' CurateDataDS
 #'
-#' Takes Raw Data Set (RDS) and transforms it into Curated Data Set (CDS) while tracing transformation operations.
+#' Takes Raw Data Set (RDS) and transforms it into Curated Data Set (CDS) while tracing data transformation.
 #'
 #' Server-side ASSIGN method
 #'
-#' @param Name_RawDataSet String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
-#' @param RuleProfile_RawDataTransformation String | Profile name defining rule set to be used for data transformation. Profile name must be stated in \code{\link{RuleSet_RawDataTransformation}. | Default: 'Default'
-#' @param RuleProfile_DiagnosisRedundancy String | Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{\link{RuleSet_DiagnosisRedundancy}. | Default: 'Default'
-#' @param RuleProfile_DiagnosisAssociation String | Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{\link{RuleSet_DiagnosisAssociation}. | Default: 'Default'
+#' @param RawDataSetName.S String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
+#' @param RuleProfile_RawDataTransformation.S String | Profile name defining rule set to be used for data transformation. Profile name must be stated in \code{\link{RuleSet_RawDataTransformation}. | Default: 'Default'
+#' @param RuleProfile_DiagnosisRedundancy.S String | Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{\link{RuleSet_DiagnosisRedundancy}. | Default: 'Default'
+#' @param RuleProfile_DiagnosisAssociation.S String | Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{\link{RuleSet_DiagnosisAssociation}. | Default: 'Default'
 #'
-#' @return A list containing two lists: The Curated Data Set (CDS) and a curation report.
+#' @return A list containing the following objects:
+#'         \itemize{\item CuratedDataSet (list)
+#'                  \item CurationReport (list)
+#'                  \item CurationMessages (list)}
 #' @export
 #'
 #' @examples
 #' @author Bastian Reiter
-CurateDataDS <- function(Name_RawDataSet = "RawDataSet",
-                         RuleProfile_RawDataTransformation = "Default",
-                         RuleProfile_DiagnosisRedundancy = "Default",
-                         RuleProfile_DiagnosisAssociation = "Default")
+CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
+                         RuleProfile_RawDataTransformation.S = "Default",
+                         RuleProfile_DiagnosisRedundancy.S = "Default",
+                         RuleProfile_DiagnosisAssociation.S = "Default")
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # OVERVIEW
@@ -46,20 +49,23 @@ CurateDataDS <- function(Name_RawDataSet = "RawDataSet",
 #     - Classification and bundling of associated diagnosis entries
 #     - Update DiagnosisIDs in other tables
 #
-#
-#   Return list containing Curated Data Set (CDS) and Curation Report
+#   Return list containing
+#     - Curated Data Set (list)
+#     - Curation Report (list)
+#     - Curation Messages (list)
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if (is.character(Name_RawDataSet))
+if (is.character(RawDataSetName.S))
 {
-    RawDataSet <- eval(parse(text = Name_RawDataSet), envir = parent.frame())
+    RawDataSet <- eval(parse(text = RawDataSetName.S), envir = parent.frame())
 }
 else
 {
-    ClientMessage <- "ERROR: 'Name_RawDataSet' must be specified as a character string"
+    ClientMessage <- "ERROR: 'RawDataSetName.S' must be specified as a character string"
     stop(ClientMessage, call. = FALSE)
 }
 
@@ -467,7 +473,7 @@ try(ProgressBar$tick())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_BioSampling <- df_BioSampling %>%
                       #--- Transformation ----------------------------------
-                      dsCCPhos::TransformData(TableName = "BioSampling", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                      dsCCPhos::TransformData(TableName = "BioSampling", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                       #--- Recoding ----------------------------------------
                       mutate(SampleType = dsCCPhos::RecodeData(SampleType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleType"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
                                                                                 set_names(Value_Curated, Value_Raw))),      # This returns a vector of the form c("Value_Raw1" = "Value1", ...), thereby inducing replacement of original values with new ones as defined in Meta Data
@@ -483,7 +489,7 @@ try(ProgressBar$tick())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Diagnosis <- df_Diagnosis %>%
                     #--- Transformation ------------------------------------
-                    dsCCPhos::TransformData(TableName = "Diagnosis", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                    dsCCPhos::TransformData(TableName = "Diagnosis", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                     #--- Recoding ------------------------------------------
                     mutate(LocalizationSide = dsCCPhos::RecodeData(LocalizationSide, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "LocalizationSide"),
                                                                                           set_names(Value_Curated, Value_Raw)))) %>%
@@ -498,7 +504,7 @@ df_Diagnosis <- df_Diagnosis %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Histology <- df_Histology %>%
                     #--- Transformation ------------------------------------
-                    dsCCPhos::TransformData(TableName = "Histology", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                    dsCCPhos::TransformData(TableName = "Histology", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                     #--- Recoding ------------------------------------------
                     mutate(Grading = dsCCPhos::RecodeData(Grading, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Histology" & Feature == "Grading"),
                                                                         set_names(Value_Curated, Value_Raw)))) %>%
@@ -512,7 +518,7 @@ df_Histology <- df_Histology %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Metastasis <- df_Metastasis %>%
                       #--- Transformation ----------------------------------
-                      dsCCPhos::TransformData(TableName = "Metastasis", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                      dsCCPhos::TransformData(TableName = "Metastasis", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                       #--- Formatting --------------------------------------
                       mutate(MetastasisDiagnosisDate = format(as_datetime(MetastasisDiagnosisDate), format = "%Y-%m-%d"),
                              HasMetastasis = as.logical(HasMetastasis))
@@ -524,7 +530,7 @@ df_Metastasis <- df_Metastasis %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
                                 #--- Transformation ------------------------
-                                dsCCPhos::TransformData(TableName = "MolecularDiagnostics", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                                dsCCPhos::TransformData(TableName = "MolecularDiagnostics", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                                 #--- Formatting ----------------------------
                                 mutate(MolecularDiagnosticsDate = format(as_datetime(MolecularDiagnosticsDate), format = "%Y-%m-%d"))
                                 #--- Update PB ---
@@ -535,7 +541,7 @@ df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Patient <- df_Patient %>%
                   #--- Transformation ------------------------------------
-                  dsCCPhos::TransformData(TableName = "Patient", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                  dsCCPhos::TransformData(TableName = "Patient", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                   #--- Recoding ------------------------------------------
                   mutate(Gender = dsCCPhos::RecodeData(Gender, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "Gender"),
                                                                     set_names(Value_Curated, Value_Raw))),
@@ -551,7 +557,7 @@ df_Patient <- df_Patient %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Progress <- df_Progress %>%
                     #--- Transformation ------------------------------------
-                    dsCCPhos::TransformData(TableName = "Progress", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                    dsCCPhos::TransformData(TableName = "Progress", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                     #--- Recoding ------------------------------------------
                     mutate(GlobalStatus = dsCCPhos::RecodeData(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus"),
                                                                                   set_names(Value_Curated, Value_Raw))),
@@ -572,7 +578,7 @@ df_Progress <- df_Progress %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_RadiationTherapy <- df_RadiationTherapy %>%
                             #--- Transformation ----------------------------
-                            dsCCPhos::TransformData(TableName = "RadiationTherapy", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                            dsCCPhos::TransformData(TableName = "RadiationTherapy", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                             #--- Recoding ----------------------------------
                             mutate(RadiationTherapyRelationToSurgery = dsCCPhos::RecodeData(RadiationTherapyRelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationTherapyRelationToSurgery"),
                                                                                                                                     set_names(Value_Curated, Value_Raw))),
@@ -589,7 +595,7 @@ df_RadiationTherapy <- df_RadiationTherapy %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Staging <- df_Staging %>%
                   #--- Transformation --------------------------------------
-                  dsCCPhos::TransformData(TableName = "Staging", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                  dsCCPhos::TransformData(TableName = "Staging", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                   #--- Recoding --------------------------------------------
                   mutate(UICCStage = dsCCPhos::RecodeData(UICCStage, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "UICCStage"),
                                                                           set_names(Value_Curated, Value_Raw))),
@@ -615,7 +621,7 @@ df_Staging <- df_Staging %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Surgery <- df_Surgery %>%
                   #--- Transformation --------------------------------------
-                  dsCCPhos::TransformData(TableName = "Surgery", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                  dsCCPhos::TransformData(TableName = "Surgery", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                   #--- Recoding --------------------------------------------
                   mutate(SurgeryIntention = dsCCPhos::RecodeData(SurgeryIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "SurgeryIntention"),
                                                                                         set_names(Value_Curated, Value_Raw))),
@@ -633,7 +639,7 @@ df_Surgery <- df_Surgery %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SystemicTherapy <- df_SystemicTherapy %>%
                           #--- Transformation ------------------------------
-                          dsCCPhos::TransformData(TableName = "SystemicTherapy", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation) %>%
+                          dsCCPhos::TransformData(TableName = "SystemicTherapy", RuleSet = dsCCPhos::RuleSet_RawDataTransformation, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                           #--- Recoding ------------------------------------
                           mutate(SystemicTherapyIntention = dsCCPhos::RecodeData(SystemicTherapyIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "SystemicTherapyIntention"),
                                                                                                                 set_names(Value_Curated, Value_Raw))),
@@ -921,7 +927,7 @@ PredictorFeatures_DiagnosisRedundancy = c("CountDeviatingValues",
 Call_IsLikelyRedundant <- CompileClassificationCall(TargetFeature = "IsLikelyRedundant",
                                                     PredictorFeatures = PredictorFeatures_DiagnosisRedundancy,
                                                     RuleSet = dsCCPhos::RuleSet_DiagnosisRedundancy,
-                                                    RuleProfile = RuleProfile_DiagnosisRedundancy,
+                                                    RuleProfile = RuleProfile_DiagnosisRedundancy.S,
                                                     ValueIfNoRuleMet = FALSE)
 # Make list of rule calls to pass them to function
 RuleCalls_DiagnosisRedundancy <- list(IsLikelyRedundant = Call_IsLikelyRedundant)
@@ -965,7 +971,7 @@ Message <- paste0("Found ", CountDiagnosisRedundancies, " redundancies related t
 
 # Add message to Messages list
 Messages$DiagnosisClassification <- c(Messages$DiagnosisClassification,
-                                      Message)
+                                              Message)
 # Additionally, print message on console
 cat(Message)
 
@@ -1024,61 +1030,61 @@ PredictorFeatures_DiagnosisAssociation <- c("ICD10Code",
 Call_IsLikelyAssociated <- CompileClassificationCall(TargetFeature = "IsLikelyAssociated",
                                                      PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                      RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                     RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                     RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                      ValueIfNoRuleMet = FALSE)
 
 Call_InconsistencyCheck <- CompileClassificationCall(TargetFeature = "InconsistencyCheck",
                                                      PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                      RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                     RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                     RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                      ValueIfNoRuleMet = "No apparent inconsistency")
 
 Call_ImplausibilityCheck <- CompileClassificationCall(TargetFeature = "ImplausibilityCheck",
                                                       PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                       RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                      RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                      RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                       ValueIfNoRuleMet = "No apparent implausibility")
 
 Call_Relation_ICD10 <- CompileClassificationCall(TargetFeature = "Relation_ICD10",
                                                  PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                  RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                 RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                 RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                  ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_ICDOTopography <- CompileClassificationCall(TargetFeature = "Relation_ICDOTopography",
                                                           PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                           RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                          RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                          RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                           ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_LocalizationSide <- CompileClassificationCall(TargetFeature = "Relation_LocalizationSide",
                                                             PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                             RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                            RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                            RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                             ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_ICDOMorphology <- CompileClassificationCall(TargetFeature = "Relation_ICDOMorphology",
                                                             PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                             RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                            RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                            RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                             ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_Grading <- CompileClassificationCall(TargetFeature = "Relation_Grading",
                                                    PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                    RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                   RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                   RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                    ValueIfNoRuleMet = NA_character_)
 
 Call_IsLikelyProgression <- CompileClassificationCall(TargetFeature = "IsLikelyProgression",
                                                       PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                       RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                      RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                      RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                       ValueIfNoRuleMet = NA)
 
 Call_IsLikelyRecoding <- CompileClassificationCall(TargetFeature = "IsLikelyRecoding",
                                                    PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                    RuleSet = dsCCPhos::RuleSet_DiagnosisAssociation,
-                                                   RuleProfile = RuleProfile_DiagnosisAssociation,
+                                                   RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                    ValueIfNoRuleMet = NA)
 
 
@@ -1136,7 +1142,7 @@ Message <- paste0("Classified ", CountAssociatedDiagnoses, " associated diagnosi
 
 # Add message to Messages list
 Messages$DiagnosisClassification <- c(Messages$DiagnosisClassification,
-                                      Message)
+                                              Message)
 # Additionally, print message on console
 cat(Message)
 
@@ -1227,7 +1233,7 @@ ls_CuratedDataSet <- list(BioSampling = df_BioSampling,
 # Return the Curated Data Set (CDS), the list of monitor objects as Curation Report and Messages
 return(list(CuratedDataSet = ls_CuratedDataSet,
             CurationReport = ls_MonitorSummaries,
-            Messages = Messages))
+            CurationMessages = Messages))
 
 }
 

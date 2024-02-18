@@ -4,10 +4,10 @@
 \alias{GetObjectInfoDS}
 \title{GetObjectInfoDS}
 \usage{
-GetObjectInfoDS(ObjectName)
+GetObjectInfoDS(ObjectName.S)
 }
 \arguments{
-\item{ObjectName}{String | Name of object on server}
+\item{ObjectName.S}{String | Name of object on server}
 }
 \value{
 A list containing information about existence and class of object
