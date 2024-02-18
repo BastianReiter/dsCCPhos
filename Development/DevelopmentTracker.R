@@ -29,21 +29,18 @@ library(devtools)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # use_package("dplyr")
-# use_package("duckdb")
-# use_package("ggplot2")
-# use_package("gt")
-# use_package("gtExtras")
+# use_package("duckdb", type = "Suggests")
 # use_package("lubridate")
 # use_package("progress")
-# use_package("readr")
-# use_package("readxl")
-# use_package("RPostgres")
-# use_package("showtext")
+# use_package("readr", type = "Suggests")
+# use_package("readxl", type = "Suggests")
+# use_package("RPostgres", type = "Suggests")
+# use_package("stats")
 # use_package("stringr")
-# use_package("sysfonts")
 # use_package("tibble")
+# use_package("tidyr")
 # use_package("validate")
-# use_package("xml2")
+# use_package("xml2", type = "Suggests")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

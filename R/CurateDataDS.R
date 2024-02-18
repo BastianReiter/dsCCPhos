@@ -41,7 +41,7 @@ CurateDataDS <- function(Name_RawDataSet = "RawDataSet",
 #     - Compilation of curation report
 #
 #   MODULE 4)  Processing of diagnosis data
-#     - Joining of df_CDS_Diagnosis and df_CDS_Histology
+#     - Joining of df_Diagnosis and df_Histology
 #     - Classification and removal of redundant diagnosis entries
 #     - Classification and bundling of associated diagnosis entries
 #     - Update DiagnosisIDs in other tables
@@ -874,11 +874,11 @@ try(ProgressBar$terminate())
 #        - Afterwards update Diagnosis IDs in related tables
 #   C) Classification and bundling of associated diagnosis entries
 #        - Afterwards update Diagnosis IDs in related tables
-#   D) Reconstruct df_CDS_Histology from df_CDS_Diagnosis
+#   D) Reconstruct df_Histology from df_Diagnosis
 #-------------------------------------------------------------------------------
 
 
-# Module 4 A) Join df_CDS_Diagnosis and df_CDS_Histology
+# Module 4 A) Join df_Diagnosis and df_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Create composed ID ('DiagnosisID / HistologyID')
 #   - Add auxiliary features for filtering purposes
