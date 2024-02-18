@@ -34,10 +34,8 @@ else
 # - Start of function proceedings -
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Extract Augmented Data Set (list of data frames) from Augmentation Output
-AugmentedDataSet <- AugmentationOutput$AugmentedDataSet
-
-OutputTable <- eval(parse(text = paste0("AugmentedDataSet$", TableName)))
+# Extract Table from Augmentation Output
+OutputTable <- eval(parse(text = paste0("AugmentationOutput$", TableName)))
 
 return(OutputTable)
 

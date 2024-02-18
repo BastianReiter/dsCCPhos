@@ -32,9 +32,14 @@ library(DSLite)
 # Load test data in local environment
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-load("./Development/Data/TestData/CCPTestData_A.RData")
-load("./Development/Data/TestData/CCPTestData_B.RData")
-load("./Development/Data/TestData/CCPTestData_C.RData")
+load("../dsCCPhos/Development/Data/TestData/CCPTestData_Small_A.RData")
+load("../dsCCPhos/Development/Data/TestData/CCPTestData_Small_B.RData")
+load("../dsCCPhos/Development/Data/TestData/CCPTestData_Small_C.RData")
+
+CCPTestData_A <- CCPTestData_Small_A
+CCPTestData_B <- CCPTestData_Small_B
+CCPTestData_C <- CCPTestData_Small_C
+
 
 
 #load("./Development/Data/RealData/CCPTestData_Total.RData")
@@ -227,6 +232,20 @@ dsCCPhosClient::ds.AugmentData(Name_CurationOutput = "CurationOutput",
 dsCCPhosClient::ds.UnpackAugmentedDataSet(Name_AugmentationOutput = "AugmentationOutput",
                                           DataSources = CCPConnections)
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Perform exemplary analyses
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+ds.colnames(x = "ADS_Patients",
+            datasources = CCPConnections)
+
+
+ds.GetSampleStatistics(TableName = "ADS_Patients",
+                       MetricFeatureName = "PatientAgeAtDiagnosis",
+                       GroupingFeatureName = "LastVitalStatus") %>%
+    MakeBoxPlot()
 
 
 
