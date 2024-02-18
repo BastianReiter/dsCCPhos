@@ -4,10 +4,16 @@
 \alias{AugmentDataDS}
 \title{AugmentDataDS}
 \usage{
-AugmentDataDS(Name_CurationOutput = "CurationOutput")
+AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 }
 \arguments{
-\item{Name_CurationOutput}{String | Name of the list object created by CurateDataDS() | Default: 'CurationOutput'}
+\item{CuratedDataSetName.S}{String | Name of the Curated Data Set object on server | Default: 'CuratedDataSet'}
+}
+\value{
+A list containing the following objects:
+\itemize{\item AugmentedDataSet (list)
+\item AugmentationReport (list)
+\item AugmentationMessages (list)}
 }
 \description{
 Transforms Curated Data Set (CDS) into Augmented Data Set (ADS)

@@ -40,16 +40,16 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 
 # Set CurateDataDS argument values manually if needed
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-RuleProfile_RawDataTransformation = "Default"
-RuleProfile_DiagnosisRedundancy = "Default"
-RuleProfile_DiagnosisAssociation = "Default"
+RuleProfile_RawDataTransformation.S = "Default"
+RuleProfile_DiagnosisRedundancy.S = "Default"
+RuleProfile_DiagnosisAssociation.S = "Default"
 
 
 # Curate data
-CurationOutput <- dsCCPhos::CurateDataDS(Name_RawDataSet = "RawDataSet",
-                                         RuleProfile_RawDataTransformation = "Default",
-                                         RuleProfile_DiagnosisRedundancy = "Default",
-                                         RuleProfile_DiagnosisAssociation = "Default")
+CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
+                                         RuleProfile_RawDataTransformation.S = "Default",
+                                         RuleProfile_DiagnosisRedundancy.S = "Default",
+                                         RuleProfile_DiagnosisAssociation.S = "Default")
 
 View(CurationOutput$CurationReport$Monitor_Diagnosis)
 

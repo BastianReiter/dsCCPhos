@@ -5,22 +5,22 @@
 #'
 #' Server-side AGGREGATE method
 #'
-#' @param ObjectName String | Name of object on server
+#' @param ObjectName.S String | Name of object on server
 #'
 #' @return A list containing information about existence and class of object
 #' @export
 #'
 #' @examples
 #' @author Bastian Reiter
-GetObjectInfoDS <- function(ObjectName)
+GetObjectInfoDS <- function(ObjectName.S)
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Check input type
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    if (!is.character(ObjectName))
+    if (!is.character(ObjectName.S))
     {
-        ClientMessage <- "ERROR: 'ObjectName' must be specified as a character string"
+        ClientMessage <- "ERROR: 'ObjectName.S' must be specified as a character string"
         stop(ClientMessage, call. = FALSE)
     }
 
@@ -31,10 +31,10 @@ GetObjectInfoDS <- function(ObjectName)
     ObjectExists <- FALSE
     ObjectClass <- NULL
 
-    if (exists(ObjectName, envir = parent.frame()))
+    if (exists(ObjectName.S, envir = parent.frame()))
     {
         ObjectExists <- TRUE
-        ObjectClass <- class(get(ObjectName, envir = parent.frame()))
+        ObjectClass <- class(get(ObjectName.S, envir = parent.frame()))
     }
 
     return(list(ObjectExists = ObjectExists,

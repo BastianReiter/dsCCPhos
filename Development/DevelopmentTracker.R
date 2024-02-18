@@ -81,9 +81,9 @@ library(devtools)
 # dataSHIELD AGGREGATE functions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_r("GetCohortDescriptionDS")
-# use_r("GetCurationReportDS")
 # use_r("GetOutcomeMeasuresDS")
 # use_r("GetObjectInfoDS")
+# use_r("GetReportingObjectDS")
 # use_r("GetSampleStatisticsDS")
 # use_r("GetValidationReportDS_RawData")
 
@@ -95,8 +95,8 @@ library(devtools)
 # use_r("ExcludeRawDataDS")
 # use_r("ExcludeAugmentedDataDS")
 # use_r("ExcludeCuratedDataDS")
-# use_r("UnpackAugmentationOutputDS")
-# use_r("UnpackCurationOutputDS")
+# use_r("ExtractFromListDS")
+
 
 
 

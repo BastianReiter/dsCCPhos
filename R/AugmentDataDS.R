@@ -5,14 +5,17 @@
 #'
 #' Server-side ASSIGN method
 #'
-#' @param Name_CurationOutput String | Name of the list object created by CurateDataDS() | Default: 'CurationOutput'
+#' @param CuratedDataSetName.S String | Name of the Curated Data Set object on server | Default: 'CuratedDataSet'
 #'
-#' @return
+#' @return A list containing the following objects:
+#'         \itemize{\item AugmentedDataSet (list)
+#'                  \item AugmentationReport (list)
+#'                  \item AugmentationMessages (list)}
 #' @export
 #'
 #' @examples
 #' @author Bastian Reiter
-AugmentDataDS <- function(Name_CurationOutput = "CurationOutput")
+AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,8 +37,6 @@ AugmentDataDS <- function(Name_CurationOutput = "CurationOutput")
 #   MODULE 3)  Creation of df_ADS_Patients
 #       - Consolidate information from df_ADS_Events and df_ADS_Diagnoses
 #
-#
-#
 #   Return statement
 
 
@@ -43,13 +44,13 @@ AugmentDataDS <- function(Name_CurationOutput = "CurationOutput")
 # Evaluate and parse input before proceeding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if (is.character(Name_CurationOutput))
+if (is.character(CuratedDataSetName.S))
 {
-    CurationOutput <- eval(parse(text = Name_CurationOutput), envir = parent.frame())
+    CuratedDataSet <- eval(parse(text = CuratedDataSetName.S), envir = parent.frame())
 }
 else
 {
-    ClientMessage <- "ERROR: 'Name_CurationOutput' must be specified as a character string"
+    ClientMessage <- "ERROR: 'CuratedDataSetName.S' must be specified as a character string"
     stop(ClientMessage, call. = FALSE)
 }
 
@@ -64,9 +65,6 @@ require(purrr)
 require(stringr)
 require(tidyr)
 
-
-# Extract Curated Data Set (list of data frames) from curation output
-CuratedDataSet <- CurationOutput$CuratedDataSet
 
 # Extract data frames from list
 df_CDS_BioSampling <- CuratedDataSet$BioSampling
