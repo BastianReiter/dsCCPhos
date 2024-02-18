@@ -87,6 +87,7 @@ library(devtools)
 # use_r("GetCurationReportDS")
 # use_r("GetOutcomeMeasuresDS")
 # use_r("GetObjectInfoDS")
+# use_r("GetSampleStatisticsDS")
 # use_r("GetValidationReportDS_RawData")
 
 

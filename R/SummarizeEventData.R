@@ -18,15 +18,12 @@ SummarizeEventData <- function(EventEntries,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     require(dplyr)
-    require(dsCCPhos)
-    require(stringr)
-    require(tidyr)
 
 
     # For function testing purposes
     # EventEntries <- df_ADS_Events %>%
     #                     filter(PatientID == "Pat_105431") %>%
-    #                     unnest(cols = c(EventDetails))
+    #                     unnest(cols = c(EventDetails), keep_empty = TRUE)
 
 
 
@@ -37,7 +34,9 @@ SummarizeEventData <- function(EventEntries,
 
 
     Output <- EventEntries %>%
-                  summarize(TimeDiagnosisToDeath = ifelse("Death" %in% EventEntries$EventSubclass,
+                  summarize(PatientAgeAtDiagnosis = first(EventPatientAge[EventSubclass == "Initial diagnosis"]),      # !!! TEMPORARY? !!! If multiple "Initial diagnoses" occur (Which shouldn't be), select only the first
+                            #---------------------------------------------------
+                            TimeDiagnosisToDeath = ifelse("Death" %in% EventEntries$EventSubclass,
                                                           EventDaysSinceDiagnosis[EventSubclass == "Death"],
                                                           NA))
 

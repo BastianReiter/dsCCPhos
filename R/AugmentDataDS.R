@@ -24,14 +24,14 @@ AugmentDataDS <- function(Name_CurationOutput = "CurationOutput")
 #     - Loading of required package namespaces
 #     - Unpacking Curated Data Set (CDS)
 #
-#   MODUL 1)  Creation of df_ADS_Events
+#   MODULE 1)  Creation of df_ADS_Events
 #       - Diagnosis-related
 #       - Patient-related
 #
-#   MODUL 2)  Creation of df_ADS_Diagnoses
+#   MODULE 2)  Creation of df_ADS_Diagnoses
 #       - Consolidate information from df_ADS_Events
 #
-#   MODUL 3)  Creation of df_ADS_Patients
+#   MODULE 3)  Creation of df_ADS_Patients
 #       - Consolidate information from df_ADS_Events and df_ADS_Diagnoses
 #
 #
@@ -154,7 +154,7 @@ df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 1)  Generate df_ADS_Events
+# MODULE 1)  Generate df_ADS_Events
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -162,7 +162,7 @@ df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
 CountProgressItems <- 14
 ProgressBar <- progress_bar$new(format = "Generating diagnosis-related events [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width = 100)
-ProgressBar$tick()
+try(ProgressBar$tick())
 #-------------------------------------------------------------------------------
 
 
@@ -187,7 +187,8 @@ df_ADS_Events <- df_CDS_Patient %>%
                                  DiagnosisID,
                                  InitialDiagnosisDate,
                                  starts_with("Event"))
-ProgressBar$tick()
+                          #--- Update PB ---
+                          try(ProgressBar$tick())
 
 
 # Initiation 2: Last known vital status
@@ -208,13 +209,14 @@ df_Events_LastVitalStatus <- df_CDS_Patient %>%
                                          DiagnosisID,
                                          InitialDiagnosisDate,
                                          starts_with("Event"))
-ProgressBar$tick()
+                                  #--- Update PB ---
+                                  try(ProgressBar$tick())
 
 
 # Initiation 3: Row-bind data frames from Initiation 1 and 2
 df_ADS_Events <- df_ADS_Events %>%
                       bind_rows(df_Events_LastVitalStatus)
-ProgressBar$tick()
+try(ProgressBar$tick())
 
 
 
@@ -240,7 +242,8 @@ df_Events_BioSampling <- df_CDS_BioSampling %>%
                               ungroup() %>%
                               select(PatientID,
                                      starts_with("Event"))
-ProgressBar$tick()
+                              #--- Update PB ---
+                              try(ProgressBar$tick())
 
 
 
@@ -265,7 +268,8 @@ df_Events_Histology <- df_CDS_Histology %>%
                             select(PatientID,
                                    DiagnosisID,
                                    starts_with("Event"))
-ProgressBar$tick()
+                            #--- Update PB ---
+                            try(ProgressBar$tick())
 
 
 
@@ -288,7 +292,8 @@ df_Events_Metastasis <- df_CDS_Metastasis %>%
                             select(PatientID,
                                    DiagnosisID,
                                    starts_with("Event"))
-ProgressBar$tick()
+                            #--- Update PB ---
+                            try(ProgressBar$tick())
 
 
 
@@ -317,7 +322,8 @@ if (nrow(df_CDS_MolecularDiagnostics) > 0)
                                                  DiagnosisID,
                                                  starts_with("Event"))
 }
-ProgressBar$tick()
+#--- Update PB ---
+try(ProgressBar$tick())
 
 
 
@@ -343,7 +349,8 @@ df_Events_Progress <- df_CDS_Progress %>%
                           select(PatientID,
                                  DiagnosisID,
                                  starts_with("Event"))
-ProgressBar$tick()
+                          #--- Update PB ---
+                          try(ProgressBar$tick())
 
 
 
@@ -367,7 +374,8 @@ df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                   select(PatientID,
                                          DiagnosisID,
                                          starts_with("Event"))
-ProgressBar$tick()
+                                  #--- Update PB ---
+                                  try(ProgressBar$tick())
 
 
 
@@ -399,7 +407,8 @@ df_Events_Staging <- df_CDS_Staging %>%
                           select(PatientID,
                                  DiagnosisID,
                                  starts_with("Event"))
-ProgressBar$tick()
+                          #--- Update PB ---
+                          try(ProgressBar$tick())
 
 
 
@@ -424,7 +433,8 @@ df_Events_Surgery <- df_CDS_Surgery %>%
                           select(PatientID,
                                  DiagnosisID,
                                  starts_with("Event"))
-ProgressBar$tick()
+                          #--- Update PB ---
+                          try(ProgressBar$tick())
 
 
 
@@ -449,7 +459,8 @@ df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                   select(PatientID,
                                          DiagnosisID,
                                          starts_with("Event"))
-ProgressBar$tick()
+                                  #--- Update PB ---
+                                  try(ProgressBar$tick())
 
 
 
@@ -491,21 +502,23 @@ df_ADS_Events <- df_ADS_Events %>%
                              EventOrderSignificance,
                              EventDetails) %>%
                       ungroup()
+                      #--- Update PB ---
+                      try(ProgressBar$tick())
 
-ProgressBar$tick()
-ProgressBar$terminate()
+#--- Terminate PB ---
+try(ProgressBar$terminate())
 
 
 
 #Temporary
-# UnnestedEvents <- df_ADS_Events %>%
-#                       unnest(cols = c(EventDetails))
+UnnestedEvents <- df_ADS_Events %>%
+                      unnest(cols = c(EventDetails), keep_empty = TRUE)
 
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 2)  Generate df_ADS_Diagnoses
+# MODULE 2)  Generate df_ADS_Diagnoses
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -513,19 +526,19 @@ ProgressBar$terminate()
 CountProgressItems <- 4
 ProgressBar <- progress_bar$new(format = "Composing diagnosis-specific data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width = 100)
-ProgressBar$tick()
+try(ProgressBar$tick())
 #-------------------------------------------------------------------------------
 
 
-
+# Summarize diagnosis-specific event data using dsCCPhos::SummarizeEventData()
 df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
-                                      unnest(cols = c(EventDetails)) %>%
+                                      unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
                                       group_by(PatientID, DiagnosisID) %>%
                                           group_modify(~ SummarizeEventData(EventEntries = .x,
                                                                             ProgressBarObject = NULL)) %>%
                                       ungroup()
-
-ProgressBar$tick()
+                                      #--- Update PB ---
+                                      try(ProgressBar$tick())
 
 
 df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
@@ -534,17 +547,19 @@ df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
                                 arrange(StagingReportDate) %>%
                                 slice_head() %>%
                             ungroup()
-
-ProgressBar$tick()
+                            #--- Update PB ---
+                            try(ProgressBar$tick())
 
 
 df_ADS_Diagnoses <- df_Aux_DiagnosisData %>%
                         left_join(df_Aux_DiagnosisSummary_Events, by = join_by(PatientID, DiagnosisID)) %>%
-                        filter(is.na(TimeDiagnosisToDeath) | TimeDiagnosisToDeath >= 0) %>%
+                        #filter(is.na(TimeDiagnosisToDeath) | TimeDiagnosisToDeath >= 0) %>%
                         ungroup()
+                        #--- Update PB ---
+                        try(ProgressBar$tick())
 
-ProgressBar$tick()
-ProgressBar$terminate()
+#--- Terminate PB ---
+try(ProgressBar$terminate())
 
 
 
@@ -574,7 +589,7 @@ ProgressBar$terminate()
 #
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODUL 3)  Generate df_ADS_Patients
+# MODULE 3)  Generate df_ADS_Patients
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -582,7 +597,7 @@ ProgressBar$terminate()
 CountProgressItems <- 3
 ProgressBar <- progress_bar$new(format = "Composing patient-specific data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width = 100)
-ProgressBar$tick()
+try(ProgressBar$tick())
 #-------------------------------------------------------------------------------
 
 
@@ -591,20 +606,24 @@ df_Aux_PatientSummary_Diagnosis <- df_CDS_Diagnosis %>%
                                         group_by(PatientID) %>%
                                             summarize(CountDiagnoses = n_distinct(DiagnosisID)) %>%
                                         ungroup()
+                                        #--- Update PB ---
+                                        try(ProgressBar$tick())
 
-ProgressBar$tick()
 
 
+# !!! TEMPORARY !!! (For easier testing, slice is performed to filter for only one diagnosis per patient)
 df_ADS_Patients <- df_CDS_Patient %>%
                         left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID)) %>%
-                        left_join(df_ADS_Diagnoses, by = join_by(PatientID)) %>%
+                        left_join(df_ADS_Diagnoses, by = join_by(PatientID)) %>%      # <--- TEMPORARY: Joining with ADS_Diagnoses
                         group_by(PatientID) %>%
                             arrange(InitialDiagnosisDate) %>%
-                            slice_head() %>%
+                            slice_head() %>%      # <--- TEMPORARY: Slice performed
                         ungroup()
+                        #--- Update PB ---
+                        try(ProgressBar$tick())
 
-ProgressBar$tick()
-ProgressBar$terminate()
+#--- Terminate PB ---
+try(ProgressBar$terminate())
 
 
 

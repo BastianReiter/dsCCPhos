@@ -30,12 +30,12 @@ FinalizeDataTransformation <- function(TargetVector,
     require(dsCCPhos)
 
     # For testing purposes
-    # TargetVector <- df_CDS_Staging$TNM_N_Prefix
-    # TableName = "Staging"
-    # FeatureName = "TNM_N_Prefix"
+    # TargetVector <- df_CDS_Diagnosis$LocalizationSide
+    # TableName = "Diagnosis"
+    # FeatureName = "LocalizationSide"
     # ExcludeIneligibleValues = TRUE
     # ConvertToFactor = FALSE
-    # AssignFactorLabels = FALSE
+    # AssignFactorLabels = TRUE
 
     vc_Output <- TargetVector
 
