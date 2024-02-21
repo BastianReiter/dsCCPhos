@@ -7,15 +7,19 @@
 TransformData(DataFrame, TableName, RuleSet, RuleProfile)
 }
 \arguments{
-\item{TargetVector}{Vector that recoding is performed on}
+\item{DataFrame}{data frame containing data to be transformed}
 
-\item{Dictionary}{A named character vector. Vector names are look-up values, vector values are substitute values.}
+\item{TableName}{String | Name of the table (to enable mapping to transformation rules)}
+
+\item{RuleSet}{Data frame | Contains predefined set of transformation rules}
+
+\item{RuleProfile}{String | Profile name stated in rule set data frame}
 }
 \value{
-A vector
+The input data frame with transformed data values
 }
 \description{
-Uses dplyr::mutate() to transform data based on transformation rules defined in dsCCPhos::RuleSet_RawDataTransformation
+Uses dplyr::mutate() to transform data based on transformation rules defined in a given rule set (Default: dsCCPhos::RuleSet_RawDataTransformation)
 }
 \author{
 Bastian Reiter
