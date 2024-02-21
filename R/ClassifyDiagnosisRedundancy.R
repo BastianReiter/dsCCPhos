@@ -48,7 +48,7 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
     # Arrange diagnosis entries by InitialDiagnosisDate and lowest number of relevant NAs
     DiagnosisEntries <- DiagnosisEntries %>%
                             rowwise() %>%
-                            mutate(CountRelevantNAs = sum(is.na(across(all_of(PredictorFeatures))))) %>%
+                                mutate(CountRelevantNAs = sum(is.na(across(all_of(PredictorFeatures))))) %>%
                             ungroup() %>%
                             arrange(InitialDiagnosisDate, CountRelevantNAs)
 
@@ -81,7 +81,6 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
                                   mutate(CountDeviatingValues = CountDeviations(CandidateEntry = pick(all_of(setdiff(PredictorFeatures, "CountDeviatingValues"))),
                                                                                 ReferenceEntry = Reference,
                                                                                 ComparedFeatures = setdiff(PredictorFeatures, "CountDeviatingValues"))) %>%
-
                               ungroup() %>%
                               mutate(IsLikelyRedundant = eval(parse(text = RuleCalls[["IsLikelyRedundant"]])))
 
@@ -140,6 +139,13 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
     # Process Output data frame
     Output <- Output %>%
                   select(-CountRelevantNAs)
+
+    # In case no redundancies were classified anywhere, attach empty column "CountRedundancies" for subsequential syntax consistency
+    if ("CountRedundancies" %in% names(Output) == FALSE)
+    {
+        Output <- Output %>%
+                      mutate(CountRedundancies = NA)
+    }
 
 
     return(as.data.frame(Output))

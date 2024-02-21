@@ -5,12 +5,13 @@ library(dsCCPhos)
 
 # Load CCP test data as raw data set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
+RawDataSet <- readRDS(file = "./Development/Data/RealData/CCPRealData_Frankfurt.rds")
+#RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
 
 
-# Make Test data set smaller for easier testing
+# Sub-sample test data for easier testing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-NumberOfPatients <- 1000
+NumberOfPatients <- 10000
 
 # Get a random sample of PatientIDs
 SamplePatientIDs <- sample(RawDataSet$patient$"_id",
@@ -38,12 +39,6 @@ names(RawDataSet) <- sapply(names(RawDataSet),
                             function(TableName) { vc_Lookup[TableName] })
 
 
-# Set CurateDataDS argument values manually if needed
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-RuleProfile_RawDataTransformation.S = "Default"
-RuleProfile_DiagnosisRedundancy.S = "Default"
-RuleProfile_DiagnosisAssociation.S = "Default"
-
 
 # Curate data
 CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
@@ -51,9 +46,8 @@ CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
                                          RuleProfile_DiagnosisRedundancy.S = "Default",
                                          RuleProfile_DiagnosisAssociation.S = "Default")
 
-View(CurationOutput$CurationReport$Monitor_Diagnosis)
 
-View(CurationOutput$CuratedDataSet$Diagnosis)
+View(CurationOutput$CurationReport$Staging)
 
 # Save curated data set for testing purposes
 # save(CurationOutput, file = "./Development/Data/TestData/CCPCurationOutput.Rdata")
