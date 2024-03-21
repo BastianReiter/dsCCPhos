@@ -26,7 +26,24 @@ CurateDataDS(
 \value{
 A list containing the following objects:
 \itemize{\item CuratedDataSet (list)
+\itemize{\item BioSampling
+\item Diagnosis
+\item Histology
+\item Metastasis
+\item MolecularDiagnostics
+\item Patient
+\item Progress
+\item RadiationTherapy
+\item Staging
+\item Surgery
+\item SystemicTherapy}
 \item CurationReport (list)
+\itemize{\item UnlinkedEntries (named vector)
+\item Transformation (list of data frames)
+\itemize{\item BioSampling
+\item Diagnosis
+\item ...}
+\item DiagnosisClassification (named vector)}
 \item CurationMessages (list)}
 }
 \description{

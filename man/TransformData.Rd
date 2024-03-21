@@ -19,6 +19,9 @@ TransformData(DataFrame, TableName, RuleSet, RuleProfile)
 The input data frame with transformed data values
 }
 \description{
+Transforms data based on a given rule set. First, general transformations are performed using regular expression based rules. Second, for direct replacement of values hash tables are being compiled and applied.
+}
+\details{
 Uses dplyr::mutate() to transform data based on transformation rules defined in a given rule set (Default: dsCCPhos::RuleSet_RawDataTransformation)
 }
 \author{
