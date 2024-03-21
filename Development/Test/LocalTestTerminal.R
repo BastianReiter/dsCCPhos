@@ -5,13 +5,13 @@ library(dsCCPhos)
 
 # Load CCP test data as raw data set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-RawDataSet <- readRDS(file = "./Development/Data/RealData/CCPRealData_Frankfurt.rds")
-#RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
+#RawDataSet <- readRDS(file = "./Development/Data/RealData/CCPRealData_Frankfurt.rds")
+RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
 
 
 # Sub-sample test data for easier testing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-NumberOfPatients <- 10000
+NumberOfPatients <- 1000
 
 # Get a random sample of PatientIDs
 SamplePatientIDs <- sample(RawDataSet$patient$"_id",
@@ -47,15 +47,15 @@ CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
                                          RuleProfile_DiagnosisAssociation.S = "Default")
 
 
-View(CurationOutput$CurationReport$Staging)
+View(CurationOutput$CurationReport$UnlinkedEntries)
 
-# Save curated data set for testing purposes
-# save(CurationOutput, file = "./Development/Data/TestData/CCPCurationOutput.Rdata")
+
+CuratedDataSet <- CurationOutput$CuratedDataSet
 
 # Augment data based on curation output
-AugmentationOutput <- dsCCPhos::AugmentDataDS("CurationOutput")
+AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 
-View(AugmentationOutput$Patients)
+View(AugmentationOutput$AugmentedDataSet$Patients)
 
 
 

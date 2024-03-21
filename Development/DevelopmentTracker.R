@@ -28,9 +28,11 @@ library(devtools)
 # Adding package dependencies using usethis::use_package()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# use_package("cli")
 # use_package("dplyr")
 # use_package("DSI")
 # use_package("DSOpal")
+# use_dev_package("dsSurvival", remote = "neelsoumya/dsSurvival")
 # use_package("duckdb", type = "Suggests")
 # use_package("lubridate")
 # use_package("progress")

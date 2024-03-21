@@ -12,8 +12,6 @@
 #'                  \item AugmentationReport (list)
 #'                  \item AugmentationMessages (list)}
 #' @export
-#'
-#' @examples
 #' @author Bastian Reiter
 AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -64,6 +62,14 @@ require(lubridate)
 require(purrr)
 require(stringr)
 require(tidyr)
+
+
+# Suppress summarize info messages
+options(dplyr.summarise.inform = FALSE)
+
+# Initiate Messaging objects
+Messages <- list()
+Messages$Completed <- FALSE
 
 
 # Extract data frames from list
@@ -625,13 +631,35 @@ try(ProgressBar$terminate())
 
 
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Put data frames into list to get compact Augmented Data Set (ADS) object
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# - Conversion from tibble to data.frame (if necessary), because dataSHIELD can handle data.frames better
+#-------------------------------------------------------------------------------
+ls_AugmentedDataSet <- list(Patients = as.data.frame(df_ADS_Patients),
+                            Diagnoses = as.data.frame(df_ADS_Diagnoses),
+                            Events = as.data.frame(df_ADS_Events))
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define content of AugmentationReport
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ls_AugmentationReport <- list(Test = c("TestReport"))
+
+Messages$Completed <- TRUE
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RETURN STATEMENT
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-return(list(Patients = df_ADS_Patients,
-            Diagnoses = df_ADS_Diagnoses,
-            Events = df_ADS_Events))
+# Return the Augmented Data Set (ADS), an Augmentation Report (defined above) and Messages
+return(list(AugmentedDataSet = ls_AugmentedDataSet,
+            AugmentationReport = ls_AugmentationReport,
+            AugmentationMessages = Messages))
+
 }
 
 

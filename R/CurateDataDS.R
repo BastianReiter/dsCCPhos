@@ -15,11 +15,26 @@
 #'
 #' @return A list containing the following objects:
 #'         \itemize{\item CuratedDataSet (list)
+#'                      \itemize{\item BioSampling
+#'                               \item Diagnosis
+#'                               \item Histology
+#'                               \item Metastasis
+#'                               \item MolecularDiagnostics
+#'                               \item Patient
+#'                               \item Progress
+#'                               \item RadiationTherapy
+#'                               \item Staging
+#'                               \item Surgery
+#'                               \item SystemicTherapy}
 #'                  \item CurationReport (list)
+#'                      \itemize{\item UnlinkedEntries (named vector)
+#'                               \item Transformation (list of data frames)
+#'                                    \itemize{\item BioSampling
+#'                                             \item Diagnosis
+#'                                             \item ...}
+#'                               \item DiagnosisClassification (named vector)}
 #'                  \item CurationMessages (list)}
 #' @export
-#'
-#' @examples
 #' @author Bastian Reiter
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                          RuleSet_RawDataTransformation.S = dsCCPhos::RuleSet_RawDataTransformation,
@@ -95,8 +110,7 @@ options(dplyr.summarise.inform = FALSE)
 
 # Initiate Messaging objects
 Messages <- list()
-Messages$DataTransformation <- character()
-Messages$DiagnosisClassification <- character()
+Messages$Completed <- FALSE
 
 
 # For testing purposes
@@ -165,11 +179,28 @@ df_SystemicTherapy <- ls_DataSet$SystemicTherapy
 #   - Remove duplicate entries
 #-------------------------------------------------------------------------------
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MONITORING: Count unlinked entries (Part 1)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CountEntriesBeforeCleaning <- c(BioSampling = nrow(df_BioSampling),
+                                Diagnosis = nrow(df_Diagnosis),
+                                Histology = nrow(df_Histology),
+                                Metastasis = nrow(df_Metastasis),
+                                MolecularDiagnostics = nrow(df_MolecularDiagnostics),
+                                Patient = nrow(df_Patient),
+                                Progress = nrow(df_Progress),
+                                RadiationTherapy = nrow(df_RadiationTherapy),
+                                Staging = nrow(df_Staging),
+                                Surgery = nrow(df_Surgery),
+                                SystemicTherapy = nrow(df_SystemicTherapy))
+
+
 # Set up progress bar
 CountProgressItems <- 12
 ProgressBar <- progress_bar$new(format = "Cleaning table entries [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width = 100)
 try(ProgressBar$tick())
+
 
 
 #--- Patient -------------------------------------------------------------------
@@ -349,6 +380,31 @@ try(ProgressBar$tick())
 try(ProgressBar$terminate())
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MONITORING: Count unlinked entries (Part 2)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CountEntriesAfterCleaning <- c(BioSampling = nrow(df_BioSampling),
+                               Diagnosis = nrow(df_Diagnosis),
+                               Histology = nrow(df_Histology),
+                               Metastasis = nrow(df_Metastasis),
+                               MolecularDiagnostics = nrow(df_MolecularDiagnostics),
+                               Patient = nrow(df_Patient),
+                               Progress = nrow(df_Progress),
+                               RadiationTherapy = nrow(df_RadiationTherapy),
+                               Staging = nrow(df_Staging),
+                               Surgery = nrow(df_Surgery),
+                               SystemicTherapy = nrow(df_SystemicTherapy))
+
+CountUnlinkedEntries <- CountEntriesBeforeCleaning - CountEntriesAfterCleaning
+
+# Print messages for live monitoring in local tests
+cat("\n")
+for (i in 1:length(CountUnlinkedEntries))
+{
+    Message <- paste0("Removed ", CountUnlinkedEntries[i], " unlinked entries from '", names(CountUnlinkedEntries)[i], "' table.")
+    cli::cat_bullet(Message, bullet = "info")
+}
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -370,7 +426,6 @@ CountProgressItems <- 29
 ProgressBar <- progress_bar$new(format = "Harmonizing data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
 try(ProgressBar$tick())
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -929,6 +984,8 @@ names(ls_MonitorSummaries) <- c("BioSampling",
 try(ProgressBar$tick())
 try(ProgressBar$terminate())
 
+# Print info message
+cli::cat_bullet("Data transformation monitors are stored in 'CurationReport$Transformation'", bullet = "info")
 
 
 
@@ -1017,24 +1074,23 @@ df_Diagnosis <- df_Diagnosis %>%
                         mutate(PatientCountDistinctEntries = n()) %>%
                     ungroup()
 
-# For monitoring purposes, obtain:
-# a) number of redundant diagnosis entries and
-# b) number of patients that had redundant diagnosis entries
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MONITORING: Redundant diagnosis entries
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# a) Number of redundant diagnosis entries and
+# b) Number of patients that had redundant diagnosis entries
 CountDiagnosisRedundancies <- sum(df_Diagnosis$CountRedundancies, na.rm = TRUE)
-CountPatientsWithRedundancies <- df_Diagnosis %>%
-                                      filter(CountRedundancies > 0) %>%
-                                      pull(PatientID) %>%
-                                      n_distinct()
+CountPatientsWithDiagnosisRedundancies <- df_Diagnosis %>%
+                                              filter(CountRedundancies > 0) %>%
+                                              pull(PatientID) %>%
+                                              n_distinct()
 
-# Compile message
-Message <- paste0("Found ", CountDiagnosisRedundancies, " redundancies related to ", CountPatientsWithRedundancies, " patient IDs.")
+# Print message for live monitoring in local tests
+Message <- paste0("Found ", CountDiagnosisRedundancies, " redundancies related to ", CountPatientsWithDiagnosisRedundancies, " patient IDs.")
+cli::cat_bullet(Message, bullet = "info")
 
-# Add message to Messages list
-Messages$DiagnosisClassification <- c(Messages$DiagnosisClassification,
-                                              Message)
-# Additionally, print message on console
-cat(Message)
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 # Replace IDs (Original DiagnosisID and not newly composed one) of redundant diagnosis entries in related tables
@@ -1188,23 +1244,23 @@ df_Diagnosis <- df_Diagnosis %>%
                     rename(all_of(c(SubDiagnosisID = "DiagnosisID",
                                     DiagnosisID = "ReferenceDiagnosisID")))
 
-# For monitoring purposes, obtain:
-# a) number of associated diagnosis entries and
-# b) number of patients that have associated diagnosis entries
-CountAssociatedDiagnoses <- sum(df_Diagnosis$IsLikelyAssociated, na.rm = TRUE)
-CountPatientsWithAssociatedDiagnoses <- df_Aux_Diagnosis_ClassifiedAssociations %>%
-                                            filter(IsLikelyAssociated == TRUE) %>%
-                                            pull(PatientID) %>%
-                                            n_distinct()
 
-# Compile message
-Message <- paste0("Classified ", CountAssociatedDiagnoses, " associated diagnosis entries related to ", CountPatientsWithAssociatedDiagnoses, " patient IDs.")
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MONITORING: Associated diagnosis entries
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# a) Number of associated diagnosis entries and
+# b) Number of patients that have associated diagnosis entries
+CountDiagnosisAssociations <- sum(df_Diagnosis$IsLikelyAssociated, na.rm = TRUE)
+CountPatientsWithDiagnosisAssociations <- df_Aux_Diagnosis_ClassifiedAssociations %>%
+                                              filter(IsLikelyAssociated == TRUE) %>%
+                                              pull(PatientID) %>%
+                                              n_distinct()
 
-# Add message to Messages list
-Messages$DiagnosisClassification <- c(Messages$DiagnosisClassification,
-                                              Message)
-# Additionally, print message on console
-cat(Message)
+# Print message for live monitoring in local tests
+Message <- paste0("Classified ", CountDiagnosisAssociations, " associated diagnosis entries related to ", CountPatientsWithDiagnosisAssociations, " patient IDs.")
+cli::cat_bullet(Message, bullet = "info")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 # Create table for DiagnosisID replacement in related tables
@@ -1273,26 +1329,41 @@ df_Histology <- df_Diagnosis %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Re-pack data frames into list to get compact Curated Data Set (CDS) object
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ls_CuratedDataSet <- list(BioSampling = df_BioSampling,
-                          Diagnosis = df_Diagnosis,
-                          Histology = df_Histology,
-                          Metastasis = df_Metastasis,
-                          MolecularDiagnostics = df_MolecularDiagnostics,
-                          Patient = df_Patient,
-                          Progress = df_Progress,
-                          RadiationTherapy = df_RadiationTherapy,
-                          Staging = df_Staging,
-                          Surgery = df_Surgery,
-                          SystemicTherapy = df_SystemicTherapy)
+# - Conversion from tibble to data.frame (if necessary), because dataSHIELD can handle data.frames better
+#-------------------------------------------------------------------------------
+ls_CuratedDataSet <- list(BioSampling = as.data.frame(df_BioSampling),
+                          Diagnosis = as.data.frame(df_Diagnosis),
+                          Histology = as.data.frame(df_Histology),
+                          Metastasis = as.data.frame(df_Metastasis),
+                          MolecularDiagnostics = as.data.frame(df_MolecularDiagnostics),
+                          Patient = as.data.frame(df_Patient),
+                          Progress = as.data.frame(df_Progress),
+                          RadiationTherapy = as.data.frame(df_RadiationTherapy),
+                          Staging = as.data.frame(df_Staging),
+                          Surgery = as.data.frame(df_Surgery),
+                          SystemicTherapy = as.data.frame(df_SystemicTherapy))
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define content of CurationReport
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ls_CurationReport <- list(UnlinkedEntries = CountUnlinkedEntries,      # Named vector
+                          Transformation = ls_MonitorSummaries,      # List
+                          DiagnosisClassification = c(DiagnosisRedundancies = CountDiagnosisRedundancies,      # Named vector
+                                                      PatientsWithDiagnosisRedundancies = CountPatientsWithDiagnosisRedundancies,
+                                                      DiagnosisAssociations = CountDiagnosisAssociations,
+                                                      PatientsWithDiagnosisAssociations = CountPatientsWithDiagnosisAssociations))
+
+Messages$Completed <- TRUE
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RETURN STATEMENT
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Return the Curated Data Set (CDS), the list of monitor objects as Curation Report and Messages
+# Return the Curated Data Set (CDS) a Curation Report (defined above) and Messages
 return(list(CuratedDataSet = ls_CuratedDataSet,
-            CurationReport = ls_MonitorSummaries,
+            CurationReport = ls_CurationReport,
             CurationMessages = Messages))
-
 }
 
