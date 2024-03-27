@@ -11,7 +11,7 @@ TrackValueCounts(DataFrame, Features, TransformationStage = NULL)
 
 \item{Features}{A list of vectors. Name of vector object gives name of feature, optional vector values give eligible values.}
 
-\item{TransformationStage}{String representing transformation stage (usually "Raw" / "After Transformation" / "After Exclusion")}
+\item{TransformationStage}{String representing transformation stage (usually "Raw" / "Transformed" / "Final")}
 }
 \value{
 A tibble
