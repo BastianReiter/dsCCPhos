@@ -96,7 +96,6 @@ else
 
 # Use require() to load package namespaces
 require(dplyr)
-require(dsCCPhos)
 require(lubridate)
 require(progress)
 require(purrr)
@@ -223,14 +222,14 @@ try(ProgressBar$tick())
 
 # Get vector of DiagnosisIDs that are linked with a PatientID
 vc_EligibleDiagnosisIDs <- df_Diagnosis %>%
-                                    left_join(df_Patient, by = join_by(PatientID)) %>%
-                                    filter(!is.na(PatientID)) %>%
-                                    pull(DiagnosisID)
+                                left_join(df_Patient, by = join_by(PatientID)) %>%
+                                filter(!is.na(PatientID)) %>%
+                                pull(DiagnosisID)
 
 # Filter out diagnosis entries with no related patient data and keep only distinct rows (removal of duplicates)
 df_Diagnosis <- df_Diagnosis %>%
-                        filter(DiagnosisID %in% vc_EligibleDiagnosisIDs) %>%
-                        distinct(across(-DiagnosisID), .keep_all = TRUE)      # Keep only rows that are distinct (everywhere but DiagnosisID)
+                    filter(DiagnosisID %in% vc_EligibleDiagnosisIDs) %>%
+                    distinct(across(-DiagnosisID), .keep_all = TRUE)      # Keep only rows that are distinct (everywhere but DiagnosisID)
 
 try(ProgressBar$tick())
 
@@ -245,8 +244,8 @@ vc_EligibleHistologyIDs <- df_Histology %>%
 
 # Filter out histology entries with no related diagnosis data and keep only distinct rows (removal of duplicates)
 df_Histology <- df_Histology %>%
-                        filter(HistologyID %in% vc_EligibleHistologyIDs) %>%
-                        distinct(across(-HistologyID), .keep_all = TRUE)
+                    filter(HistologyID %in% vc_EligibleHistologyIDs) %>%
+                    distinct(across(-HistologyID), .keep_all = TRUE)
 
 try(ProgressBar$tick())
 
@@ -261,8 +260,8 @@ vc_EligibleSampleIDs <- df_BioSampling %>%
 
 # Filter out...
 df_BioSampling <- df_BioSampling %>%
-                          filter(SampleID %in% vc_EligibleSampleIDs) %>%
-                          distinct()
+                      filter(SampleID %in% vc_EligibleSampleIDs) %>%
+                      distinct()
 
 try(ProgressBar$tick())
 
@@ -277,8 +276,8 @@ vc_EligibleMetastasisIDs <- df_Metastasis %>%
 
 # Filter out...
 df_Metastasis <- df_Metastasis %>%
-                          filter(MetastasisID %in% vc_EligibleMetastasisIDs) %>%
-                          distinct(across(-MetastasisID), .keep_all = TRUE)
+                      filter(MetastasisID %in% vc_EligibleMetastasisIDs) %>%
+                      distinct(across(-MetastasisID), .keep_all = TRUE)
 
 try(ProgressBar$tick())
 
@@ -293,8 +292,8 @@ vc_EligibleMolecularDiagnosticsIDs <- df_MolecularDiagnostics %>%
 
 # Filter out...
 df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
-                                    filter(MolecularDiagnosticsID %in% vc_EligibleMolecularDiagnosticsIDs) %>%
-                                    distinct(across(-MolecularDiagnosticsID), .keep_all = TRUE)
+                                filter(MolecularDiagnosticsID %in% vc_EligibleMolecularDiagnosticsIDs) %>%
+                                distinct(across(-MolecularDiagnosticsID), .keep_all = TRUE)
 
 try(ProgressBar$tick())
 
@@ -309,8 +308,8 @@ vc_EligibleProgressIDs <- df_Progress %>%
 
 # Filter out...
 df_Progress <- df_Progress %>%
-                        filter(ProgressID %in% vc_EligibleProgressIDs) %>%
-                        distinct(across(-ProgressID), .keep_all = TRUE)
+                    filter(ProgressID %in% vc_EligibleProgressIDs) %>%
+                    distinct(across(-ProgressID), .keep_all = TRUE)
 
 try(ProgressBar$tick())
 
@@ -325,8 +324,8 @@ vc_EligibleRadiationTherapyIDs <- df_RadiationTherapy %>%
 
 # Filter out...
 df_RadiationTherapy <- df_RadiationTherapy %>%
-                                filter(RadiationTherapyID %in% vc_EligibleRadiationTherapyIDs) %>%
-                                distinct(across(-RadiationTherapyID), .keep_all = TRUE)
+                            filter(RadiationTherapyID %in% vc_EligibleRadiationTherapyIDs) %>%
+                            distinct(across(-RadiationTherapyID), .keep_all = TRUE)
 
 try(ProgressBar$tick())
 
@@ -341,8 +340,8 @@ vc_EligibleStagingIDs <- df_Staging %>%
 
 # Filter out...
 df_Staging <- df_Staging %>%
-                      filter(StagingID %in% vc_EligibleStagingIDs) %>%
-                      distinct(across(-StagingID), .keep_all = TRUE)
+                  filter(StagingID %in% vc_EligibleStagingIDs) %>%
+                  distinct(across(-StagingID), .keep_all = TRUE)
 
 try(ProgressBar$tick())
 
@@ -357,8 +356,8 @@ vc_EligibleSurgeryIDs <- df_Surgery %>%
 
 # Filter out...
 df_Surgery <- df_Surgery %>%
-                      filter(SurgeryID %in% vc_EligibleSurgeryIDs) %>%
-                      distinct(across(-SurgeryID), .keep_all = TRUE)
+                  filter(SurgeryID %in% vc_EligibleSurgeryIDs) %>%
+                  distinct(across(-SurgeryID), .keep_all = TRUE)
 
 try(ProgressBar$tick())
 
@@ -373,8 +372,8 @@ vc_EligibleSystemicTherapyIDs <- df_SystemicTherapy %>%
 
 # Filter out...
 df_SystemicTherapy <- df_SystemicTherapy %>%
-                              filter(SystemicTherapyID %in% vc_EligibleSystemicTherapyIDs) %>%
-                              distinct(across(-SystemicTherapyID), .keep_all = TRUE)
+                          filter(SystemicTherapyID %in% vc_EligibleSystemicTherapyIDs) %>%
+                          distinct(across(-SystemicTherapyID), .keep_all = TRUE)
 
 try(ProgressBar$tick())
 try(ProgressBar$terminate())
@@ -411,13 +410,17 @@ for (i in 1:length(CountUnlinkedEntries))
 # MODULE 3)  Data Harmonization / Transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   A) Definition of features to monitor during Transformation
-#   B) Value transformation
+#   B) Tracking of raw feature values
+#   C) Value transformation
 #        - Harmonization and correction
 #        - Recoding
 #        - Formatting
-#   C) Finalize transformation of data
+#   D) Tracking of transformed feature values
+#   E) Finalize transformation of data
 #        - Removing of ineligible values
 #        - Optional conversion to factor
+#   F) Tracking of finalized feature values
+#   G) Compilation of monitor objects for reporting
 #-------------------------------------------------------------------------------
 
 
@@ -429,7 +432,7 @@ try(ProgressBar$tick())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 A)  Definition of features to monitor during Transformation
+# Module 3 A)  Definition of tracked features and their sets of eligible values
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Object syntax: List of vectors
 #     - Vector names = Name of feature to be monitored during Curation (Transformation)
@@ -437,38 +440,38 @@ try(ProgressBar$tick())
 # If a feature should be monitored but has no specific set of eligible values, set it NULL
 #-------------------------------------------------------------------------------
 
-ls_MonitorFeatures_BioSampling <- list(SampleType = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleType")$Value_Curated,
+ls_MonitorMetaData_BioSampling <- list(SampleType = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleType")$Value_Curated,
                                        SampleAliquot = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleAliquot")$Value_Curated)
 
 
-ls_MonitorFeatures_Diagnosis <- list(ICD10Version = NULL,
+ls_MonitorMetaData_Diagnosis <- list(ICD10Version = NULL,
                                      LocalizationSide = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "LocalizationSide")$Value_Curated)
 
 
-ls_MonitorFeatures_Histology <- list(Grading = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Histology" & Feature == "Grading")$Value_Curated)
+ls_MonitorMetaData_Histology <- list(Grading = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Histology" & Feature == "Grading")$Value_Curated)
 
 
-ls_MonitorFeatures_Metastasis <- list(MetastasisLocalization = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Metastasis" & Feature == "MetastasisLocalization")$Value_Curated)
+ls_MonitorMetaData_Metastasis <- list(MetastasisLocalization = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Metastasis" & Feature == "MetastasisLocalization")$Value_Curated)
 
 
-ls_MonitorFeatures_MolecularDiagnostics <- list()
+ls_MonitorMetaData_MolecularDiagnostics <- list()
 
 
-ls_MonitorFeatures_Patient <- list(Gender = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "Gender")$Value_Curated,
+ls_MonitorMetaData_Patient <- list(Gender = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "Gender")$Value_Curated,
                                    LastVitalStatus = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "LastVitalStatus")$Value_Curated)
 
 
-ls_MonitorFeatures_Progress <- list(GlobalStatus = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus")$Value_Curated,
+ls_MonitorMetaData_Progress <- list(GlobalStatus = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus")$Value_Curated,
                                     LocalStatus = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "LocalStatus")$Value_Curated,
                                     LymphnodalStatus = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "LymphnodalStatus")$Value_Curated,
                                     MetastasisStatus = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "MetastasisStatus")$Value_Curated)
 
 
-ls_MonitorFeatures_RadiationTherapy <- list(RadiationTherapyRelationToSurgery = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationTherapyRelationToSurgery")$Value_Curated,
+ls_MonitorMetaData_RadiationTherapy <- list(RadiationTherapyRelationToSurgery = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationTherapyRelationToSurgery")$Value_Curated,
                                             RadiationTherapyIntention = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationTherapyIntention")$Value_Curated)
 
 
-ls_MonitorFeatures_Staging <- list(UICCStage = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "UICCStage")$Value_Curated,
+ls_MonitorMetaData_Staging <- list(UICCStage = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "UICCStage")$Value_Curated,
                                    TNM_T = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_T")$Value_Curated,
                                    TNM_N = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_N")$Value_Curated,
                                    TNM_M = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M")$Value_Curated,
@@ -480,12 +483,12 @@ ls_MonitorFeatures_Staging <- list(UICCStage = dplyr::filter(dsCCPhos::Meta_Valu
                                    TNM_mSymbol = NULL)
 
 
-ls_MonitorFeatures_Surgery <- list(SurgeryIntention = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "SurgeryIntention")$Value_Curated,
+ls_MonitorMetaData_Surgery <- list(SurgeryIntention = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "SurgeryIntention")$Value_Curated,
                                    ResidualAssessmentLocal = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentLocal")$Value_Curated,
                                    ResidualAssessmentTotal = dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentTotal")$Value_Curated)
 
 
-ls_MonitorFeatures_SystemicTherapy <- list(IsChemotherapy = NULL,
+ls_MonitorMetaData_SystemicTherapy <- list(IsChemotherapy = NULL,
                                            IsImmunotherapy = NULL,
                                            IsHormoneTherapy = NULL,
                                            IsBoneMarrowTransplant = NULL,
@@ -495,29 +498,32 @@ ls_MonitorFeatures_SystemicTherapy <- list(IsChemotherapy = NULL,
 
 # Put all objects in one list object to make them passable to functions (alphabetic order)
 # Names must be in same order as in ls_DataSet
-ls_MonitorFeatures_All <- list(BioSampling = ls_MonitorFeatures_BioSampling,
-                               Diagnosis = ls_MonitorFeatures_Diagnosis,
-                               Histology = ls_MonitorFeatures_Histology,
-                               Metastasis = ls_MonitorFeatures_Metastasis,
-                               MolecularDiagnostics = ls_MonitorFeatures_MolecularDiagnostics,
-                               Patient = ls_MonitorFeatures_Patient,
-                               Progress = ls_MonitorFeatures_Progress,
-                               RadiationTherapy = ls_MonitorFeatures_RadiationTherapy,
-                               Staging = ls_MonitorFeatures_Staging,
-                               Surgery = ls_MonitorFeatures_Surgery,
-                               SystemicTherapy = ls_MonitorFeatures_SystemicTherapy)
+ls_MonitorMetaData_All <- list(BioSampling = ls_MonitorMetaData_BioSampling,
+                               Diagnosis = ls_MonitorMetaData_Diagnosis,
+                               Histology = ls_MonitorMetaData_Histology,
+                               Metastasis = ls_MonitorMetaData_Metastasis,
+                               MolecularDiagnostics = ls_MonitorMetaData_MolecularDiagnostics,
+                               Patient = ls_MonitorMetaData_Patient,
+                               Progress = ls_MonitorMetaData_Progress,
+                               RadiationTherapy = ls_MonitorMetaData_RadiationTherapy,
+                               Staging = ls_MonitorMetaData_Staging,
+                               Surgery = ls_MonitorMetaData_Surgery,
+                               SystemicTherapy = ls_MonitorMetaData_SystemicTherapy)
 
 try(ProgressBar$tick())
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MONITORING: Track feature values of raw data
+# Module 3 B)  Track feature values of raw data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Get unique raw values and their frequencies for monitoring
+#   - Copy values of monitored features and mark them with TrackID that has correspondent in actually processed data frames
+
 
 # Re-pack data frames into list in order to pass them to map-function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Names have to be exactly the same (and the same order) as in ls_MonitorFeatures_all
+#   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
 #-------------------------------------------------------------------------------
 ls_DataSet <- list(BioSampling = df_BioSampling,
                    Diagnosis = df_Diagnosis,
@@ -534,19 +540,41 @@ ls_DataSet <- list(BioSampling = df_BioSampling,
                    try(ProgressBar$tick())
 
 
-# Check if object names in ls_DataSet and ls_MonitorFeatures_All are identical to avoid incorrect mapping
-if (all(names(ls_DataSet) == names(ls_MonitorFeatures_All)))
+# Check if object names in ls_DataSet and ls_MonitorMetaData_All are identical to avoid incorrect mapping
+if (all(names(ls_DataSet) == names(ls_MonitorMetaData_All)))
 {
-    ls_Monitors_Raw <- purrr::map2(.x = ls_DataSet,
-                                   .y = ls_MonitorFeatures_All,
-                                   .f = function(DataFrame, MonitorFeatures)
-                                        {
-                                           DataFrame %>%
-                                               dsCCPhos::TrackFeatureValues(Features = MonitorFeatures,
-                                                                            CurationStage = "Raw")
-                                        })
+    # Initiate list of data frames containing transformation tracks
+    # First step: Store copied raw values of monitored features and mark them with "TrackID" to track them along transformation process
+    ls_TransformationTracks <- purrr::map2(.x = ls_DataSet,
+                                           .y = ls_MonitorMetaData_All,
+                                           .f = function(DataFrame, MonitorMetaData)
+                                                {
+                                                    if (purrr::is_empty(MonitorMetaData) == FALSE)
+                                                    {
+                                                         DataFrame %>%
+                                                              select(names(MonitorMetaData)) %>%
+                                                              rename_with(.fn = ~ str_c(., "__Raw"),   # Two underscores for later use in pivot_longer()
+                                                                          .cols = everything()) %>%
+                                                              mutate(TrackID = row_number(), .before = 1)   # Create TrackID to enable correct mapping and further processing
+                                                    }
+                                                    else { return(data.frame()) }
+                                                })
+
+    ls_ValueCounts_Raw <- purrr::map2(.x = ls_DataSet,
+                                      .y = ls_MonitorMetaData_All,
+                                      .f = function(DataFrame, MonitorMetaData)
+                                           {
+                                               DataFrame %>%
+                                                   dsCCPhos::TrackValueCounts(Features = MonitorMetaData,
+                                                                              TransformationStage = "Raw") %>%
+                                                   select(Feature,
+                                                          Value,
+                                                          Frequency) %>%
+                                                   rename(Value_Raw = Value,
+                                                          Count_Raw = Frequency)
+                                           })
 } else {
-    stop("Internal error: Object names in ls_DataSet and ls_MonitorFeatures_All must be identical and in the same order.")
+    stop("Internal error: Object names in ls_DataSet and ls_MonitorMetaData_All must be identical and in the same order.")
 }
 
 try(ProgressBar$tick())
@@ -554,7 +582,7 @@ try(ProgressBar$tick())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 B)  Value transformation
+# Module 3 C)  Execution of value transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Order of operations in each raw data frame:
 #     1) Harmonizing and correctional transformation of data values using dsCCPhos::TransformData()
@@ -569,22 +597,24 @@ try(ProgressBar$tick())
 # Transform df_BioSampling
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_BioSampling <- df_BioSampling %>%
-                      #--- Transformation ----------------------------------
+                      mutate(TrackID = row_number()) %>%   # Enables tracking of transformation (see above)
+                      #--- Transformation --------------------------------------
                       dsCCPhos::TransformData(TableName = "BioSampling", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
-                      #--- Recoding ----------------------------------------
+                      #--- Recoding --------------------------------------------
                       mutate(SampleType = dsCCPhos::RecodeData(SampleType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleType"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
                                                                                 set_names(Value_Curated, Value_Raw))),      # This returns a vector of the form c("Value_Raw1" = "Value1", ...), thereby inducing replacement of original values with new ones as defined in Meta Data
                              SampleAliquot = dsCCPhos::RecodeData(SampleAliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleAliquot"),
                                                                                       set_names(Value_Curated, Value_Raw)))) %>%
-                      #--- Formatting --------------------------------------
+                      #--- Formatting ------------------------------------------
                       mutate(SampleTakingDate = format(as_datetime(SampleTakingDate), format = "%Y-%m-%d"))
-
-try(ProgressBar$tick())
+                      #--- Update PB ---
+                      try(ProgressBar$tick())
 
 
 # Transform df_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Diagnosis <- df_Diagnosis %>%
+                    mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                     #--- Transformation ------------------------------------
                     dsCCPhos::TransformData(TableName = "Diagnosis", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                     #--- Recoding ------------------------------------------
@@ -600,6 +630,7 @@ df_Diagnosis <- df_Diagnosis %>%
 # Transform df_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Histology <- df_Histology %>%
+                    mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                     #--- Transformation ------------------------------------
                     dsCCPhos::TransformData(TableName = "Histology", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                     #--- Recoding ------------------------------------------
@@ -614,6 +645,7 @@ df_Histology <- df_Histology %>%
 # Transform df_Metastasis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Metastasis <- df_Metastasis %>%
+                      mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                       #--- Transformation ----------------------------------
                       dsCCPhos::TransformData(TableName = "Metastasis", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                       #--- Formatting --------------------------------------
@@ -626,6 +658,7 @@ df_Metastasis <- df_Metastasis %>%
 # Transform df_MolecularDiagnostics
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
+                                mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                                 #--- Transformation ------------------------
                                 dsCCPhos::TransformData(TableName = "MolecularDiagnostics", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                                 #--- Formatting ----------------------------
@@ -637,6 +670,7 @@ df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
 # Transform df_Patient
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Patient <- df_Patient %>%
+                  mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                   #--- Transformation ------------------------------------
                   dsCCPhos::TransformData(TableName = "Patient", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                   #--- Recoding ------------------------------------------
@@ -653,6 +687,7 @@ df_Patient <- df_Patient %>%
 # Transform df_Progress
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Progress <- df_Progress %>%
+                    mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                     #--- Transformation ------------------------------------
                     dsCCPhos::TransformData(TableName = "Progress", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                     #--- Recoding ------------------------------------------
@@ -674,6 +709,7 @@ df_Progress <- df_Progress %>%
 # Transform df_RadiationTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_RadiationTherapy <- df_RadiationTherapy %>%
+                            mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                             #--- Transformation ----------------------------
                             dsCCPhos::TransformData(TableName = "RadiationTherapy", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                             #--- Recoding ----------------------------------
@@ -691,6 +727,7 @@ df_RadiationTherapy <- df_RadiationTherapy %>%
 # Transform df_Staging
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Staging <- df_Staging %>%
+                  mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                   #--- Transformation --------------------------------------
                   dsCCPhos::TransformData(TableName = "Staging", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                   #--- Recoding --------------------------------------------
@@ -717,6 +754,7 @@ df_Staging <- df_Staging %>%
 # Transform df_Surgery
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Surgery <- df_Surgery %>%
+                  mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                   #--- Transformation --------------------------------------
                   dsCCPhos::TransformData(TableName = "Surgery", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                   #--- Recoding --------------------------------------------
@@ -735,6 +773,7 @@ df_Surgery <- df_Surgery %>%
 # Transform df_SystemicTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SystemicTherapy <- df_SystemicTherapy %>%
+                          mutate(TrackID = row_number()) %>%   # Enables tracking of transformation
                           #--- Transformation ------------------------------
                           dsCCPhos::TransformData(TableName = "SystemicTherapy", RuleSet = RuleSet_RawDataTransformation.S, RuleProfile = RuleProfile_RawDataTransformation.S) %>%
                           #--- Recoding ------------------------------------
@@ -755,12 +794,12 @@ df_SystemicTherapy <- df_SystemicTherapy %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MONITORING: Track feature values after Transformation
+# Module 3 D)  Track feature values after Transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Re-pack data frames into list in order to pass them to map-function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Names have to be exactly the same (and the same order) as in ls_MonitorFeatures_all
+#   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
 #-------------------------------------------------------------------------------
 ls_DataSet <- list(BioSampling = df_BioSampling,
                    Diagnosis = df_Diagnosis,
@@ -777,19 +816,57 @@ ls_DataSet <- list(BioSampling = df_BioSampling,
                    try(ProgressBar$tick())
 
 
-# Check if object names in ls_DataSet and ls_MonitorFeatures_All are identical to avoid incorrect mapping
-if (all(names(ls_DataSet) == names(ls_MonitorFeatures_All)))
+# Map raw values to their transformed state to get transformation tracks
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Check if object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData_All are identical to avoid incorrect mapping
+if (all(names(ls_TransformationTracks) == names(ls_DataSet)) & all(names(ls_DataSet) == names(ls_MonitorMetaData_All)))
 {
-    ls_Monitors_Transformed <- map2(.x = ls_DataSet,
-                                    .y = ls_MonitorFeatures_All,
-                                    .f = function(DataFrame, MonitorFeatures)
-                                         {
-                                              DataFrame %>%
-                                                  dsCCPhos::TrackFeatureValues(Features = MonitorFeatures,
-                                                                               CurationStage = "Transformed")
-                                         })
+    ls_TransformationTracks <- purrr::pmap(.l = list(ls_TransformationTracks,
+                                                     ls_DataSet,
+                                                     ls_MonitorMetaData_All),
+                                           .f = function(TransformationTracks, TransformedDataFrame, MonitorMetaData)
+                                                {
+                                                     if (purrr::is_empty(MonitorMetaData) == FALSE)
+                                                     {
+                                                         TransformedValues <- TransformedDataFrame %>%
+                                                                                   select(c("TrackID", names(MonitorMetaData))) %>%
+                                                                                   rename_with(.fn = ~ str_c(., "__Transformed"),   # Two underscores for later use in pivot_longer()
+                                                                                               .cols = all_of(names(MonitorMetaData)))
+
+                                                         TransformationTracks %>%
+                                                             left_join(TransformedValues,
+                                                                       by = join_by(TrackID)) %>%
+                                                             distinct(pick(contains("__Raw")), .keep_all = TRUE)
+                                                     }
+                                                     else { return(data.frame()) }
+                                                })
 } else {
-    stop("Internal error: Object names in ls_DataSet and ls_MonitorFeatures_All must be identical and in the same order.")
+    stop("Internal error: Object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData_All must be identical and in the same order.")
+}
+
+
+# Get counts of all distinct values in transformed data sets
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Check if object names in ls_DataSet and ls_MonitorMetaData_All are identical to avoid incorrect mapping
+if (all(names(ls_DataSet) == names(ls_MonitorMetaData_All)))
+{
+    ls_ValueCounts_Transformed <- map2(.x = ls_DataSet,
+                                       .y = ls_MonitorMetaData_All,
+                                       .f = function(DataFrame, MonitorMetaData)
+                                            {
+                                                DataFrame %>%
+                                                   dsCCPhos::TrackValueCounts(Features = MonitorMetaData,
+                                                                              TransformationStage = "Transformed") %>%
+                                                   select(Feature,
+                                                          Value,
+                                                          Frequency) %>%
+                                                   rename(Value_Transformed = Value,
+                                                          Count_Transformed = Frequency)
+                                            })
+} else {
+    stop("Internal error: Object names in ls_DataSet and ls_MonitorMetaData_All must be identical and in the same order.")
 }
 
 
@@ -798,9 +875,9 @@ try(ProgressBar$tick())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 C)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
+# Module 3 E)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - (Optional) Exclusion of ineligible data (including data that could not be transformed)
+#   - (Optional / Default) Exclusion of ineligible data (including data that could not be transformed)
 #   - (Optional) Conversion to ordered factor
 #   - (Optional) Assignment of factor labels   <-- Conversion to factor is put off for now, 02/2024
 #   - All predefined information stored in dsCCPhos::Meta_ValueSets
@@ -897,40 +974,79 @@ df_SystemicTherapy <- df_SystemicTherapy %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MONITORING: Track Feature Values after Finalized Harmonization
+# Module 3 F)  Track Feature Values after Finalized Harmonization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Re-pack data frames into list in order to pass them to map-function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Names have to be exactly the same (and the same order) as in ls_MonitorFeatures_all
+#   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
 #-------------------------------------------------------------------------------
-ls_CuratedDataSet <- list(BioSampling = df_BioSampling,
-                          Diagnosis = df_Diagnosis,
-                          Histology = df_Histology,
-                          Metastasis = df_Metastasis,
-                          MolecularDiagnostics = df_MolecularDiagnostics,
-                          Patient = df_Patient,
-                          Progress = df_Progress,
-                          RadiationTherapy = df_RadiationTherapy,
-                          Staging = df_Staging,
-                          Surgery = df_Surgery,
-                          SystemicTherapy = df_SystemicTherapy)
-                          #--- Update PB ---
-                          try(ProgressBar$tick())
+ls_DataSet <- list(BioSampling = df_BioSampling,
+                   Diagnosis = df_Diagnosis,
+                   Histology = df_Histology,
+                   Metastasis = df_Metastasis,
+                   MolecularDiagnostics = df_MolecularDiagnostics,
+                   Patient = df_Patient,
+                   Progress = df_Progress,
+                   RadiationTherapy = df_RadiationTherapy,
+                   Staging = df_Staging,
+                   Surgery = df_Surgery,
+                   SystemicTherapy = df_SystemicTherapy)
+                   #--- Update PB ---
+                   try(ProgressBar$tick())
 
-# Check if object names in ls_DataSet and ls_MonitorFeatures_All are identical to avoid incorrect mapping
-if (all(names(ls_DataSet) == names(ls_MonitorFeatures_All)))
+
+# Map raw values to their finalized state to get transformation tracks
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Check if object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData_All are identical to avoid incorrect mapping
+if (all(names(ls_TransformationTracks) == names(ls_DataSet)) & all(names(ls_DataSet) == names(ls_MonitorMetaData_All)))
 {
-    ls_Monitors_Final <- map2(.x = ls_DataSet,
-                              .y = ls_MonitorFeatures_All,
-                              .f = function(DataFrame, MonitorFeatures)
-                                   {
-                                        DataFrame %>%
-                                            dsCCPhos::TrackFeatureValues(Features = MonitorFeatures,
-                                                                         CurationStage = "Final")
-                                   })
+    ls_TransformationTracks <- purrr::pmap(.l = list(ls_TransformationTracks,
+                                                     ls_DataSet,
+                                                     ls_MonitorMetaData_All),
+                                           .f = function(TransformationTrack, FinalizedDataFrame, MonitorMetaData)
+                                                {
+                                                     if (purrr::is_empty(MonitorMetaData) == FALSE)
+                                                     {
+                                                         FinalizedValues <- FinalizedDataFrame %>%
+                                                                                 select(c("TrackID", names(MonitorMetaData))) %>%
+                                                                                 rename_with(.fn = ~ str_c(., "__Final"),   # Two underscores for later use in pivot_longer()
+                                                                                             .cols = all_of(names(MonitorMetaData)))
+
+                                                         TransformationTrack %>%
+                                                             left_join(FinalizedValues,
+                                                                       by = join_by(TrackID)) %>%
+                                                             distinct(pick(contains("__Raw")), .keep_all = TRUE)
+                                                     }
+                                                     else { return(data.frame()) }
+                                                })
 } else {
-    stop("Internal error: Object names in ls_DataSet and ls_MonitorFeatures_All must be identical and in the same order.")
+    stop("Internal error: Object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData_All must be identical and in the same order.")
+}
+
+
+# Get counts of all distinct values in finalized data sets
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Check if object names in ls_DataSet and ls_MonitorMetaData_All are identical to avoid incorrect mapping
+if (all(names(ls_DataSet) == names(ls_MonitorMetaData_All)))
+{
+    ls_ValueCounts_Final <- map2(.x = ls_DataSet,
+                                 .y = ls_MonitorMetaData_All,
+                                 .f = function(DataFrame, MonitorMetaData)
+                                      {
+                                          DataFrame %>%
+                                              dsCCPhos::TrackValueCounts(Features = MonitorMetaData,
+                                                                         TransformationStage = "Final") %>%
+                                              select(Feature,
+                                                     Value,
+                                                     Frequency) %>%
+                                              rename(Value_Final = Value,
+                                                     Count_Final = Frequency)
+                                      })
+} else {
+    stop("Internal error: Object names in ls_DataSet and ls_MonitorMetaData_All must be identical and in the same order.")
 }
 
 
@@ -939,47 +1055,84 @@ try(ProgressBar$tick())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MONITORING: Merge monitor objects into coherent summaries
+# Module 3 G)  Merge monitor objects into coherent summaries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_MonitorSummaries <- list()
+# Summarize Transformation Tracks
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ls_TransformationTracks_Summaries <- purrr::pmap(.l = list(ls_TransformationTracks,
+                                                           ls_MonitorMetaData_All),
+                                                 .f = function(TrackData,
+                                                               MonitorMetaData)
+                                                      {
+                                                           if (purrr::is_empty(TrackData) == FALSE)
+                                                           {
+                                                               TrackData %>%
+                                                                   mutate(across(everything(), ~ as.character(.x))) %>%      # Turn all columns into character (necessary for pivot_longer() to work correctly)
+                                                                   tidyr::pivot_longer(cols = c(everything(), -TrackID),
+                                                                                       names_to = c("Feature", "Stage"),
+                                                                                       names_sep = "(__)",      # Separate by '__'-string (two underscores)
+                                                                                       values_to = "Value") %>%
+                                                                   distinct(pick(c(everything(), -TrackID)), .keep_all = TRUE) %>%
+                                                                   tidyr::pivot_wider(names_from = Stage,
+                                                                                      values_from = Value) %>%
+                                                                   select(-TrackID) %>%
+                                                                   rename(Value_Raw = Raw,
+                                                                          Value_Transformed = Transformed,
+                                                                          Value_Final = Final) %>%
+                                                                   rowwise() %>%
+                                                                   mutate(IsEligible_Raw = Value_Raw %in% MonitorMetaData[[Feature]],
+                                                                          IsEligible_Transformed = Value_Transformed %in% MonitorMetaData[[Feature]]) %>%
+                                                                   ungroup() %>%
+                                                                   arrange(Feature,
+                                                                           desc(IsEligible_Raw),
+                                                                           desc(IsEligible_Transformed),
+                                                                           Value_Raw)
+                                                           }
+                                                           else { return (data.frame()) }
+                                                      })
 
-for (i in 1:length(ls_Monitors_Raw))
-{
-    if (nrow(ls_Monitors_Raw[[i]]) > 0)
-    {
-        df_CurrentSummary <- ls_Monitors_Raw[[i]] %>%
-                                  dplyr::full_join(ls_Monitors_Transformed[[i]], by = join_by(Feature, Value, IsValueEligible, CurationStage, Frequency)) %>%
-                                  dplyr::full_join(ls_Monitors_Final[[i]], by = join_by(Feature, Value, IsValueEligible, CurationStage, Frequency)) %>%
-                                  tidyr::pivot_wider(names_from = CurationStage,
-                                                     values_from = Frequency) %>%
-                                  group_by(Feature, Value, IsValueEligible) %>%
-                                      summarize(Raw = sum(Raw, na.rm = TRUE),
-                                                Transformed = sum(Transformed, na.rm = TRUE),
-                                                Final = sum(Final, na.rm = TRUE)) %>%
-                                      arrange(Feature, desc(IsValueEligible))
-    }
-    else
-    {
-        df_CurrentSummary <- NULL
-    }
 
-    ls_MonitorSummaries <- c(ls_MonitorSummaries,
-                             list(df_CurrentSummary))
-}
+# Create final summaries of transformation monitoring
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ls_TransformationSummaries <- purrr::pmap(.l = list(ls_TransformationTracks_Summaries,
+                                                    ls_ValueCounts_Raw,
+                                                    ls_ValueCounts_Transformed,
+                                                    ls_ValueCounts_Final),
+                                          .f = function(TransformationTracksSummary,
+                                                        ValueCountsRaw,
+                                                        ValueCountsTransformed,
+                                                        ValueCountsFinal)
+                                               {
+                                                    if (nrow(TransformationTracksSummary) > 0)
+                                                    {
+                                                        TransformationTracksSummary %>%
+                                                            left_join(ValueCountsRaw, by = c("Feature", "Value_Raw")) %>%
+                                                            left_join(ValueCountsTransformed, by = c("Feature", "Value_Transformed")) %>%
+                                                            left_join(ValueCountsFinal, by = c("Feature", "Value_Final")) %>%
+                                                            arrange(Feature,
+                                                                    desc(IsEligible_Raw),
+                                                                    desc(IsEligible_Transformed),
+                                                                    Value_Raw)
+                                                    }
+                                                    else { return(NULL) }
+                                               })
 
-# Name the monitor summary objects
-names(ls_MonitorSummaries) <- c("BioSampling",
-                                "Diagnosis",
-                                "Histology",
-                                "Metastasis",
-                                "MolecularDiagnostics",
-                                "Patient",
-                                "Progress",
-                                "RadiationTherapy",
-                                "Staging",
-                                "Surgery",
-                                "SystemicTherapy")
+
+# Delete artificial "TrackID"-column from data frames (not needed anymore)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+try(df_BioSampling <- df_BioSampling %>% select(-TrackID))
+try(df_Diagnosis <- df_Diagnosis %>% select(-TrackID))
+try(df_Histology <- df_Histology %>% select(-TrackID))
+try(df_Metastasis <- df_Metastasis %>% select(-TrackID))
+try(df_MolecularDiagnostics <- df_MolecularDiagnostics %>% select(-TrackID))
+try(df_Patient <- df_Patient %>% select(-TrackID))
+try(df_Progress <- df_Progress %>% select(-TrackID))
+try(df_RadiationTherapy <- df_RadiationTherapy %>% select(-TrackID))
+try(df_Staging <- df_Staging %>% select(-TrackID))
+try(df_Surgery <- df_Surgery %>% select(-TrackID))
+try(df_SystemicTherapy <- df_SystemicTherapy %>% select(-TrackID))
+
 
 try(ProgressBar$tick())
 try(ProgressBar$terminate())
@@ -1349,13 +1502,14 @@ ls_CuratedDataSet <- list(BioSampling = as.data.frame(df_BioSampling),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ls_CurationReport <- list(UnlinkedEntries = CountUnlinkedEntries,      # Named vector
-                          Transformation = ls_MonitorSummaries,      # List
+                          Transformation = ls_TransformationSummaries,      # List
                           DiagnosisClassification = c(DiagnosisRedundancies = CountDiagnosisRedundancies,      # Named vector
                                                       PatientsWithDiagnosisRedundancies = CountPatientsWithDiagnosisRedundancies,
                                                       DiagnosisAssociations = CountDiagnosisAssociations,
                                                       PatientsWithDiagnosisAssociations = CountPatientsWithDiagnosisAssociations))
 
 Messages$Completed <- TRUE
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RETURN STATEMENT

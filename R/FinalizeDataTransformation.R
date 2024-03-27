@@ -27,17 +27,15 @@ FinalizeDataTransformation <- function(TargetVector,
                                        AssignFactorLabels = FALSE)
 {
     require(dplyr)
-    require(dsCCPhos)
 
     # For testing purposes
-    # TargetVector <- df_CDS_Diagnosis$LocalizationSide
-    # TableName = "Diagnosis"
-    # FeatureName = "LocalizationSide"
+    # TargetVector <- df_Progress$GlobalStatus
+    # TableName = "Progress"
+    # FeatureName = "GlobalStatus"
     # ExcludeIneligibleValues = TRUE
     # ConvertToFactor = FALSE
-    # AssignFactorLabels = TRUE
+    # AssignFactorLabels = FALSE
 
-    vc_Output <- TargetVector
 
     RelevantValueSet <- dsCCPhos::Meta_ValueSets %>%
                             filter(Table == TableName & Feature == FeatureName) %>%
@@ -55,6 +53,7 @@ FinalizeDataTransformation <- function(TargetVector,
 
         TargetVector <- TargetVector[vc_IsEligible]
     }
+
     if (ConvertToFactor == TRUE)
     {
         TargetVector <- factor(TargetVector,

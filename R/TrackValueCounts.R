@@ -1,32 +1,32 @@
 
-#' TrackFeatureValues
+#' TrackValueCounts
 #'
 #' Track occurrence of a feature's unique values, their eligibility and frequency
 #'
 #' @param DataFrame A data frame
 #' @param Features A list of vectors. Name of vector object gives name of feature, optional vector values give eligible values.
-#' @param CurationStage String representing curation stage (usually "Raw" / "After Transformation" / "After Exclusion")
+#' @param TransformationStage String representing transformation stage (usually "Raw" / "Transformed" / "Final")
 #'
 #' @return A tibble
 #' @export
 #'
 #' @examples
 #' @author Bastian Reiter
-TrackFeatureValues <- function(DataFrame,
-                               Features,
-                               CurationStage = NULL)
+TrackValueCounts <- function(DataFrame,
+                             Features,
+                             TransformationStage = NULL)
 {
     require(dplyr)
 
     # For testing purposes
     # DataFrame <- df_CDS_Diagnosis
     # Features <- ls_MonitorFeatures_All$Diagnosis
-    # CurationStage <- "Final"
+    # TransformationStage <- "Final"
 
     df_Output <- tibble(Feature = character(),
                         Value = character(),
                         IsValueEligible = logical(),
-                        CurationStage = character(),
+                        TransformationStage = character(),
                         Frequency = numeric())
 
     for (feature in names(Features))
@@ -38,7 +38,7 @@ TrackFeatureValues <- function(DataFrame,
         df_FeatureRows <- tibble::tibble(Feature = feature,
                                          Value = names(vc_ContingencyTable),      # Get all distinct values from contingency table
                                          IsValueEligible = NA,
-                                         CurationStage = CurationStage,
+                                         TransformationStage = TransformationStage,
                                          Frequency = as.numeric(vc_ContingencyTable)) %>%      # Get absolute frequencies from contingency table
                                       arrange(Value)
 
