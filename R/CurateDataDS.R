@@ -1058,6 +1058,7 @@ try(ProgressBar$tick())
 # Module 3 G)  Merge monitor objects into coherent summaries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 # Summarize Transformation Tracks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ls_TransformationTracks_Summaries <- purrr::pmap(.l = list(ls_TransformationTracks,
@@ -1067,56 +1068,94 @@ ls_TransformationTracks_Summaries <- purrr::pmap(.l = list(ls_TransformationTrac
                                                       {
                                                            if (purrr::is_empty(TrackData) == FALSE)
                                                            {
-                                                               TrackData %>%
-                                                                   mutate(across(everything(), ~ as.character(.x))) %>%      # Turn all columns into character (necessary for pivot_longer() to work correctly)
-                                                                   tidyr::pivot_longer(cols = c(everything(), -TrackID),
-                                                                                       names_to = c("Feature", "Stage"),
-                                                                                       names_sep = "(__)",      # Separate by '__'-string (two underscores)
-                                                                                       values_to = "Value") %>%
-                                                                   distinct(pick(c(everything(), -TrackID)), .keep_all = TRUE) %>%
-                                                                   tidyr::pivot_wider(names_from = Stage,
-                                                                                      values_from = Value) %>%
-                                                                   select(-TrackID) %>%
-                                                                   rename(Value_Raw = Raw,
-                                                                          Value_Transformed = Transformed,
-                                                                          Value_Final = Final) %>%
-                                                                   rowwise() %>%
-                                                                   mutate(IsEligible_Raw = Value_Raw %in% MonitorMetaData[[Feature]],
-                                                                          IsEligible_Transformed = Value_Transformed %in% MonitorMetaData[[Feature]]) %>%
-                                                                   ungroup() %>%
-                                                                   arrange(Feature,
-                                                                           desc(IsEligible_Raw),
-                                                                           desc(IsEligible_Transformed),
-                                                                           Value_Raw)
+                                                               Summary <- TrackData %>%
+                                                                               mutate(across(everything(), ~ as.character(.x))) %>%      # Turn all columns into character (necessary for pivot_longer() to work correctly)
+                                                                               tidyr::pivot_longer(cols = c(everything(), -TrackID),
+                                                                                                   names_to = c("Feature", "Stage"),
+                                                                                                   names_sep = "(__)",      # Separate by '__'-string (two underscores)
+                                                                                                   values_to = "Value") %>%
+                                                                               tidyr::pivot_wider(names_from = Stage,
+                                                                                                  values_from = Value) %>%
+                                                                               select(-TrackID) %>%
+                                                                               distinct() %>%
+                                                                               rename(Value_Raw = Raw,
+                                                                                      Value_Transformed = Transformed,
+                                                                                      Value_Final = Final) %>%
+                                                                               rowwise() %>%
+                                                                               mutate(IsOccurring = TRUE,
+                                                                                      IsEligible_Raw = ifelse(is.null(MonitorMetaData[[Feature]]),      # If there is no set of eligible values, set variable NA...
+                                                                                                              NA,
+                                                                                                              Value_Raw %in% MonitorMetaData[[Feature]]),      # ... else check if specific row value is in set of eligible values
+                                                                                      IsEligible_Transformed = ifelse(is.null(MonitorMetaData[[Feature]]),
+                                                                                                                      NA,
+                                                                                                                      Value_Transformed %in% MonitorMetaData[[Feature]])) %>%
+                                                                               ungroup()
+
+                                                               # Add set of all eligible values regardless of occurrence to summary
+                                                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                                               for (i in 1:length(MonitorMetaData))   # Loop through all monitored features of a table
+                                                               {
+                                                                   AllEligibleValues <- tibble(Feature = names(MonitorMetaData)[i],
+                                                                                               Value_Raw = MonitorMetaData[[i]],
+                                                                                               IsOccurring = FALSE,
+                                                                                               IsEligible_Raw = TRUE,
+                                                                                               IsEligible_Transformed = TRUE)
+
+                                                                   Summary <- bind_rows(Summary,
+                                                                                        AllEligibleValues)
+                                                               }
+
+                                                               # Filter out eligible values marked as not occurring if they actually occur
+                                                               # Result: All eligible values are included in summary, regardless of occurrence
+                                                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                                               Summary <- Summary %>%
+                                                                              group_by(Feature, Value_Raw) %>%
+                                                                                  arrange(desc(IsOccurring), .by_group = TRUE) %>%
+                                                                                  slice_head() %>%
+                                                                              ungroup() %>%
+                                                                              arrange(Feature,
+                                                                                      desc(IsOccurring),
+                                                                                      desc(IsEligible_Raw),
+                                                                                      desc(IsEligible_Transformed),
+                                                                                      Value_Raw)
+
+                                                               return(Summary)
                                                            }
                                                            else { return (data.frame()) }
                                                       })
 
 
-# Create final summaries of transformation monitoring
+# Create final summaries of transformation monitoring for Output
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ls_TransformationSummaries <- purrr::pmap(.l = list(ls_TransformationTracks_Summaries,
+#   - Joining of info from transformation tracks and value counts
+#-------------------------------------------------------------------------------
+ls_TransformationMonitors <- purrr::pmap(.l = list(ls_TransformationTracks_Summaries,
                                                     ls_ValueCounts_Raw,
                                                     ls_ValueCounts_Transformed,
                                                     ls_ValueCounts_Final),
-                                          .f = function(TransformationTracksSummary,
-                                                        ValueCountsRaw,
-                                                        ValueCountsTransformed,
-                                                        ValueCountsFinal)
-                                               {
-                                                    if (nrow(TransformationTracksSummary) > 0)
-                                                    {
-                                                        TransformationTracksSummary %>%
-                                                            left_join(ValueCountsRaw, by = c("Feature", "Value_Raw")) %>%
-                                                            left_join(ValueCountsTransformed, by = c("Feature", "Value_Transformed")) %>%
-                                                            left_join(ValueCountsFinal, by = c("Feature", "Value_Final")) %>%
-                                                            arrange(Feature,
-                                                                    desc(IsEligible_Raw),
-                                                                    desc(IsEligible_Transformed),
-                                                                    Value_Raw)
-                                                    }
-                                                    else { return(NULL) }
-                                               })
+                                         .f = function(TransformationTracksSummary,
+                                                       ValueCountsRaw,
+                                                       ValueCountsTransformed,
+                                                       ValueCountsFinal)
+                                              {
+                                                   if (nrow(TransformationTracksSummary) > 0)
+                                                   {
+                                                       TransformationTracksSummary %>%
+                                                           left_join(ValueCountsRaw, by = c("Feature", "Value_Raw")) %>%
+                                                           left_join(ValueCountsTransformed, by = c("Feature", "Value_Transformed")) %>%
+                                                           left_join(ValueCountsFinal, by = c("Feature", "Value_Final")) %>%
+                                                           mutate(Count_Transformed = case_when(IsOccurring == FALSE ~ NA,
+                                                                                                TRUE ~ Count_Transformed),
+                                                                  Count_Final = case_when(IsOccurring == FALSE ~ NA,
+                                                                                          TRUE ~ Count_Final)) %>%
+                                                           arrange(Feature,
+                                                                   desc(IsOccurring),
+                                                                   desc(IsEligible_Raw),
+                                                                   desc(IsEligible_Transformed),
+                                                                   Value_Raw)
+                                                   }
+                                                   else { return(NULL) }
+                                              })
 
 
 # Delete artificial "TrackID"-column from data frames (not needed anymore)
@@ -1502,7 +1541,7 @@ ls_CuratedDataSet <- list(BioSampling = as.data.frame(df_BioSampling),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ls_CurationReport <- list(UnlinkedEntries = CountUnlinkedEntries,      # Named vector
-                          Transformation = ls_TransformationSummaries,      # List
+                          Transformation = ls_TransformationMonitors,      # List
                           DiagnosisClassification = c(DiagnosisRedundancies = CountDiagnosisRedundancies,      # Named vector
                                                       PatientsWithDiagnosisRedundancies = CountPatientsWithDiagnosisRedundancies,
                                                       DiagnosisAssociations = CountDiagnosisAssociations,
