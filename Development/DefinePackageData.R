@@ -40,14 +40,14 @@ use_data(Meta_ValueSets, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta data: Raw Data Transformation rule set
+# Meta data: Raw Data Harmonization rule set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RuleSet_RawDataTransformation <- read_excel(path = "./Development/Data/MetaData/RuleSets.xlsx",
-                                            sheet = "RawDataTransformation")
+RuleSet_RawDataHarmonization <- read_excel(path = "./Development/Data/MetaData/RuleSets.xlsx",
+                                           sheet = "RawDataHarmonization")
 
 # Save data in .rda-file and make it part of package
-use_data(RuleSet_RawDataTransformation, overwrite = TRUE)
+use_data(RuleSet_RawDataHarmonization, overwrite = TRUE)
 
 
 

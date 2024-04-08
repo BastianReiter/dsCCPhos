@@ -76,14 +76,14 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RuleSet_RawDataTransformation.rda
+# RuleSet_RawDataHarmonization.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #' Meta data on rule-based transformation of raw data
 #'
 #' A tibble containing rules
 #'
-#' @format ## `RuleSet_RawDataTransformation`
+#' @format ## `RuleSet_RawDataHarmonization`
 #' Tibble
 #' \describe{
 #'   \item{Profile}{}
@@ -97,7 +97,7 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"RuleSet_RawDataTransformation"
+"RuleSet_RawDataHarmonization"
 
 
 

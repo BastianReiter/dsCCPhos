@@ -1,20 +1,19 @@
 
-#' CompileTransformationRules
+#' CompileHarmonizationRules
 #'
-#' Auxiliary function within \code{\link{CurateDataDS}} or \code{\link{TransformData}} respectively
+#' Auxiliary function within \code{\link{CurateDataDS}} or \code{\link{HarmonizeData}} respectively
 #'
 #' Based on a predefined rule set data frame, compile argument expressions for dplyr::mutate()
 #'
 #' @param TableName String | Name of table that contains features to be transformed
-#' @param RuleSet Data frame | Contains predefined set of transformation rules
+#' @param RuleSet Data frame | Contains predefined set of harmonization rules
 #' @param RuleProfile String | Profile name stated in rule set data frame
 #'
 #' @return String containing arguments for dplyr::mutate()
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
-CompileTransformationRules <- function(TableName,
+CompileHarmonizationRules <- function(TableName,
                                        RuleSet,
                                        RuleProfile)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,7 +24,7 @@ CompileTransformationRules <- function(TableName,
 
     # For testing purposes
     # TableName <- "Staging"
-    # RuleSet <- dsCCPhos::RuleSet_RawDataTransformation
+    # RuleSet <- dsCCPhos::RuleSet_RawDataHarmonization
     # RuleProfile <- "Default"
 
 

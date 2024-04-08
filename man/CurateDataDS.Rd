@@ -6,8 +6,8 @@
 \usage{
 CurateDataDS(
   RawDataSetName.S = "RawDataSet",
-  RuleSet_RawDataTransformation.S = dsCCPhos::RuleSet_RawDataTransformation,
-  RuleProfile_RawDataTransformation.S = "Default",
+  RuleSet_RawDataHarmonization.S = dsCCPhos::RuleSet_RawDataHarmonization,
+  RuleProfile_RawDataHarmonization.S = "Default",
   RuleSet_DiagnosisRedundancy.S = dsCCPhos::RuleSet_DiagnosisRedundancy,
   RuleProfile_DiagnosisRedundancy.S = "Default",
   RuleSet_DiagnosisAssociation.S = dsCCPhos::RuleSet_DiagnosisAssociation,
@@ -17,7 +17,7 @@ CurateDataDS(
 \arguments{
 \item{RawDataSetName.S}{String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'}
 
-\item{RuleSet_RawDataTransformation.S}{Data frame}
+\item{RuleSet_RawDataHarmonization.S}{Data frame}
 
 \item{RuleSet_DiagnosisRedundancy.S}{Data frame}
 
