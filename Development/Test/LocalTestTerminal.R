@@ -42,12 +42,13 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 
 # Curate data
 CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
-                                         RuleProfile_RawDataTransformation.S = "Default",
+                                         RuleProfile_RawDataHarmonization.S = "Default",
                                          RuleProfile_DiagnosisRedundancy.S = "Default",
                                          RuleProfile_DiagnosisAssociation.S = "Default")
 
 
 View(CurationOutput$CurationReport$UnlinkedEntries)
+View(CurationOutput$CurationReport$Transformation$Patient)
 
 
 CuratedDataSet <- CurationOutput$CuratedDataSet

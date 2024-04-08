@@ -1,13 +1,13 @@
 
-#' TransformData
+#' HarmonizeData
 #'
-#' Transforms data based on a given rule set. First, general transformations are performed using regular expression based rules. Second, for direct replacement of values hash tables are being compiled and applied.
+#' Harmonizes data based on a given rule set. First, general harmonizing transformations are performed using regular expression based rules. Second, for direct replacement of values hash tables are being compiled and applied.
 #'
-#' Uses dplyr::mutate() to transform data based on transformation rules defined in a given rule set (Default: dsCCPhos::RuleSet_RawDataTransformation)
+#' Uses dplyr::mutate() to transform data based on harmonization rules defined in a given rule set (Default: dsCCPhos::RuleSet_RawDataHarmonization)
 #'
 #' @param DataFrame data frame containing data to be transformed
-#' @param TableName String | Name of the table (to enable mapping to transformation rules)
-#' @param RuleSet Data frame | Contains predefined set of transformation rules
+#' @param TableName String | Name of the table (to enable mapping to harmonization rules)
+#' @param RuleSet Data frame | Contains predefined set of harmonization rules
 #' @param RuleProfile String | Profile name stated in rule set data frame
 #'
 #' @return The input data frame with transformed data values
@@ -15,7 +15,7 @@
 #'
 #' @examples
 #' @author Bastian Reiter
-TransformData <- function(DataFrame,
+HarmonizeData <- function(DataFrame,
                           TableName,
                           RuleSet,
                           RuleProfile)
@@ -26,20 +26,20 @@ TransformData <- function(DataFrame,
     # For testing purposes
     # DataFrame <- df_Staging
     # TableName <- "Staging"
-    # RuleSet <- dsCCPhos::RuleSet_RawDataTransformation
+    # RuleSet <- dsCCPhos::RuleSet_RawDataHarmonization
     # RuleProfile <- "Default"
 
-    # Compile general transformation rules with dsCCPhos::CompileTransformationRules
-    TransformationRules <- CompileTransformationRules(TableName,
-                                                      RuleSet,
-                                                      RuleProfile)
+    # Compile general harmonization rules with dsCCPhos::CompileHarmonizationRules
+    HarmonizationRules <- CompileHarmonizationRules(TableName,
+                                                    RuleSet,
+                                                    RuleProfile)
 
-    # Compile hash tables for direct value transformation
+    # Compile hash tables for direct value replacement
     HashTables <- CompileHashTables(TableName,
                                     RuleSet,
                                     RuleProfile)
 
-    if (is.na(TransformationRules) & is.null(HashTables))
+    if (is.na(HarmonizationRules) & is.null(HashTables))
     {
         return(DataFrame)
     }
@@ -47,10 +47,10 @@ TransformData <- function(DataFrame,
     {
         df_Output <- DataFrame
 
-        if (!is.na(TransformationRules))
+        if (!is.na(HarmonizationRules))
         {
             df_Output <- df_Output %>%
-                            eval(expr = parse(text = paste0("mutate(., ", TransformationRules, ")")))
+                            eval(expr = parse(text = paste0("mutate(., ", HarmonizationRules, ")")))
         }
 
         if (!is.null(HashTables))
