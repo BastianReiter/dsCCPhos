@@ -32,13 +32,16 @@ SummarizeEventData <- function(EventEntries,
     if (!is.null(ProgressBarObject)) { ProgressBarObject$tick() }
 
 
-
     Output <- EventEntries %>%
-                  summarize(PatientAgeAtDiagnosis = first(EventPatientAge[EventSubclass == "Initial diagnosis"]),      # !!! TEMPORARY? !!! If multiple "Initial diagnoses" occur (Which shouldn't be), select only the first
+                  summarize(PatientAgeAtDiagnosis = first(EventPatientAge[EventSubclass == "InitialDiagnosis"]),      # !!! TEMPORARY? !!! If multiple "InitialDiagnosis" entries occur (Which shouldn't be), select only the first
                             #---------------------------------------------------
-                            TimeDiagnosisToDeath = ifelse("Death" %in% EventEntries$EventSubclass,
-                                                          EventDaysSinceDiagnosis[EventSubclass == "Death"],
-                                                          NA))
+                            TimeDiagnosisToDeath = ifelse("Deceased" %in% EventEntries$EventSubclass,
+                                                          EventDaysSinceDiagnosis[EventSubclass == "Deceased"],
+                                                          NA),
+                            TimeFollowUp = case_when(!is.na(TimeDiagnosisToDeath) ~ TimeDiagnosisToDeath,
+                                                     .default = max(EventDaysSinceDiagnosis, na.rm = TRUE)),
+                            IsDocumentedDeceased = case_when(!is.na(TimeDiagnosisToDeath) ~ TRUE,
+                                                             .default = FALSE))
 
 
     return(as.data.frame(Output))

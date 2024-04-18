@@ -4,12 +4,19 @@
 \alias{TrackValueCounts}
 \title{TrackValueCounts}
 \usage{
-TrackValueCounts(DataFrame, Features, TransformationStage = NULL)
+TrackValueCounts(
+  DataFrame,
+  FeatureNames,
+  EligibleValues = NULL,
+  TransformationStage = NULL
+)
 }
 \arguments{
 \item{DataFrame}{A data frame}
 
-\item{Features}{A list of vectors. Name of vector object gives name of feature, optional vector values give eligible values.}
+\item{FeatureNames}{Character vector containing names of features to be tracked}
+
+\item{EligibleValues}{An optional list of vectors containing eligible value sets. Name of vector object gives name of feature, vector values give eligible values.}
 
 \item{TransformationStage}{String representing transformation stage (usually "Raw" / "Transformed" / "Final")}
 }

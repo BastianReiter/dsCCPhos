@@ -52,7 +52,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #     - Evaluation and parsing of input
 #     - Loading of required package namespaces
 #
-#   MODULE 1)  Transformation of feature names
+#   MODULE 1)  Transformation of meta data (table names / feature names)
 #
 #   MODULE 2)  Primary table cleaning
 #     - Remove entries that are not linked to related tables
@@ -96,6 +96,7 @@ else
 
 # Use require() to load package namespaces
 require(dplyr)
+require(dsCCPhos)
 require(lubridate)
 require(progress)
 require(purrr)
@@ -1167,10 +1168,10 @@ ls_TransformationTracks_Summaries <- purrr::pmap(.l = list(ls_TransformationTrac
 #   - Joining of info from transformation tracks and value counts
 #-------------------------------------------------------------------------------
 ls_TransformationMonitors <- purrr::pmap(.l = list(ls_TransformationTracks_Summaries,
-                                                    ls_ValueCounts_Raw,
-                                                    ls_ValueCounts_Harmonized,
-                                                    ls_ValueCounts_Recoded,
-                                                    ls_ValueCounts_Final),
+                                                   ls_ValueCounts_Raw,
+                                                   ls_ValueCounts_Harmonized,
+                                                   ls_ValueCounts_Recoded,
+                                                   ls_ValueCounts_Final),
                                          .f = function(TransformationTracksSummary,
                                                        ValueCountsRaw,
                                                        ValueCountsHarmonized,
@@ -1202,62 +1203,113 @@ ls_TransformationMonitors <- purrr::pmap(.l = list(ls_TransformationTracks_Summa
 
 # Create overview of value eligibility in different transformation stages
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ls_EligibilityOverviews <- purrr::map(.x = ls_TransformationMonitors,
-                                      .f = function(MonitorData)
-                                           {
-                                              if (!purrr::is_empty(MonitorData))
-                                              {
-                                                  SummaryRaw <- MonitorData %>%
-                                                                    group_by(Feature, IsEligible_Raw) %>%
-                                                                        summarize(Raw = sum(Count_Raw, na.rm = TRUE)) %>%
-                                                                        rename(Eligibility = IsEligible_Raw)
+ls_EligibilityOverviews <- purrr::pmap(.l = list(ls_TransformationMonitors,
+                                                 ls_MonitorMetaData),
+                                       .f = function(MonitorData,
+                                                     MonitorMetaData)
+                                            {
+                                                if (!purrr::is_empty(MonitorData))
+                                                {
+                                                    # Filter out features that are not meant to be monitored, e.g. do not have applicable eligibility criteria
+                                                    MonitorData <- MonitorData %>%
+                                                                        filter(Feature %in% names(MonitorMetaData))
 
-                                                  SummaryHarmonized <- MonitorData %>%
-                                                                            distinct(pick(Feature, Value_Harmonized), .keep_all = TRUE) %>%
-                                                                            group_by(Feature, IsEligible_Harmonized) %>%
-                                                                                summarize(Harmonized = sum(Count_Harmonized, na.rm = TRUE)) %>%
-                                                                                rename(Eligibility = IsEligible_Harmonized)
+                                                    SummaryRaw <- MonitorData %>%
+                                                                      group_by(Feature, IsEligible_Raw) %>%
+                                                                          summarize(Raw = sum(Count_Raw, na.rm = TRUE)) %>%
+                                                                          rename(Eligibility = IsEligible_Raw)
 
-                                                  SummaryRecoded <- MonitorData %>%
-                                                                        distinct(pick(Feature, Value_Recoded), .keep_all = TRUE) %>%
-                                                                        group_by(Feature, IsEligible_Recoded) %>%
-                                                                            summarize(Recoded = sum(Count_Recoded, na.rm = TRUE)) %>%
-                                                                            rename(Eligibility = IsEligible_Recoded)
+                                                    SummaryHarmonized <- MonitorData %>%
+                                                                              distinct(pick(Feature, Value_Harmonized), .keep_all = TRUE) %>%
+                                                                              group_by(Feature, IsEligible_Harmonized) %>%
+                                                                                  summarize(Harmonized = sum(Count_Harmonized, na.rm = TRUE)) %>%
+                                                                                  rename(Eligibility = IsEligible_Harmonized)
 
-                                                  SummaryFinal <- MonitorData %>%
-                                                                      distinct(pick(Feature, Value_Final), .keep_all = TRUE) %>%
-                                                                      group_by(Feature, IsEligible_Final) %>%
-                                                                          summarize(Final = sum(Count_Final, na.rm = TRUE)) %>%
-                                                                          rename(Eligibility = IsEligible_Final)
+                                                    SummaryRecoded <- MonitorData %>%
+                                                                          distinct(pick(Feature, Value_Recoded), .keep_all = TRUE) %>%
+                                                                          group_by(Feature, IsEligible_Recoded) %>%
+                                                                              summarize(Recoded = sum(Count_Recoded, na.rm = TRUE)) %>%
+                                                                              rename(Eligibility = IsEligible_Recoded)
 
-                                                  Overview <- SummaryRaw %>%
-                                                                  full_join(SummaryHarmonized, by = join_by(Feature, Eligibility)) %>%
-                                                                  full_join(SummaryRecoded, by = join_by(Feature, Eligibility)) %>%
-                                                                  full_join(SummaryFinal, by = join_by(Feature, Eligibility)) %>%
-                                                                  arrange(Feature, desc(Eligibility)) %>%
-                                                                  mutate(Eligibility = case_match(Eligibility,
-                                                                                                  TRUE ~ "Eligible",
-                                                                                                  FALSE ~ "Ineligible",
-                                                                                                  NA ~ "Missing")) %>%
-                                                                  mutate(across(c(Raw, Harmonized, Recoded, Final), ~ case_when(is.na(.x) ~ 0, .default = .x)))       # Turn all NAs into 0 in count columns
+                                                    SummaryFinal <- MonitorData %>%
+                                                                        distinct(pick(Feature, Value_Final), .keep_all = TRUE) %>%
+                                                                        group_by(Feature, IsEligible_Final) %>%
+                                                                            summarize(Final = sum(Count_Final, na.rm = TRUE)) %>%
+                                                                            rename(Eligibility = IsEligible_Final)
 
-                                              }
-                                              else { return(data.frame()) }
+                                                    Overview <- SummaryRaw %>%
+                                                                    full_join(SummaryHarmonized, by = join_by(Feature, Eligibility)) %>%
+                                                                    full_join(SummaryRecoded, by = join_by(Feature, Eligibility)) %>%
+                                                                    full_join(SummaryFinal, by = join_by(Feature, Eligibility)) %>%
+                                                                    arrange(Feature, desc(Eligibility)) %>%
+                                                                    mutate(Eligibility = case_match(Eligibility,
+                                                                                                    TRUE ~ "Eligible",
+                                                                                                    FALSE ~ "Ineligible",
+                                                                                                    NA ~ "Missing"))
+
+                                                    # Get tibble of all combinations of occurring features and eligibility category
+                                                    AllCombinations <- tibble(Feature = rep(unique(Overview$Feature), each = 3),
+                                                                              Eligibility = rep(c("Eligible", "Ineligible", "Missing"), times = length(unique(Overview$Feature))))
+
+                                                    # Finalize overview
+                                                    Overview <- Overview %>%
+                                                                    right_join(AllCombinations, by = join_by(Feature, Eligibility)) %>%
+                                                                    mutate(across(c(Raw, Harmonized, Recoded, Final), ~ case_when(is.na(.x) ~ 0, .default = .x))) %>%       # Turn all NAs into 0 in count columns
+                                                                    group_by(Feature) %>%
+                                                                        mutate(across(c(Raw, Harmonized, Recoded, Final), ~ .x / sum(.x), .names = "{.col}_Proportional")) %>%      # Create proportional value columns
+                                                                    ungroup() %>%
+                                                                    arrange(Feature, factor(Eligibility, levels = c("Eligible", "Ineligible", "Missing")))
+                                                }
+                                                else { return(data.frame()) }
                                            })
 
 
-ls_ValueSetOverviews <- list()
+# Create overview of value eligibility in different transformation stages
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ls_ValueSetOverviews <- purrr::map(.x = ls_TransformationMonitors,
+                                   .f = function(MonitorData)
+                                        {
+                                            if (!purrr::is_empty(MonitorData))
+                                            {
+                                                ValueSets <- list()
 
-# ls_ValueSetOverviews <- purrr::map(.x = ls_TransformationMonitors,
-#                                   .f = function(MonitorData)
-#                                        {
-#                                           if (!purrr::is_empty(MonitorData))
-#                                               {
-#
-#
-#                                               }
-#                                               else { return(data.frame()) }
-#                                           })
+                                                ValueSets$Raw <- MonitorData %>%
+                                                                      select(Feature, Value_Raw, IsOccurring, IsEligible_Raw, Count_Raw) %>%
+                                                                      group_by(Feature) %>%
+                                                                          mutate(Proportion_Raw = Count_Raw / sum(Count_Raw, na.rm = TRUE)) %>%
+                                                                      ungroup()
+
+                                                ValueSets$Harmonized <- MonitorData %>%
+                                                                            group_by(Feature, Value_Harmonized, IsEligible_Harmonized) %>%
+                                                                                summarize(Count_Harmonized = sum(Count_Harmonized, na.rm = TRUE)) %>%
+                                                                            ungroup() %>%
+                                                                            distinct(Feature, Value_Harmonized, .keep_all = TRUE) %>%
+                                                                            group_by(Feature) %>%
+                                                                                mutate(Proportion_Harmonized = Count_Harmonized / sum(Count_Harmonized, na.rm = TRUE)) %>%
+                                                                            ungroup()
+
+                                                ValueSets$Recoded <- MonitorData %>%
+                                                                          group_by(Feature, Value_Recoded, IsEligible_Recoded) %>%
+                                                                              summarize(Count_Recoded = sum(Count_Recoded, na.rm = TRUE)) %>%
+                                                                          ungroup() %>%
+                                                                          distinct(Feature, Value_Recoded, .keep_all = TRUE) %>%
+                                                                          group_by(Feature) %>%
+                                                                              mutate(Proportion_Recoded = Count_Recoded / sum(Count_Recoded, na.rm = TRUE)) %>%
+                                                                          ungroup()
+
+                                                ValueSets$Final <- MonitorData %>%
+                                                                        group_by(Feature, Value_Final, IsEligible_Final) %>%
+                                                                            summarize(Count_Final = sum(Count_Final, na.rm = TRUE)) %>%
+                                                                        ungroup() %>%
+                                                                        distinct(Feature, Value_Final, .keep_all = TRUE) %>%
+                                                                        group_by(Feature) %>%
+                                                                            mutate(Proportion_Final = Count_Final / sum(Count_Final, na.rm = TRUE)) %>%
+                                                                        ungroup()
+
+                                                return(ValueSets)
+                                            }
+                                            else { return(list()) }
+                                        })
 
 
 
@@ -1341,6 +1393,7 @@ Call_IsLikelyRedundant <- CompileClassificationCall(TargetFeature = "IsLikelyRed
                                                     RuleSet = RuleSet_DiagnosisRedundancy.S,
                                                     RuleProfile = RuleProfile_DiagnosisRedundancy.S,
                                                     ValueIfNoRuleMet = FALSE)
+
 # Make list of rule calls to pass them to function
 RuleCalls_DiagnosisRedundancy <- list(IsLikelyRedundant = Call_IsLikelyRedundant)
 
@@ -1644,9 +1697,9 @@ ls_CuratedDataSet <- list(BioSampling = as.data.frame(df_BioSampling),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ls_CurationReport <- list(UnlinkedEntries = CountUnlinkedEntries,      # Named vector
-                          Transformation = list(Details = ls_TransformationMonitors,      # List of lists
-                                                EligibilityOverview = ls_EligibilityOverviews,
-                                                ValueSetOverview = ls_ValueSetOverviews),
+                          Transformation = list(Monitors = ls_TransformationMonitors,      # List of lists
+                                                EligibilityOverviews = ls_EligibilityOverviews,
+                                                ValueSetOverviews = ls_ValueSetOverviews),
                           DiagnosisClassification = c(DiagnosisRedundancies = CountDiagnosisRedundancies,      # Named vector
                                                       PatientsWithDiagnosisRedundancies = CountPatientsWithDiagnosisRedundancies,
                                                       DiagnosisAssociations = CountDiagnosisAssociations,

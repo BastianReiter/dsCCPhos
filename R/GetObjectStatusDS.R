@@ -1,5 +1,5 @@
 
-#' GetObjectInfoDS
+#' GetObjectStatusDS
 #'
 #' Similar to dsBase::testObjExistsDS(). Tests whether a certain object exists physically on server and provides meta info about it.
 #'
@@ -10,9 +10,8 @@
 #' @return A list containing information about existence and class of object
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
-GetObjectInfoDS <- function(ObjectName.S)
+GetObjectStatusDS <- function(ObjectName.S)
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Check input type
