@@ -47,18 +47,24 @@ CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
                                          RuleProfile_DiagnosisAssociation.S = "Default")
 
 
-View(CurationOutput$CurationReport$UnlinkedEntries)
-View(CurationOutput$CurationReport$Transformation$Patient)
-
+CurationOutput$CurationReport$UnlinkedEntries
+View(CurationOutput$CurationReport$Transformation$Monitors$Staging)
+View(CurationOutput$CurationReport$Transformation$EligibilityOverviews$Staging)
+View(CurationOutput$CurationReport$Transformation$ValueSetOverviews$Staging$Harmonized)
 
 CuratedDataSet <- CurationOutput$CuratedDataSet
+
+View(CuratedDataSet$Patient)
+
 
 # Augment data based on curation output
 AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 
-View(AugmentationOutput$AugmentedDataSet$Patients)
+ADS <- AugmentationOutput$AugmentedDataSet
 
-
+View(ADS$Patients)
+View(ADS$Events)
+View(ADS$Diagnoses)
 
 
 

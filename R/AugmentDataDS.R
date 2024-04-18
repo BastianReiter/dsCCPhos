@@ -104,7 +104,7 @@ df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
 
 
 
-# Temporary
+# Temporary !!!
 
 df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
                         filter(IsReferenceEntry == TRUE)
@@ -172,7 +172,7 @@ try(ProgressBar$tick())
 
 
 # Initiate df_ADS_Events, integrating patient-specific and initial diagnosis events
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Initiation 1: Initial diagnosis event
 df_ADS_Events <- df_CDS_Patient %>%
@@ -181,11 +181,15 @@ df_ADS_Events <- df_CDS_Patient %>%
                           mutate(EventType = "Point",
                                  EventDate = InitialDiagnosisDate,
                                  EventDateEnd = NULL,      # For events of type "Period"
+                                 EventDateIsAdjusted = FALSE,      # In case event date is adjusted later for plausibility reasons
                                  EventClass = "Diagnosis",
-                                 EventSubclass = "Initial diagnosis",
+                                 EventSubclass = "InitialDiagnosis",
                                  EventRankWithinSubclass = row_number(),
-                                 EventOrderSignificance = NULL,
-                                 EventDetails = NULL) %>%
+                                 EventOrderSignificance = NULL) %>%
+                          nest(EventDetails = c(ICD10Code,
+                                                ICDOTopographyCode,
+                                                ICDOMorphologyCode,
+                                                Grading)) %>%
                           select(PatientID,
                                  DateOfBirth,
                                  DiagnosisID,
@@ -201,10 +205,10 @@ df_Events_LastVitalStatus <- df_CDS_Patient %>%
                                   group_by(PatientID, DiagnosisID) %>%
                                       mutate(EventType = "Point",
                                              EventDate = LastVitalStatusDate,
-                                             EventClass = "Vital Status",
-                                             EventSubclass = case_when(LastVitalStatus == "Deceased" ~ "Death",
-                                                                       LastVitalStatus == "Alive" ~ "Alive",
-                                                                       LastVitalStatus == NA ~ "Unknown")) %>%
+                                             EventDateIsAdjusted = FALSE,
+                                             EventClass = "VitalStatus",
+                                             EventSubclass = case_when(NA ~ "Unknown",
+                                                                       .default = LastVitalStatus)) %>%
                                       nest(EventDetails = c(DeathCancerRelated,
                                                             CausesOfDeath)) %>%
                                   ungroup() %>%
@@ -231,6 +235,7 @@ df_Events_BioSampling <- df_CDS_BioSampling %>%
                                   arrange(SampleTakingDate, .by_group = TRUE) %>%
                                   mutate(EventType = "Point",
                                          EventDate = SampleTakingDate,
+                                         EventDateIsAdjusted = FALSE,
                                          EventClass = "Diagnostics",
                                          EventSubclass = "Sample Taking",
                                          EventRankWithinSubclass = row_number(),
@@ -258,6 +263,7 @@ df_Events_Histology <- df_CDS_Histology %>%
                                 arrange(HistologyDate, HistologyID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
                                        EventDate = HistologyDate,
+                                       EventDateIsAdjusted = FALSE,
                                        EventClass = "Diagnostics",
                                        EventSubclass = "Histology",
                                        EventRankWithinSubclass = row_number(),
@@ -284,6 +290,7 @@ df_Events_Metastasis <- df_CDS_Metastasis %>%
                                 arrange(MetastasisDiagnosisDate, MetastasisID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
                                        EventDate = MetastasisDiagnosisDate,
+                                       EventDateIsAdjusted = FALSE,
                                        EventClass = "Diagnosis",
                                        EventSubclass = "Metastasis",
                                        EventRankWithinSubclass = row_number(),
@@ -312,6 +319,7 @@ if (nrow(df_CDS_MolecularDiagnostics) > 0)
                                               arrange(MolecularDiagnosticsDate, .by_group = TRUE) %>%
                                               mutate(EventType = "Point",
                                                      EventDate = MolecularDiagnosticsDate,
+                                                     EventDateIsAdjusted = FALSE,
                                                      EventClass = "Diagnostics",
                                                      EventSubclass = "Molecular Diagnostics",
                                                      EventRankWithinSubclass = row_number(),
@@ -338,6 +346,7 @@ df_Events_Progress <- df_CDS_Progress %>%
                               arrange(ProgressReportDate, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
                                      EventDate = ProgressReportDate,
+                                     EventDateIsAdjusted = FALSE,
                                      EventClass = "Diagnosis",
                                      EventSubclass = "Progress",
                                      EventRankWithinSubclass = row_number(),
@@ -366,6 +375,7 @@ df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                       mutate(EventType = "Period",
                                              EventDate = RadiationTherapyStart,
                                              EventDateEnd = RadiationTherapyEnd,
+                                             EventDateIsAdjusted = FALSE,
                                              EventClass = "Therapy",
                                              EventSubclass = "Radiation Therapy",
                                              EventRankWithinSubclass = row_number(),
@@ -390,6 +400,7 @@ df_Events_Staging <- df_CDS_Staging %>%
                               arrange(StagingReportDate, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
                                      EventDate = StagingReportDate,
+                                     EventDateIsAdjusted = FALSE,
                                      EventClass = "Diagnosis",
                                      EventSubclass = "Staging",
                                      EventRankWithinSubclass = row_number(),
@@ -423,6 +434,7 @@ df_Events_Surgery <- df_CDS_Surgery %>%
                               arrange(SurgeryDate, SurgeryID, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
                                      EventDate = SurgeryDate,
+                                     EventDateIsAdjusted = FALSE,
                                      EventClass = "Therapy",
                                      EventSubclass = "Surgery",
                                      EventRankWithinSubclass = row_number(),
@@ -450,6 +462,7 @@ df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                       mutate(EventType = "Period",
                                              EventDate = SystemicTherapyStart,
                                              EventDateEnd = SystemicTherapyEnd,
+                                             EventDateIsAdjusted = FALSE,
                                              EventClass = "Therapy",
                                              EventSubclass = SystemicTherapySubclass,
                                              EventRankWithinSubclass = row_number(),
@@ -485,9 +498,17 @@ df_ADS_Events <- df_ADS_Events %>%
                                .direction = "downup") %>%
                       group_by(PatientID, DiagnosisID) %>%
                           arrange(EventDate, .by_group = TRUE) %>%
-                          fill(InitialDiagnosisDate,
-                               .direction = "downup") %>%
-                          mutate(EventRank = row_number(),
+                          # Important adjustment!
+                          mutate(FirstEventDate = min(EventDate, na.rm = TRUE),
+                                 LastEventDate = max(EventDate, na.rm = TRUE),
+                                 EventDateIsAdjusted = case_when(EventSubclass == "InitialDiagnosis" & EventDate > FirstEventDate ~ TRUE,
+                                                                 EventClass == "VitalStatus" & EventDate < LastEventDate ~ TRUE,
+                                                                 .default = FALSE),
+                                 EventDate = case_when(EventSubclass == "InitialDiagnosis" ~ FirstEventDate,
+                                                       EventClass == "VitalStatus" ~ LastEventDate,
+                                                       .default = EventDate),
+                                 InitialDiagnosisDate = FirstEventDate,
+                                 EventRank = row_number(),
                                  EventDaysSinceDiagnosis = round(as.numeric(difftime(EventDate, InitialDiagnosisDate, units = "days")), digits = 1),
                                  EventPatientAge = floor(time_length(difftime(EventDate, DateOfBirth), unit = "years"))) %>%
                       select(PatientID,
@@ -498,6 +519,7 @@ df_ADS_Events <- df_ADS_Events %>%
                              EventType,
                              EventDate,
                              EventDateEnd,
+                             EventDateIsAdjusted,
                              EventPatientAge,
                              EventDaysSinceDiagnosis,
                              EventClass,
@@ -515,8 +537,8 @@ try(ProgressBar$terminate())
 
 
 #Temporary
-UnnestedEvents <- df_ADS_Events %>%
-                      unnest(cols = c(EventDetails), keep_empty = TRUE)
+# UnnestedEvents <- df_ADS_Events %>%
+#                       unnest(cols = c(EventDetails), keep_empty = TRUE)
 
 
 

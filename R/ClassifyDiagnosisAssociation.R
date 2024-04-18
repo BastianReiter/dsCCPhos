@@ -26,7 +26,7 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
 
 
     # For function testing purposes
-    # DiagnosisEntries <- df_CDS_Diagnosis %>% filter(PatientID == "Pat_100167")
+    # DiagnosisEntries <- df_Diagnosis %>% filter(PatientID == "Pat_15294")
     # RuleCalls <- RuleCalls_DiagnosisAssociation
     # RulesProfile = "Default"
     # print(DiagnosisEntries$DiagnosisID[1])
@@ -59,7 +59,7 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
     Reference <- DiagnosisEntries %>%
                       slice_min(InitialDiagnosisDate) %>%     # Select oldest diagnosis (or diagnoses)
                       arrange(desc(ICD10Code)) %>%      # If there are more than one diagnoses with the same date, prefer the one that starts with "D" over one that starts with "C" (to account for line in progression)
-                      first() %>%
+                      slice_head() %>%
                       mutate(ReferenceDiagnosisID = DiagnosisID,
                              IsLikelyAssociated = FALSE)
 
@@ -106,7 +106,7 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
                           filter(IsLikelyAssociated == FALSE) %>%
                           slice_min(tibble(InitialDiagnosisDate, HistologyDate)) %>%
                           arrange(desc(ICD10Code)) %>%      # If there are more than one diagnoses with the same date, prefer the one that starts with "D" over one that starts with "C" (to account for line in progression)
-                          first() %>%
+                          slice_head() %>%
                           mutate(ReferenceDiagnosisID = DiagnosisID)
 
         # Assign new candidates for associated diagnoses

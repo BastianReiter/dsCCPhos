@@ -1,6 +1,7 @@
 AggregateMethods:
     GetCohortDescriptionDS,
-    GetObjectInfoDS,
+    GetObjectMetaDataDS,
+    GetObjectStatusDS,
     GetReportingObjectDS,
     GetSampleStatisticsDS,
     GetValidationReportDS_RawData
