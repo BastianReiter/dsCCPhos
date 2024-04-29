@@ -42,10 +42,10 @@ GetObjectMetaDataDS <- function(ObjectName.S)
         MetaData$DataTypes <- switch(class(Object) %in% c("list", "data.frame"),      # Only apply if 'Object' is a list or a data.frame
                                      sapply(Object, class))
 
-        MetaData$ContentOverview <- switch(class(Object) %in% c("list", "data.frame"),
-                                           data.frame(Element = MetaData$Names,
-                                                      Type = MetaData$DataTypes,
-                                                      row.names = NULL))
+        MetaData$Structure <- switch(class(Object) %in% c("list", "data.frame"),
+                                     data.frame(Element = MetaData$Names,
+                                                Type = MetaData$DataTypes,
+                                                row.names = NULL))
     }
     else { MetaData$ObjectExists <- FALSE }
 
