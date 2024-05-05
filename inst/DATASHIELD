@@ -1,5 +1,7 @@
 AggregateMethods:
     GetCohortDescriptionDS,
+    GetFeatureInfoDS,
+    GetFrequencyTableDS,
     GetObjectMetaDataDS,
     GetObjectStatusDS,
     GetReportingObjectDS,
