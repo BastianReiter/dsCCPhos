@@ -1,35 +1,35 @@
 
 #' GetSampleStatisticsDS
 #'
-#' Calculate common sample statistics for a feature of a data frame
+#' Calculate common sample statistics for a feature of a data frame.
 #'
-#' @param TableName String | Name of the Data frame that contains the metric feature
-#' @param MetricFeatureName String | Name of metric feature
-#' @param GroupingFeatureName String | Name of optional grouping feature
-#' @param na.rm Logical | Whether NA values should be removed before calculating statistics
+#' @param TableName.S \code{string} | Name of the Data frame that contains the feature
+#' @param MetricFeatureName.S \code{string} | Name of feature
+#' @param GroupingFeatureName.S \code{string} | Name of optional grouping feature
+#' @param RemoveMissings.S \code{logical} | With numeric features; Whether NA values should be removed before calculating statistics
 #'
-#' @return A tibble containing the following statistics: sample size (N), minimum, maximum, Q1, Median, Q3, MAD, mean, standard deviation
+#' @return A \code{tibble} containing parametric and non-parametric sample statistics
 #' @export
 #'
 #' @examples
-GetSampleStatisticsDS <- function(TableName,
-                                  MetricFeatureName,
-                                  GroupingFeatureName = NULL,
-                                  na.rm = FALSE)
+GetSampleStatisticsDS <- function(TableName.S,
+                                  MetricFeatureName.S,
+                                  GroupingFeatureName.S = NULL,
+                                  RemoveMissings.S = TRUE)
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Check, evaluate and parse input before proceeding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if (is.character(TableName)
-      & is.character(MetricFeatureName)
-      & (is.null(GroupingFeatureName) | (!is.null(GroupingFeatureName) & is.character(GroupingFeatureName))))
+if (is.character(TableName.S)
+      & is.character(MetricFeatureName.S)
+      & (is.null(GroupingFeatureName.S) | (!is.null(GroupingFeatureName.S) & is.character(GroupingFeatureName.S))))
 {
-    Table <- eval(parse(text = TableName), envir = parent.frame())
+    Table <- eval(parse(text = TableName.S), envir = parent.frame())
 }
 else
 {
-    ClientMessage <- "ERROR: 'TableName', 'MetricFeatureName' and 'GroupingFeatureName' (optionally) must be specified as a character string"
+    ClientMessage <- "Error: 'TableName.S', 'MetricFeatureName.S' and (optionally) 'GroupingFeatureName.S' must be specified as a character string"
     stop(ClientMessage, call. = FALSE)
 }
 
@@ -47,53 +47,70 @@ require(stats)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # For function testing purposes
-# Table <- AugmentationOutput$Patients
-# MetricFeatureName <- "PatientAgeAtDiagnosis"
-# GroupingFeatureName <- "LastVitalStatus"
-# na.rm = TRUE
+# Table <- ADS$Patients
+# MetricFeatureName.S <- "TNM_T"
+# GroupingFeatureName.S <- "LastVitalStatus"
+# RemoveMissings.S = TRUE
 
 
-df_Output <- Table %>%
-                  summarize(N = n(),
-                            q5 = quantile(.data[[MetricFeatureName]], probs = 0.05, na.rm = na.rm),
-                            Q1 = quantile(.data[[MetricFeatureName]], probs = 0.25, na.rm = na.rm),
-                            Median = median(.data[[MetricFeatureName]], na.rm = na.rm),
-                            Q3 = quantile(.data[[MetricFeatureName]], probs = 0.75, na.rm = na.rm),
-                            q95 = quantile(.data[[MetricFeatureName]], probs = 0.95, na.rm = na.rm),
-                            MAD = mad(.data[[MetricFeatureName]], na.rm = na.rm),
-                            Mean = mean(.data[[MetricFeatureName]], na.rm = na.rm),
-                            SD = sd(.data[[MetricFeatureName]], na.rm = na.rm),
-                            SEM = SD / sqrt(N))
+# Evaluate feature in question
+Feature <- Table[[MetricFeatureName.S]]
+
+# Stop if Feature is not of class 'numeric'
+if (class(Feature) != "numeric") { stop(paste0("The specified feature '", MetricFeatureName.S, "' is not of class 'numeric'."), call. = FALSE) }
 
 
-if (!is.null(GroupingFeatureName))      # If GroupingFeatureName is not empty...
+# Get count of valid (non-missing) values in Feature
+N_Valid <- sum(!is.na(Feature))
+
+if (N_Valid > 0)
 {
-    # Get group-specific output
-    df_Groupwise <- Table %>%
-                        group_by(., .data[[GroupingFeatureName]]) %>%
-                        summarize(N = n(),
-                                  q5 = quantile(.data[[MetricFeatureName]], probs = 0.05, na.rm = na.rm),
-                                  Q1 = quantile(.data[[MetricFeatureName]], probs = 0.25, na.rm = na.rm),
-                                  Median = median(.data[[MetricFeatureName]], na.rm = na.rm),
-                                  Q3 = quantile(.data[[MetricFeatureName]], probs = 0.75, na.rm = na.rm),
-                                  q95 = quantile(.data[[MetricFeatureName]], probs = 0.95, na.rm = na.rm),
-                                  MAD = mad(.data[[MetricFeatureName]], na.rm = na.rm),
-                                  Mean = mean(.data[[MetricFeatureName]], na.rm = na.rm),
-                                  SD = sd(.data[[MetricFeatureName]], na.rm = na.rm),
-                                  SEM = SD / sqrt(N))
+    # Calculate parametric and non-parametric sample statistics
+    Statistics <- as_tibble(Table) %>%
+                      summarize(N = N_Valid,
+                                q5 = quantile(.data[[MetricFeatureName.S]], probs = 0.05, na.rm = RemoveMissings.S),
+                                Q1 = quantile(.data[[MetricFeatureName.S]], probs = 0.25, na.rm = RemoveMissings.S),
+                                Median = median(.data[[MetricFeatureName.S]], na.rm = RemoveMissings.S),
+                                Q3 = quantile(.data[[MetricFeatureName.S]], probs = 0.75, na.rm = RemoveMissings.S),
+                                q95 = quantile(.data[[MetricFeatureName.S]], probs = 0.95, na.rm = RemoveMissings.S),
+                                MAD = mad(.data[[MetricFeatureName.S]], na.rm = RemoveMissings.S),
+                                Mean = mean(.data[[MetricFeatureName.S]], na.rm = RemoveMissings.S),
+                                SD = sd(.data[[MetricFeatureName.S]], na.rm = RemoveMissings.S),
+                                SEM = SD / sqrt(N))
 
-    # Create Extra column for later rbinding
-    df_Output <- df_Output %>%
-                      mutate(dummy = "All", .before = 1)
+    # If GroupingFeatureName.S is passed...
+    if (!is.null(GroupingFeatureName.S))
+    {
+        # Get group-specific output
+        df_Groupwise <- as_tibble(Table) %>%
+                            group_by(., .data[[GroupingFeatureName.S]]) %>%
+                            summarize(q5 = quantile(.data[[MetricFeatureName.S]], probs = 0.05, na.rm = RemoveMissings.S),
+                                      Q1 = quantile(.data[[MetricFeatureName.S]], probs = 0.25, na.rm = RemoveMissings.S),
+                                      Median = median(.data[[MetricFeatureName.S]], na.rm = RemoveMissings.S),
+                                      Q3 = quantile(.data[[MetricFeatureName.S]], probs = 0.75, na.rm = RemoveMissings.S),
+                                      q95 = quantile(.data[[MetricFeatureName.S]], probs = 0.95, na.rm = RemoveMissings.S),
+                                      MAD = mad(.data[[MetricFeatureName.S]], na.rm = RemoveMissings.S),
+                                      Mean = mean(.data[[MetricFeatureName.S]], na.rm = RemoveMissings.S),
+                                      SD = sd(.data[[MetricFeatureName.S]], na.rm = RemoveMissings.S),
+                                      SEM = SD / sqrt(N))
 
-    # Harmonize column names for rbinding
-    colnames(df_Output) <- colnames(df_Groupwise)
+        # Create Extra column for later rbinding
+        Statistics <- Statistics %>%
+                          mutate(dummy = "All", .before = 1)
 
-    df_Output <- rbind(df_Output,
-                       df_Groupwise)
+        # Harmonize column names for rbinding
+        colnames(Statistics) <- colnames(df_Groupwise)
+
+        Statistics <- rbind(Statistics,
+                            df_Groupwise)
+    }
 }
 
-return(df_Output)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Return statement
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+return(Statistics)
 }
 
 

@@ -52,12 +52,14 @@ View(CurationOutput$CurationReport$Transformation$Monitors$Staging)
 View(CurationOutput$CurationReport$Transformation$EligibilityOverviews$Staging)
 View(CurationOutput$CurationReport$Transformation$ValueSetOverviews$Staging$Harmonized)
 
+
+
 CuratedDataSet <- CurationOutput$CuratedDataSet
 
 View(CuratedDataSet$Patient)
 
 
-# Augment data based on curation output
+# Augment data
 AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 
 ADS <- AugmentationOutput$AugmentedDataSet
@@ -67,4 +69,8 @@ View(ADS$Events)
 View(ADS$Diagnoses)
 
 
+
+SampleStatistics <- GetSampleStatisticsDS(TableName.S = "ADS$Patients",
+                                          FeatureName.S = "LastVitalStatus")
+SampleStatistics$Statistics
 

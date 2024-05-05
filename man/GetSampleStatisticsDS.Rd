@@ -5,24 +5,24 @@
 \title{GetSampleStatisticsDS}
 \usage{
 GetSampleStatisticsDS(
-  TableName,
-  MetricFeatureName,
-  GroupingFeatureName = NULL,
-  na.rm = FALSE
+  TableName.S,
+  MetricFeatureName.S,
+  GroupingFeatureName.S = NULL,
+  RemoveMissings.S = TRUE
 )
 }
 \arguments{
-\item{TableName}{String | Name of the Data frame that contains the metric feature}
+\item{TableName.S}{\code{string} | Name of the Data frame that contains the feature}
 
-\item{MetricFeatureName}{String | Name of metric feature}
+\item{MetricFeatureName.S}{\code{string} | Name of feature}
 
-\item{GroupingFeatureName}{String | Name of optional grouping feature}
+\item{GroupingFeatureName.S}{\code{string} | Name of optional grouping feature}
 
-\item{na.rm}{Logical | Whether NA values should be removed before calculating statistics}
+\item{RemoveMissings.S}{\code{logical} | With numeric features; Whether NA values should be removed before calculating statistics}
 }
 \value{
-A tibble containing the following statistics: sample size (N), minimum, maximum, Q1, Median, Q3, MAD, mean, standard deviation
+A \code{tibble} containing parametric and non-parametric sample statistics
 }
 \description{
-Calculate common sample statistics for a feature of a data frame
+Calculate common sample statistics for a feature of a data frame.
 }
