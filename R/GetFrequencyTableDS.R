@@ -1,7 +1,7 @@
 
 #' GetFrequencyTableDS
 #'
-#' Return table of absolute and relative value frequencies (proportions) for a nominal / ordinal feature.
+#' Return table of absolute and relative value frequencies for a nominal / ordinal feature.
 #'
 #' @param TableName.S \code{string} | Name of the Data frame that contains the feature
 #' @param FeatureName.S \code{string} | Name of feature
@@ -53,8 +53,8 @@ require(stats)
 # Evaluate feature in question
 Feature <- Table[[FeatureName.S]]
 
-# Stop if Feature is of class 'numeric'
-if (class(Feature) == "numeric") { stop(paste0("The specified feature '", FeatureName.S, "' is of class 'numeric' and therefore not eligible."), call. = FALSE) }
+# Stop if Feature is of class 'numeric' or similar
+if (class(Feature) %in% c("double", "integer", "numeric")) { stop(paste0("The specified feature '", FeatureName.S, "' is of class '", class(Feature), "' and therefore not suitable."), call. = FALSE) }
 
 
 # Initiate FrequencyTable object
@@ -70,12 +70,12 @@ N_Valid <- sum(!is.na(Feature))
 
 if (class(Feature) == "character" & N_Valid > 0)
 {
-    # Tibble containing absolute frequencies
+    # Tibble containing absolute and relative frequencies
     FrequencyTable <- as_tibble(table(Feature, useNA = "no")) %>%
-                          rename(c(Frequency = "n",
+                          rename(c(AbsoluteFrequency = "n",
                                    Value = "Feature")) %>%
-                          arrange(desc(Frequency)) %>%
-                          mutate(Proportion = Frequency / N_Valid)
+                          arrange(desc(AbsoluteFrequency)) %>%
+                          mutate(RelativeFrequency = AbsoluteFrequency / N_Valid)
 }
 
 
@@ -85,11 +85,11 @@ if (class(Feature) == "character" & N_Valid > 0)
 
 if (class(Feature) == "logical" & N_Valid > 0)
 {
-    # Tibble containing absolute frequencies
+    # Tibble containing absolute and relative frequencies
     FrequencyTable <- as_tibble(table(Feature, useNA = "no")) %>%
-                          rename(c(Frequency = "n",
+                          rename(c(AbsoluteFrequency = "n",
                                    Value = "Feature")) %>%
-                          mutate(Proportion = Frequency / N_Valid)
+                          mutate(RelativeFrequency = AbsoluteFrequency / N_Valid)
 }
 
 
