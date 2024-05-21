@@ -57,7 +57,7 @@ require(stats)
 Feature <- Table[[MetricFeatureName.S]]
 
 # Stop if Feature is not of class 'numeric'
-if (class(Feature) != "numeric") { stop(paste0("The specified feature '", MetricFeatureName.S, "' is not of class 'numeric'."), call. = FALSE) }
+if (!(class(Feature) %in% c("double", "integer", "numeric"))) { stop(paste0("The specified feature '", MetricFeatureName.S, "' is of class '", class(Feature), "' and therefore not suitable."), call. = FALSE) }
 
 
 # Get count of valid (non-missing) values in Feature
