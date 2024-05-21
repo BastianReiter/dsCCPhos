@@ -144,12 +144,16 @@ names(ls_DataSet) <- sapply(names(ls_DataSet),
 ls_DataSet <- purrr::map(.x = names(ls_DataSet),
                          .f = function(TableName)
                               {
-                                  # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
-                                  vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Raw
-                                  names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Curated
+                                  if (!is.null(ls_DataSet[[TableName]]))
+                                  {
+                                      # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
+                                      vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Raw
+                                      names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Curated
 
-                                  # Rename feature names according to look-up vector
-                                  dplyr::rename(ls_DataSet[[TableName]], any_of(vc_Lookup))      # Returns a tibble
+                                      # Rename feature names according to look-up vector
+                                      dplyr::rename(ls_DataSet[[TableName]], any_of(vc_Lookup))      # Returns a tibble
+                                  }
+                                  else { return(NULL) }
                               }) %>%
                   setNames(names(ls_DataSet))      # List member names are preserved using setNames()
 
