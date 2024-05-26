@@ -39,8 +39,14 @@ names(RawDataSet) <- sapply(names(RawDataSet),
                             function(TableName) { vc_Lookup[TableName] })
 
 
+# Simulate missing tables
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+RawDataSet$RDS_BioSampling <- NULL
+RawDataSet$RDS_MolecularDiagnostics <- NULL
+
 
 # Curate data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
                                          RuleProfile_RawDataHarmonization.S = "Default",
                                          RuleProfile_DiagnosisRedundancy.S = "Default",

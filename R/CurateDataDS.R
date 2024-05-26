@@ -137,41 +137,67 @@ names(ls_DataSet) <- sapply(names(ls_DataSet),
                             function(TableName) { str_remove(TableName, "RDS_") })
 
 
+# If tables are missing, create corresponding empty tables for easier management throughout following processing
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+AllTableNames <- dsCCPhos::Meta_TableNames$TableName_Curated
+MissingTableNames <- AllTableNames[!(AllTableNames %in% names(ls_DataSet))]
+
+# Create empty data frames for missing tables
+if (!is.null(MissingTableNames))
+{
+    for (i in 1:length(MissingTableNames))
+    {
+        ls_DataSet[[MissingTableNames[i]]] <- data.frame()
+    }
+}
+
+# Reestablish original order of tables in ls_DataSet
+ls_DataSet <- ls_DataSet[AllTableNames]
+
+
 # Rename features
 #~~~~~~~~~~~~~~~~
 
 # Looping through tables to rename features
-ls_DataSet <- purrr::map(.x = names(ls_DataSet),
-                         .f = function(TableName)
-                              {
-                                  if (!is.null(ls_DataSet[[TableName]]))
-                                  {
-                                      # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
-                                      vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Raw
-                                      names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Curated
+ls_DataSet <- ls_DataSet %>%
+                  imap(function(dataframe, name)
+                       {
+                          # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
+                          vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Raw
+                          names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Curated
 
-                                      # Rename feature names according to look-up vector
-                                      dplyr::rename(ls_DataSet[[TableName]], any_of(vc_Lookup))      # Returns a tibble
-                                  }
-                                  else { return(NULL) }
-                              }) %>%
-                  setNames(names(ls_DataSet))      # List member names are preserved using setNames()
+                          if (nrow(dataframe) > 0)
+                          {
+                              # Rename feature names according to look-up vector
+                              dplyr::rename(dataframe, any_of(vc_Lookup))      # Returns a tibble
+                          }
+                          else
+                          {
+                              # Create empty data.frame with pre-defined column names
+                              df <- data.frame(matrix(nrow = 0,
+                                                      ncol = length(names(vc_Lookup)))) %>%
+                                        setNames(names(vc_Lookup)) %>%
+                                        mutate(across(everything(), ~ as.character(.x)))
+
+                              return(df)
+                          }
+                       })
 
 
-
-# Unpack list into data frames
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_BioSampling <- ls_DataSet$BioSampling
-df_Diagnosis <- ls_DataSet$Diagnosis
-df_Histology <- ls_DataSet$Histology
-df_Metastasis <- ls_DataSet$Metastasis
-df_MolecularDiagnostics <- ls_DataSet$MolecularDiagnostics
-df_Patient <- ls_DataSet$Patient
-df_Progress <- ls_DataSet$Progress
-df_RadiationTherapy <- ls_DataSet$RadiationTherapy
-df_Staging <- ls_DataSet$Staging
-df_Surgery <- ls_DataSet$Surgery
-df_SystemicTherapy <- ls_DataSet$SystemicTherapy
+# # Unpack list into data frames for easier management
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# df_BioSampling <- ls_DataSet$BioSampling
+# df_Diagnosis <- ls_DataSet$Diagnosis
+# df_Histology <- ls_DataSet$Histology
+# df_Metastasis <- ls_DataSet$Metastasis
+# df_MolecularDiagnostics <- ls_DataSet$MolecularDiagnostics
+# df_Patient <- ls_DataSet$Patient
+# df_Progress <- ls_DataSet$Progress
+# df_RadiationTherapy <- ls_DataSet$RadiationTherapy
+# df_Staging <- ls_DataSet$Staging
+# df_Surgery <- ls_DataSet$Surgery
+# df_SystemicTherapy <- ls_DataSet$SystemicTherapy
 
 
 
@@ -183,20 +209,14 @@ df_SystemicTherapy <- ls_DataSet$SystemicTherapy
 #   - Remove duplicate entries
 #-------------------------------------------------------------------------------
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MONITORING: Count unlinked entries (Part 1)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CountEntriesBeforeCleaning <- c(BioSampling = nrow(df_BioSampling),
-                                Diagnosis = nrow(df_Diagnosis),
-                                Histology = nrow(df_Histology),
-                                Metastasis = nrow(df_Metastasis),
-                                MolecularDiagnostics = nrow(df_MolecularDiagnostics),
-                                Patient = nrow(df_Patient),
-                                Progress = nrow(df_Progress),
-                                RadiationTherapy = nrow(df_RadiationTherapy),
-                                Staging = nrow(df_Staging),
-                                Surgery = nrow(df_Surgery),
-                                SystemicTherapy = nrow(df_SystemicTherapy))
+
+# Count entries in data frames before cleaning
+CountEntriesBeforeCleaning <- ls_DataSet %>%
+                                  map_int(\(dataframe) nrow(dataframe))
 
 
 # Set up progress bar
@@ -207,199 +227,187 @@ try(ProgressBar$tick())
 
 
 
-#--- Patient -------------------------------------------------------------------
+ls_DataSet <- ls_DataSet %>%
+                  imap(function(dataframe, name)
+                         {
+                            if (name == "Patient")
+                            {
+                                # Get vector of PatientIDs that are linked with one or more DiagnosisIDs
+                                vc_EligiblePatientIDs <- dataframe %>%
+                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID)) %>%
+                                                              filter(!is.na(DiagnosisID)) %>%
+                                                              pull(PatientID)
 
-# Get vector of PatientIDs that are linked with one or more DiagnosisIDs
-vc_EligiblePatientIDs <- df_Patient %>%
-                              left_join(df_Diagnosis, by = join_by(PatientID)) %>%
-                              filter(!is.na(DiagnosisID)) %>%
-                              pull(PatientID)
+                                # Filter out patient entries with no related diagnosis data and keep only distinct rows (removal of duplicates)
+                                return(dataframe %>%
+                                            filter(PatientID %in% vc_EligiblePatientIDs) %>%
+                                            distinct())
+                            }
 
-# Filter out patient entries with no related diagnosis data and keep only distinct rows (removal of duplicates)
-df_Patient <- df_Patient %>%
-                      filter(PatientID %in% vc_EligiblePatientIDs) %>%
-                      distinct()
+                            if (name == "Diagnosis")
+                            {
+                                # Get vector of DiagnosisIDs that are linked with a PatientID
+                                vc_EligibleDiagnosisIDs <- dataframe %>%
+                                                                left_join(ls_DataSet$Patient, by = join_by(PatientID)) %>%
+                                                                filter(!is.na(PatientID)) %>%
+                                                                pull(DiagnosisID)
 
-try(ProgressBar$tick())
+                                # Filter out diagnosis entries with no related patient data and keep only distinct rows (removal of duplicates)
+                                return(dataframe %>%
+                                            filter(DiagnosisID %in% vc_EligibleDiagnosisIDs) %>%
+                                            distinct(across(-DiagnosisID), .keep_all = TRUE))      # Keep only rows that are distinct (everywhere but DiagnosisID)
+                            }
 
+                            if (name == "Histology")
+                            {
+                                # Get vector of HistologyIDs that are linked with a PatientID / DiagnosisID
+                                vc_EligibleHistologyIDs <- dataframe %>%
+                                                                left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                                filter(!is.na(DiagnosisID)) %>%
+                                                                pull(HistologyID)
 
-#--- Diagnosis -----------------------------------------------------------------
+                                # Filter out histology entries with no related diagnosis data and keep only distinct rows (removal of duplicates)
+                                return(dataframe %>%
+                                            filter(HistologyID %in% vc_EligibleHistologyIDs) %>%
+                                            distinct(across(-HistologyID), .keep_all = TRUE))
+                            }
 
-# Get vector of DiagnosisIDs that are linked with a PatientID
-vc_EligibleDiagnosisIDs <- df_Diagnosis %>%
-                                left_join(df_Patient, by = join_by(PatientID)) %>%
-                                filter(!is.na(PatientID)) %>%
-                                pull(DiagnosisID)
+                            if (name == "BioSampling")
+                            {
+                                if (!(is.null(dataframe) | length(dataframe) == 0))
+                                {
+                                    # Get vector of SampleIDs that are linked with a PatientID
+                                    vc_EligibleSampleIDs <- dataframe %>%
+                                                                left_join(ls_DataSet$Patient, by = join_by(PatientID)) %>%
+                                                                filter(!is.na(PatientID)) %>%
+                                                                pull(SampleID)
 
-# Filter out diagnosis entries with no related patient data and keep only distinct rows (removal of duplicates)
-df_Diagnosis <- df_Diagnosis %>%
-                    filter(DiagnosisID %in% vc_EligibleDiagnosisIDs) %>%
-                    distinct(across(-DiagnosisID), .keep_all = TRUE)      # Keep only rows that are distinct (everywhere but DiagnosisID)
+                                    # Filter out...
+                                    return(dataframe %>%
+                                                filter(SampleID %in% vc_EligibleSampleIDs) %>%
+                                                distinct())
+                                }
+                                else (return(dataframe))
+                            }
 
-try(ProgressBar$tick())
+                            if (name == "Metastasis")
+                            {
+                                # Get vector of MetastasisIDs that are linked with a PatientID / DiagnosisID
+                                vc_EligibleMetastasisIDs <- dataframe %>%
+                                                                left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                                filter(!is.na(DiagnosisID)) %>%
+                                                                pull(MetastasisID)
 
+                                # Filter out...
+                                return(dataframe %>%
+                                            filter(MetastasisID %in% vc_EligibleMetastasisIDs) %>%
+                                            distinct(across(-MetastasisID), .keep_all = TRUE))
+                            }
 
-#--- Histology -----------------------------------------------------------------
+                            if (name == "MolecularDiagnostics")
+                            {
+                                if (!(is.null(dataframe) | length(dataframe) == 0))
+                                {
+                                    # Get vector of MolecularDiagnosticsIDs that are linked with a PatientID / DiagnosisID
+                                    vc_EligibleMolecularDiagnosticsIDs <- dataframe %>%
+                                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                                              filter(!is.na(DiagnosisID)) %>%
+                                                                              pull(MolecularDiagnosticsID)
 
-# Get vector of HistologyIDs that are linked with a PatientID / DiagnosisID
-vc_EligibleHistologyIDs <- df_Histology %>%
-                                left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                filter(!is.na(DiagnosisID)) %>%
-                                pull(HistologyID)
+                                    # Filter out...
+                                    return(dataframe %>%
+                                                filter(MolecularDiagnosticsID %in% vc_EligibleMolecularDiagnosticsIDs) %>%
+                                                distinct(across(-MolecularDiagnosticsID), .keep_all = TRUE))
+                                }
+                                else (return(dataframe))
+                            }
 
-# Filter out histology entries with no related diagnosis data and keep only distinct rows (removal of duplicates)
-df_Histology <- df_Histology %>%
-                    filter(HistologyID %in% vc_EligibleHistologyIDs) %>%
-                    distinct(across(-HistologyID), .keep_all = TRUE)
+                            if (name == "Progress")
+                            {
+                                # Get vector of ProgressIDs that are linked with a PatientID / DiagnosisID
+                                vc_EligibleProgressIDs <- dataframe %>%
+                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                              filter(!is.na(DiagnosisID)) %>%
+                                                              pull(ProgressID)
 
-try(ProgressBar$tick())
+                                # Filter out...
+                                return(dataframe %>%
+                                            filter(ProgressID %in% vc_EligibleProgressIDs) %>%
+                                            distinct(across(-ProgressID), .keep_all = TRUE))
+                            }
 
+                            if (name == "RadiationTherapy")
+                            {
+                                # Get vector of RadiationTherapyIDs that are linked with a PatientID / DiagnosisID
+                                vc_EligibleRadiationTherapyIDs <- dataframe %>%
+                                                                      left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                                      filter(!is.na(DiagnosisID)) %>%
+                                                                      pull(RadiationTherapyID)
 
-#--- BioSampling ---------------------------------------------------------------
+                                # Filter out...
+                                return(dataframe %>%
+                                            filter(RadiationTherapyID %in% vc_EligibleRadiationTherapyIDs) %>%
+                                            distinct(across(-RadiationTherapyID), .keep_all = TRUE))
+                            }
 
-# Get vector of SampleIDs that are linked with a PatientID
-vc_EligibleSampleIDs <- df_BioSampling %>%
-                                  left_join(df_Patient, by = join_by(PatientID)) %>%
-                                  filter(!is.na(PatientID)) %>%
-                                  pull(SampleID)
+                            if (name == "Staging")
+                            {
+                                # Get vector of StagingIDs that are linked with a PatientID / DiagnosisID
+                                vc_EligibleStagingIDs <- dataframe %>%
+                                                              left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                              filter(!is.na(DiagnosisID)) %>%
+                                                              pull(StagingID)
 
-# Filter out...
-df_BioSampling <- df_BioSampling %>%
-                      filter(SampleID %in% vc_EligibleSampleIDs) %>%
-                      distinct()
+                                # Filter out...
+                                return(dataframe %>%
+                                            filter(StagingID %in% vc_EligibleStagingIDs) %>%
+                                            distinct(across(-StagingID), .keep_all = TRUE))
+                            }
 
-try(ProgressBar$tick())
+                            if (name == "Surgery")
+                            {
+                                # Get vector of SurgeryIDs that are linked with a PatientID / DiagnosisID
+                                vc_EligibleSurgeryIDs <- dataframe %>%
+                                                              left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                              filter(!is.na(DiagnosisID)) %>%
+                                                              pull(SurgeryID)
 
+                                # Filter out...
+                                return(dataframe %>%
+                                            filter(SurgeryID %in% vc_EligibleSurgeryIDs) %>%
+                                            distinct(across(-SurgeryID), .keep_all = TRUE))
+                            }
 
-#--- Metastasis ----------------------------------------------------------------
+                            if (name == "SystemicTherapy")
+                            {
+                                # Get vector of SystemicTherapyIDs that are linked with a PatientID / DiagnosisID
+                                vc_EligibleSystemicTherapyIDs <- dataframe %>%
+                                                                      left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                                      filter(!is.na(DiagnosisID)) %>%
+                                                                      pull(SystemicTherapyID)
 
-# Get vector of MetastasisIDs that are linked with a PatientID / DiagnosisID
-vc_EligibleMetastasisIDs <- df_Metastasis %>%
-                                left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                filter(!is.na(DiagnosisID)) %>%
-                                pull(MetastasisID)
+                                # Filter out...
+                                return(dataframe %>%
+                                            filter(SystemicTherapyID %in% vc_EligibleSystemicTherapyIDs) %>%
+                                            distinct(across(-SystemicTherapyID), .keep_all = TRUE))
+                            }
 
-# Filter out...
-df_Metastasis <- df_Metastasis %>%
-                      filter(MetastasisID %in% vc_EligibleMetastasisIDs) %>%
-                      distinct(across(-MetastasisID), .keep_all = TRUE)
+                            try(ProgressBar$tick()) })
 
-try(ProgressBar$tick())
-
-
-#--- MolecularDiagnostics ------------------------------------------------------
-
-# Get vector of MolecularDiagnosticsIDs that are linked with a PatientID / DiagnosisID
-vc_EligibleMolecularDiagnosticsIDs <- df_MolecularDiagnostics %>%
-                                          left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                          filter(!is.na(DiagnosisID)) %>%
-                                          pull(MolecularDiagnosticsID)
-
-# Filter out...
-df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
-                                filter(MolecularDiagnosticsID %in% vc_EligibleMolecularDiagnosticsIDs) %>%
-                                distinct(across(-MolecularDiagnosticsID), .keep_all = TRUE)
-
-try(ProgressBar$tick())
-
-
-#--- Progress ------------------------------------------------------------------
-
-# Get vector of ProgressIDs that are linked with a PatientID / DiagnosisID
-vc_EligibleProgressIDs <- df_Progress %>%
-                              left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                              filter(!is.na(DiagnosisID)) %>%
-                              pull(ProgressID)
-
-# Filter out...
-df_Progress <- df_Progress %>%
-                    filter(ProgressID %in% vc_EligibleProgressIDs) %>%
-                    distinct(across(-ProgressID), .keep_all = TRUE)
-
-try(ProgressBar$tick())
-
-
-#--- RadiationTherapy ----------------------------------------------------------
-
-# Get vector of RadiationTherapyIDs that are linked with a PatientID / DiagnosisID
-vc_EligibleRadiationTherapyIDs <- df_RadiationTherapy %>%
-                                      left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                      filter(!is.na(DiagnosisID)) %>%
-                                      pull(RadiationTherapyID)
-
-# Filter out...
-df_RadiationTherapy <- df_RadiationTherapy %>%
-                            filter(RadiationTherapyID %in% vc_EligibleRadiationTherapyIDs) %>%
-                            distinct(across(-RadiationTherapyID), .keep_all = TRUE)
-
-try(ProgressBar$tick())
-
-
-#--- Staging -------------------------------------------------------------------
-
-# Get vector of StagingIDs that are linked with a PatientID / DiagnosisID
-vc_EligibleStagingIDs <- df_Staging %>%
-                              left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                              filter(!is.na(DiagnosisID)) %>%
-                              pull(StagingID)
-
-# Filter out...
-df_Staging <- df_Staging %>%
-                  filter(StagingID %in% vc_EligibleStagingIDs) %>%
-                  distinct(across(-StagingID), .keep_all = TRUE)
-
-try(ProgressBar$tick())
-
-
-#--- Surgery -------------------------------------------------------------------
-
-# Get vector of SurgeryIDs that are linked with a PatientID / DiagnosisID
-vc_EligibleSurgeryIDs <- df_Surgery %>%
-                              left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                              filter(!is.na(DiagnosisID)) %>%
-                              pull(SurgeryID)
-
-# Filter out...
-df_Surgery <- df_Surgery %>%
-                  filter(SurgeryID %in% vc_EligibleSurgeryIDs) %>%
-                  distinct(across(-SurgeryID), .keep_all = TRUE)
-
-try(ProgressBar$tick())
-
-
-#--- Systemic Therapy ----------------------------------------------------------
-
-# Get vector of SystemicTherapyIDs that are linked with a PatientID / DiagnosisID
-vc_EligibleSystemicTherapyIDs <- df_SystemicTherapy %>%
-                                      left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                      filter(!is.na(DiagnosisID)) %>%
-                                      pull(SystemicTherapyID)
-
-# Filter out...
-df_SystemicTherapy <- df_SystemicTherapy %>%
-                          filter(SystemicTherapyID %in% vc_EligibleSystemicTherapyIDs) %>%
-                          distinct(across(-SystemicTherapyID), .keep_all = TRUE)
-
-try(ProgressBar$tick())
 try(ProgressBar$terminate())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MONITORING: Count unlinked entries (Part 2)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CountEntriesAfterCleaning <- c(BioSampling = nrow(df_BioSampling),
-                               Diagnosis = nrow(df_Diagnosis),
-                               Histology = nrow(df_Histology),
-                               Metastasis = nrow(df_Metastasis),
-                               MolecularDiagnostics = nrow(df_MolecularDiagnostics),
-                               Patient = nrow(df_Patient),
-                               Progress = nrow(df_Progress),
-                               RadiationTherapy = nrow(df_RadiationTherapy),
-                               Staging = nrow(df_Staging),
-                               Surgery = nrow(df_Surgery),
-                               SystemicTherapy = nrow(df_SystemicTherapy))
 
+# Count entries in data frames after cleaning
+CountEntriesAfterCleaning <- ls_DataSet %>%
+                                  map_int(\(dataframe) nrow(dataframe))
+
+# Count unlinked entries
 CountUnlinkedEntries <- CountEntriesBeforeCleaning - CountEntriesAfterCleaning
+
 
 # Print messages for live monitoring in local tests
 cat("\n")
@@ -448,7 +456,7 @@ try(ProgressBar$tick())
 
 # Auxiliary function to extract eligible values from meta data
 f_GetEligibleValues <- function(TableName,
-                              FeatureName)
+                                FeatureName)
 {
     dsCCPhos::Meta_ValueSets %>%
         filter(Table == TableName,
@@ -506,23 +514,23 @@ ls_MonitorMetaData <- list(BioSampling = list(SampleType = f_GetEligibleValues("
 try(ProgressBar$tick())
 
 
-# Re-pack data frames into list in order to pass them to map-functions
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
-#-------------------------------------------------------------------------------
-ls_DataSet <- list(BioSampling = df_BioSampling,
-                   Diagnosis = df_Diagnosis,
-                   Histology = df_Histology,
-                   Metastasis = df_Metastasis,
-                   MolecularDiagnostics = df_MolecularDiagnostics,
-                   Patient = df_Patient,
-                   Progress = df_Progress,
-                   RadiationTherapy = df_RadiationTherapy,
-                   Staging = df_Staging,
-                   Surgery = df_Surgery,
-                   SystemicTherapy = df_SystemicTherapy)
-                   #--- Update PB ---
-                   try(ProgressBar$tick())
+# # Re-pack data frames into list in order to pass them to map-functions
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# #   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
+# #-------------------------------------------------------------------------------
+# ls_DataSet <- list(BioSampling = df_BioSampling,
+#                    Diagnosis = df_Diagnosis,
+#                    Histology = df_Histology,
+#                    Metastasis = df_Metastasis,
+#                    MolecularDiagnostics = df_MolecularDiagnostics,
+#                    Patient = df_Patient,
+#                    Progress = df_Progress,
+#                    RadiationTherapy = df_RadiationTherapy,
+#                    Staging = df_Staging,
+#                    Surgery = df_Surgery,
+#                    SystemicTherapy = df_SystemicTherapy)
+#                    #--- Update PB ---
+#                    try(ProgressBar$tick())
 
 
 
@@ -531,7 +539,7 @@ ls_DataSet <- list(BioSampling = df_BioSampling,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Get unique raw values and their frequencies for monitoring
 #   - Copy values of monitored features and mark them with TrackID that has correspondent in actually processed data frames
-
+#-------------------------------------------------------------------------------
 
 # Check if object names in ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
 if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
@@ -1102,7 +1110,7 @@ ls_TransformationTracks_Summaries <- purrr::pmap(.l = list(ls_TransformationTrac
                                                  .f = function(TrackData,
                                                                MonitorMetaData)
                                                       {
-                                                           if (purrr::is_empty(TrackData) == FALSE)
+                                                           if (!purrr::is_empty(TrackData)) { if (nrow(TrackData) > 0)
                                                            {
                                                                Summary <- TrackData %>%
                                                                                mutate(across(everything(), ~ as.character(.x))) %>%      # Turn all columns into character (necessary for pivot_longer() to work correctly)
@@ -1163,6 +1171,7 @@ ls_TransformationTracks_Summaries <- purrr::pmap(.l = list(ls_TransformationTrac
 
                                                                return(Summary)
                                                            }
+                                                           else { return (data.frame()) } }
                                                            else { return (data.frame()) }
                                                       })
 
@@ -1212,7 +1221,7 @@ ls_EligibilityOverviews <- purrr::pmap(.l = list(ls_TransformationMonitors,
                                        .f = function(MonitorData,
                                                      MonitorMetaData)
                                             {
-                                                if (!purrr::is_empty(MonitorData))
+                                                if (!(purrr::is_empty(MonitorData) | is.null(MonitorData)))
                                                 {
                                                     # Filter out features that are not meant to be monitored, e.g. do not have applicable eligibility criteria
                                                     MonitorData <- MonitorData %>%
