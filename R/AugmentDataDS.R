@@ -230,29 +230,34 @@ try(ProgressBar$tick())
 
 # Transform BioSampling data into Event-oriented data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_BioSampling <- df_CDS_BioSampling %>%
-                              group_by(PatientID) %>%
-                                  arrange(SampleTakingDate, .by_group = TRUE) %>%
-                                  mutate(EventType = "Point",
-                                         EventDate = SampleTakingDate,
-                                         EventDateIsAdjusted = FALSE,
-                                         EventClass = "Diagnostics",
-                                         EventSubclass = "Sample Taking",
-                                         EventRankWithinSubclass = row_number(),
-                                         EventOrderSignificance = case_when(row_number() == 1 ~ "First Sample Taking",
-                                                                            row_number() == n() ~ "Last Sample Taking",
-                                                                            TRUE ~ NA)) %>%
-                                  nest(EventDetails = c(SampleAliquot,
-                                                        SampleType,
-                                                        SampleStatus,
-                                                        SampleQuantity,
-                                                        SampleUnit,
-                                                        SampleProjectName)) %>%
-                              ungroup() %>%
-                              select(PatientID,
-                                     starts_with("Event"))
-                              #--- Update PB ---
-                              try(ProgressBar$tick())
+df_Events_BioSampling <- NULL
+
+if (nrow(df_CDS_BioSampling) > 0)
+{
+    df_Events_BioSampling <- df_CDS_BioSampling %>%
+                                  group_by(PatientID) %>%
+                                      arrange(SampleTakingDate, .by_group = TRUE) %>%
+                                      mutate(EventType = "Point",
+                                             EventDate = SampleTakingDate,
+                                             EventDateIsAdjusted = FALSE,
+                                             EventClass = "Diagnostics",
+                                             EventSubclass = "Sample Taking",
+                                             EventRankWithinSubclass = row_number(),
+                                             EventOrderSignificance = case_when(row_number() == 1 ~ "First Sample Taking",
+                                                                                row_number() == n() ~ "Last Sample Taking",
+                                                                                TRUE ~ NA)) %>%
+                                      nest(EventDetails = c(SampleAliquot,
+                                                            SampleType,
+                                                            SampleStatus,
+                                                            SampleQuantity,
+                                                            SampleUnit,
+                                                            SampleProjectName)) %>%
+                                  ungroup() %>%
+                                  select(PatientID,
+                                         starts_with("Event"))
+}
+#--- Update PB ---
+try(ProgressBar$tick())
 
 
 
