@@ -144,7 +144,7 @@ AllTableNames <- dsCCPhos::Meta_TableNames$TableName_Curated
 MissingTableNames <- AllTableNames[!(AllTableNames %in% names(ls_DataSet))]
 
 # Create empty data frames for missing tables
-if (!is.null(MissingTableNames))
+if (length(MissingTableNames) > 0)
 {
     for (i in 1:length(MissingTableNames))
     {
@@ -354,7 +354,7 @@ ls_DataSet <- ls_DataSet %>%
                             {
                                 # Get vector of StagingIDs that are linked with a PatientID / DiagnosisID
                                 vc_EligibleStagingIDs <- dataframe %>%
-                                                              left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
                                                               filter(!is.na(DiagnosisID)) %>%
                                                               pull(StagingID)
 
@@ -368,7 +368,7 @@ ls_DataSet <- ls_DataSet %>%
                             {
                                 # Get vector of SurgeryIDs that are linked with a PatientID / DiagnosisID
                                 vc_EligibleSurgeryIDs <- dataframe %>%
-                                                              left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
                                                               filter(!is.na(DiagnosisID)) %>%
                                                               pull(SurgeryID)
 
@@ -382,7 +382,7 @@ ls_DataSet <- ls_DataSet %>%
                             {
                                 # Get vector of SystemicTherapyIDs that are linked with a PatientID / DiagnosisID
                                 vc_EligibleSystemicTherapyIDs <- dataframe %>%
-                                                                      left_join(df_Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                                      left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
                                                                       filter(!is.na(DiagnosisID)) %>%
                                                                       pull(SystemicTherapyID)
 
