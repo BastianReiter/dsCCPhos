@@ -17,5 +17,5 @@ GetFrequencyTableDS(TableName.S, FeatureName.S, GroupingFeatureName.S = NULL)
 A \code{tibble} containing absolute and relative frequencies
 }
 \description{
-Return table of absolute and relative value frequencies (proportions) for a nominal / ordinal feature.
+Return table of absolute and relative value frequencies for a nominal / ordinal feature.
 }
