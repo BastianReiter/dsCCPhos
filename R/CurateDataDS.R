@@ -167,7 +167,7 @@ ls_DataSet <- ls_DataSet %>%
                           vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Raw
                           names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Curated
 
-                          if (nrow(dataframe) > 0)
+                          if (!is_empty(dataframe))
                           {
                               # Rename feature names according to look-up vector
                               dplyr::rename(dataframe, any_of(vc_Lookup))      # Returns a tibble
