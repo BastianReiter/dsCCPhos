@@ -1,15 +1,19 @@
 
 
 library(dsCCPhos)
+library(dplyr)
 
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load CCP test data as raw data set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #RawDataSet <- readRDS(file = "./Development/Data/RealData/CCPRealData_Frankfurt.rds")
+#OldTestData <- readRDS(file = "./Development/Data/TestData/OldTestData/CCPTestData.rds")
 RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
-RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData_WithMissingTables.rds")
+#RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData_WithMissingTables.rds")
 
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Sub-sample test data for easier testing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 NumberOfPatients <- 1000
@@ -19,7 +23,9 @@ SamplePatientIDs <- sample(RawDataSet$patient$"_id",
                            size = NumberOfPatients)
 
 # Get data subsets that relate to sampled PatientIDs
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Special tables 'sample' and 'molecularmarker' might be empty
 sample <- data.frame()
 if (nrow(RawDataSet$sample) > 0)
 {
@@ -32,6 +38,8 @@ if (nrow(RawDataSet$`molecular-marker`) > 0)
     molecularmarker <- as.data.frame(filter(RawDataSet$"molecular-marker", RawDataSet$"molecular-marker"$"patient-id" %in% SamplePatientIDs))
 }
 
+# Compile list 'RawDataSet'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~
 RawDataSet <- list(sample = sample,
                    diagnosis = as.data.frame(filter(RawDataSet$diagnosis, RawDataSet$diagnosis$"patient-id" %in% SamplePatientIDs)),
                    histology = as.data.frame(filter(RawDataSet$histology, RawDataSet$histology$"patient-id" %in% SamplePatientIDs)),
@@ -54,6 +62,13 @@ names(RawDataSet) <- sapply(names(RawDataSet),
                             function(TableName) { vc_Lookup[TableName] })
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Validate Raw Data Set
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Curate data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",

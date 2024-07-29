@@ -35,43 +35,44 @@ else
 # Use require() to load package namespaces
 require(dplyr)
 require(lubridate)
+require(purrr)
 require(validate)
 
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Extract data frames from list
+# Check existence and completeness of tables
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Temporarily save table names for later use
-vc_TableNames <- names(RawDataSet)
+# Go through available dataframes in RawDataSet and check for completeness
+TableCheckPresent <- RawDataSet %>%
+                          imap(function(dataframe, name)
+                               {
+                                  TableExists <- (!is_empty(dataframe))
 
-# Transform feature names for easier handling in later functions
-RawDataSet <- purrr::map(.x = names(RawDataSet),
-                         .f = function(TableName)
-                              {
-                                  # Create named vector to look up matching feature names in meta data
-                                  vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Raw
-                                  names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == TableName)$FeatureName_Curated
+                                  RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Raw
+                                  PresentFeatureNames <- names(dataframe)
 
-                                  # Rename feature names according to look-up vector
-                                  dplyr::rename(RawDataSet[[TableName]], any_of(vc_Lookup))      # Returns a tibble
+                                  MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
+
+                                  TableComplete <- (length(MissingFeatures) == 0)
+
+                                  return(list(TableExists = TableExists,
+                                              TableComplete = TableComplete,
+                                              MissingFeatures = MissingFeatures))
                                })
 
-# Re-assign table names in Raw Data Set
-names(RawDataSet) <- vc_TableNames
+# Get all required table names from meta data
+RequiredTableNames <- paste0("RDS_", dsCCPhosClient::Meta_TableNames$TableName_Curated)
 
-
-df_RDS_BioSampling <- RawDataSet$BioSampling
-df_RDS_Diagnosis <- RawDataSet$Diagnosis
-df_RDS_Histology <- RawDataSet$Histology
-df_RDS_Metastasis <- RawDataSet$Metastasis
-df_RDS_MolecularDiagnostics <- RawDataSet$MolecularDiagnostics
-df_RDS_Patient <- RawDataSet$Patient
-df_RDS_Progress <- RawDataSet$Progress
-df_RDS_RadiationTherapy <- RawDataSet$RadiationTherapy
-df_RDS_Staging <- RawDataSet$Staging
-df_RDS_Surgery <- RawDataSet$Surgery
-df_RDS_SystemicTherapy <- RawDataSet$SystemicTherapy
+# Compile summarizing list of table check
+TableCheck <- RequiredTableNames %>%
+                  map(function(tablename)
+                      {
+                          if (tablename %in% names(TableCheckPresent)) { return(TableCheckPresent[[tablename]]) }
+                          else { return(list(TableExists = FALSE)) }
+                      }) %>%
+                  set_names(RequiredTableNames)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
