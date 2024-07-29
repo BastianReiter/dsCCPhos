@@ -359,8 +359,7 @@ df_Events_Progress <- df_CDS_Progress %>%
                                                                         row_number() == n() ~ "Last Progress Report",
                                                                         TRUE ~ NA)) %>%
                               nest(EventDetails = (c(GlobalStatus,
-                                                     LocalRelapseDate,
-                                                     LocalStatus,
+                                                     PrimaryTumorStatus,
                                                      LymphnodalStatus,
                                                      MetastasisStatus))) %>%
                           ungroup() %>%

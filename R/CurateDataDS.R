@@ -467,6 +467,7 @@ f_GetEligibleValues <- function(TableName,
 
 # List object containing meta data
 ls_MonitorMetaData <- list(BioSampling = list(SampleType = f_GetEligibleValues("BioSampling", "SampleType"),
+                                              SampleTypeCXX = f_GetEligibleValues("BioSampling", "SampleTypeCXX"),
                                               SampleAliquot = f_GetEligibleValues("BioSampling", "SampleAliquot")),
 
                            Diagnosis = list(ICD10Version = NULL,
@@ -482,7 +483,7 @@ ls_MonitorMetaData <- list(BioSampling = list(SampleType = f_GetEligibleValues("
                                           LastVitalStatus = f_GetEligibleValues("Patient", "LastVitalStatus")),
 
                            Progress = list(GlobalStatus = f_GetEligibleValues("Progress", "GlobalStatus"),
-                                           LocalStatus = f_GetEligibleValues("Progress", "LocalStatus"),
+                                           PrimaryTumorStatus = f_GetEligibleValues("Progress", "PrimaryTumorStatus"),
                                            LymphnodalStatus = f_GetEligibleValues("Progress", "LymphnodalStatus"),
                                            MetastasisStatus = f_GetEligibleValues("Progress", "MetastasisStatus")),
 
@@ -749,15 +750,15 @@ df_Progress <- ls_DataSet$Progress %>%
                     #--- Recoding ------------------------------------------
                     mutate(GlobalStatus = dsCCPhos::RecodeData(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus"),
                                                                                   set_names(Value_Curated, Value_Raw))),
-                           LocalStatus = dsCCPhos::RecodeData(LocalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "LocalStatus"),
+                           PrimaryTumorStatus = dsCCPhos::RecodeData(PrimaryTumorStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "PrimaryTumorStatus"),
                                                                                 set_names(Value_Curated, Value_Raw))),
                            LymphnodalStatus = dsCCPhos::RecodeData(LymphnodalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "LymphnodalStatus"),
                                                                                           set_names(Value_Curated, Value_Raw))),
                            MetastasisStatus = dsCCPhos::RecodeData(MetastasisStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "MetastasisStatus"),
                                                                                           set_names(Value_Curated, Value_Raw)))) %>%
                     #--- Formatting ----------------------------------------
-                    mutate(ProgressReportDate = format(as_datetime(ProgressReportDate), format = "%Y-%m-%d"),
-                           LocalRelapseDate = format(as_datetime(LocalRelapseDate), format = "%Y-%m-%d"))
+                    mutate(ProgressReportDate = format(as_datetime(ProgressReportDate), format = "%Y-%m-%d"))
+                           #LocalRelapseDate = format(as_datetime(LocalRelapseDate), format = "%Y-%m-%d"))
                     #--- Update PB ---
                     try(ProgressBar$tick())
 
@@ -931,6 +932,7 @@ try(ProgressBar$tick())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_BioSampling <- df_BioSampling %>%
                       mutate(SampleType = dsCCPhos::FinalizeDataTransformation(SampleType, TableName = "BioSampling", FeatureName = "SampleType"),
+                             SampleType = dsCCPhos::FinalizeDataTransformation(SampleTypeCXX, TableName = "BioSampling", FeatureName = "SampleTypeCXX"),
                              SampleAliquot = dsCCPhos::FinalizeDataTransformation(SampleAliquot, TableName = "BioSampling", FeatureName = "SampleAliquot"))
                       #--- Update PB ---
                       try(ProgressBar$tick())
@@ -965,7 +967,7 @@ df_Patient <- df_Patient %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Progress <- df_Progress %>%
                     mutate(GlobalStatus = dsCCPhos::FinalizeDataTransformation(GlobalStatus, TableName = "Progress", FeatureName = "GlobalStatus"),   # Assign factor labels?
-                           LocalStatus = dsCCPhos::FinalizeDataTransformation(LocalStatus, TableName = "Progress", FeatureName = "LocalStatus"),   # Assign factor labels?
+                           PrimaryTumorStatus = dsCCPhos::FinalizeDataTransformation(PrimaryTumorStatus, TableName = "Progress", FeatureName = "PrimaryTumorStatus"),   # Assign factor labels?
                            LymphnodalStatus = dsCCPhos::FinalizeDataTransformation(LymphnodalStatus, TableName = "Progress", FeatureName = "LymphnodalStatus"),   # Assign factor labels?
                            MetastasisStatus = dsCCPhos::FinalizeDataTransformation(MetastasisStatus, TableName = "Progress", FeatureName = "MetastasisStatus"))   # Assign factor labels?
                     #--- Update PB ---
