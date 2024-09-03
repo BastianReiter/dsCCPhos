@@ -4,9 +4,10 @@ AggregateMethods:
     GetFrequencyTableDS,
     GetObjectMetaDataDS,
     GetObjectStatusDS,
+    GetRDSTableCheckDS,
+    GetRDSValidationReportDS,
     GetReportingObjectDS,
-    GetSampleStatisticsDS,
-    GetValidationReportDS_RawData
+    GetSampleStatisticsDS
 AssignMethods:
     AugmentDataDS,
     CurateDataDS,
