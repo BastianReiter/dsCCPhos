@@ -185,7 +185,7 @@ ls_DataSet <- ls_DataSet %>%
                        })
 
 
-# # Unpack list into data frames for easier management
+# # Deprecated: Unpack list into data frames for easier management
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # df_BioSampling <- ls_DataSet$BioSampling
 # df_Diagnosis <- ls_DataSet$Diagnosis
@@ -678,6 +678,8 @@ df_BioSampling <- ls_DataSet$BioSampling %>%
                       #--- Recoding --------------------------------------------
                       mutate(SampleType = dsCCPhos::RecodeData(SampleType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleType"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
                                                                                 set_names(Value_Curated, Value_Raw))),      # This returns a vector of the form c("Value_Raw1" = "Value1", ...), thereby inducing replacement of original values with new ones as defined in Meta Data
+                             SampleTypeCXX = dsCCPhos::RecodeData(SampleTypeCXX, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleTypeCXX"),
+                                                                                      set_names(Value_Curated, Value_Raw))),
                              SampleAliquot = dsCCPhos::RecodeData(SampleAliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleAliquot"),
                                                                                       set_names(Value_Curated, Value_Raw)))) %>%
                       #--- Formatting ------------------------------------------

@@ -13,8 +13,10 @@ RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
 
 
 
+# - - OPTIONAL START - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Sub-sample test data for easier testing
+# OPTIONAL: Sub-sample test data for easier testing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 NumberOfPatients <- 1000
 
@@ -52,7 +54,11 @@ RawDataSet <- list(sample = sample,
                    surgery = as.data.frame(filter(RawDataSet$surgery, RawDataSet$surgery$"patient-id" %in% SamplePatientIDs)),
                    "system-therapy" = as.data.frame(filter(RawDataSet$"system-therapy", RawDataSet$"system-therapy"$"patient-id" %in% SamplePatientIDs)))
 
+# - - OPTIONAL END - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rename tables of RawDataSet (the names are also changed when tables are being loaded into R server sessions)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 vc_Lookup <- paste0("RDS_", dsCCPhos::Meta_TableNames$TableName_Curated)
@@ -63,8 +69,17 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Check Tables for existence and completeness
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TableCheck <- GetRDSTableCheckDS("RawDataSet")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Validate Raw Data Set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 
 
 
