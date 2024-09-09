@@ -11,4 +11,5 @@ AggregateMethods:
 AssignMethods:
     AugmentDataDS,
     CurateDataDS,
-    ExtractFromListDS
+    ExtractFromListDS,
+    CreateCheckpointsDS
