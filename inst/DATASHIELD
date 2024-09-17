@@ -1,10 +1,10 @@
 AggregateMethods:
+    CheckRDSTablesDS,
     GetCohortDescriptionDS,
     GetFeatureInfoDS,
     GetFrequencyTableDS,
     GetObjectMetaDataDS,
     GetObjectStatusDS,
-    GetRDSTableCheckDS,
     GetRDSValidationReportDS,
     GetReportingObjectDS,
     GetSampleStatisticsDS

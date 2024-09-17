@@ -1,5 +1,5 @@
 
-#' GetRDSTableCheck
+#' CheckRDSTablesDS
 #'
 #' Checks existence and completeness of RawDataSet (RDS) tables and returns an informative list object.
 #'
@@ -12,7 +12,7 @@
 #'
 #' @examples
 #' @author Bastian Reiter
-GetRDSTableCheckDS <- function(RawDataSetName.S = "RawDataSet")
+CheckRDSTablesDS <- function(RawDataSetName.S = "RawDataSet")
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
@@ -35,6 +35,7 @@ else
 # Use require() to load package namespaces
 require(dplyr)
 require(purrr)
+require(stringr)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Check existence and completeness of tables
@@ -46,15 +47,22 @@ TableCheckPresent <- RawDataSet %>%
                                {
                                   TableExists <- (!is_empty(dataframe))
 
-                                  RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Raw
+                                  RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == str_remove(name, "RDS_"))$FeatureName_Raw
                                   PresentFeatureNames <- names(dataframe)
+
+                                  FeatureExistence <- tibble(FeatureName = RequiredFeatureNames) %>%
+                                                          mutate(Exists = case_when(FeatureName %in% PresentFeatureNames ~ TRUE,
+                                                                                    TRUE ~ FALSE))
 
                                   MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
 
                                   TableComplete <- (length(MissingFeatures) == 0)
 
+                                  #FeatureTypes <-
+
                                   return(list(TableExists = TableExists,
                                               TableComplete = TableComplete,
+                                              FeatureExistence = FeatureExistence,
                                               MissingFeatures = MissingFeatures))
                                })
 

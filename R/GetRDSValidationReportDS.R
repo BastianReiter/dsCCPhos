@@ -17,7 +17,7 @@ GetRDSValidationReportDS <- function(RawDataSetName.S = "RawDataSet")
 # Evaluate and parse input before proceeding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if (is.character(Name_RawDataSet))
+if (is.character(RawDataSetName.S))
 {
     RawDataSet <- eval(parse(text = RawDataSetName.S), envir = parent.frame())
 }
@@ -26,6 +26,9 @@ else
     ClientMessage <- "ERROR: 'RawDataSetName.S' must be specified as a character string"
     stop(ClientMessage, call. = FALSE)
 }
+
+# For testing purposes
+#RawDataSetName.S <- "RawDataSet"
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load package namespaces
@@ -104,7 +107,14 @@ ValidationRules <- names(RawDataSet) %>%
 ValidationReports <- pmap(.l = list(RawDataSet,
                                     ValidationRules),
                           .f = \(dataframe, ruleset) confront(dataframe,
-                                                              validator(.data = ruleset)) %>% summary())
+                                                              validator(.data = ruleset)))
+
+# ValidationSummaries <- ValidationReports %>%
+#                             map(\(report) summary(report))
+#
+#
+# ValidationReportTables <- ValidationSummaries %>%
+#                               map(\(summary) as.data.frame(summary, check.names = FALSE))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
