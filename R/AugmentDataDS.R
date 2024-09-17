@@ -69,7 +69,13 @@ options(dplyr.summarise.inform = FALSE)
 
 # Initiate Messaging objects
 Messages <- list()
-Messages$Completed <- FALSE
+Messages$CheckAugmentationCompletion <- "red"
+Messages$FinalMessage <- "Augmentation not completed"
+
+
+# Use tryCatch to catch warnings and errors
+# Note: Warnings and errors must be defined and thrown explicitly for this to work. Unspecified errors will not be caught directly but will also not lead to harsh stops.
+tryCatch({
 
 
 # Extract data frames from list
@@ -674,17 +680,38 @@ ls_AugmentedDataSet <- list(Patients = as.data.frame(df_ADS_Patients),
 
 ls_AugmentationReport <- list(Test = c("TestReport"))
 
-Messages$Completed <- TRUE
 
+Messages$CheckAugmentationCompletion <- "green"
+Messages$FinalMessage <- "Augmentation performed successfully!"
+
+},
+
+# In case of occurring warning:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+warning = function(w)
+          {
+              Messages$CheckAugmentationCompletion <- "yellow"
+              Messages$FinalMessage <- paste0("Completed Augmentation with following warning: \n", w)
+          },
+
+# In case of occurring error:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+error = function(e)
+        {
+            Messages$CheckAugmentationCompletion <- "red"
+            Messages$FinalMessage <- paste0("An error occured: \n", e)
+        },
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RETURN STATEMENT
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Return the Augmented Data Set (ADS), an Augmentation Report (defined above) and Messages
-return(list(AugmentedDataSet = ls_AugmentedDataSet,
-            AugmentationReport = ls_AugmentationReport,
-            AugmentationMessages = Messages))
+finally =
+{
+  # Return the Augmented Data Set (ADS), an Augmentation Report (defined above) and Messages
+  return(list(AugmentedDataSet = ls_AugmentedDataSet,
+              AugmentationReport = ls_AugmentationReport,
+              AugmentationMessages = Messages))
+})
 
 }
 

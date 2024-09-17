@@ -108,9 +108,17 @@ require(tidyr)
 # Suppress summarize info messages
 options(dplyr.summarise.inform = FALSE)
 
+# Initiate output objects
+ls_CuratedDataSet <- NULL
+ls_CurationReport <- NULL
+
 # Initiate Messaging objects
 Messages <- list()
-Messages$Completed <- FALSE
+Messages$UnlinkedEntries <- character()
+Messages$DiagnosisRedundancies <- character()
+Messages$DiagnosisAssociation <- character()
+Messages$CheckCurationCompletion <- "red"
+Messages$FinalMessage <- "Curation not completed"
 
 
 # For testing purposes
@@ -120,6 +128,11 @@ Messages$Completed <- FALSE
 # RuleProfile_DiagnosisRedundancy.S <- "Default"
 # RuleSet_DiagnosisAssociation.S <- dsCCPhos::RuleSet_DiagnosisAssociation
 # RuleProfile_DiagnosisAssociation.S <- "Default"
+
+
+# Use tryCatch to catch warnings and errors
+# Note: Warnings and errors must be defined and thrown explicitly for this to work. Unspecified errors will not be caught directly but will also not lead to harsh stops.
+tryCatch({
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -183,22 +196,6 @@ ls_DataSet <- ls_DataSet %>%
                               return(df)
                           }
                        })
-
-
-# # Deprecated: Unpack list into data frames for easier management
-# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# df_BioSampling <- ls_DataSet$BioSampling
-# df_Diagnosis <- ls_DataSet$Diagnosis
-# df_Histology <- ls_DataSet$Histology
-# df_Metastasis <- ls_DataSet$Metastasis
-# df_MolecularDiagnostics <- ls_DataSet$MolecularDiagnostics
-# df_Patient <- ls_DataSet$Patient
-# df_Progress <- ls_DataSet$Progress
-# df_RadiationTherapy <- ls_DataSet$RadiationTherapy
-# df_Staging <- ls_DataSet$Staging
-# df_Surgery <- ls_DataSet$Surgery
-# df_SystemicTherapy <- ls_DataSet$SystemicTherapy
-
 
 
 
@@ -409,12 +406,17 @@ CountEntriesAfterCleaning <- ls_DataSet %>%
 CountUnlinkedEntries <- CountEntriesBeforeCleaning - CountEntriesAfterCleaning
 
 
+
 # Print messages for live monitoring in local tests
 cat("\n")
 for (i in 1:length(CountUnlinkedEntries))
 {
     Message <- paste0("Removed ", CountUnlinkedEntries[i], " unlinked entries from '", names(CountUnlinkedEntries)[i], "' table.")
     cli::cat_bullet(Message, bullet = "info")
+
+    # Save messages in output object
+    Messages$UnlinkedEntries <- c(Messages$UnlinkedEntries,
+                                  info = Message)
 }
 
 
@@ -437,7 +439,7 @@ for (i in 1:length(CountUnlinkedEntries))
 
 
 # Set up progress bar
-CountProgressItems <- 30
+CountProgressItems <- 29
 ProgressBar <- progress_bar$new(format = "Harmonizing data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
 try(ProgressBar$tick())
@@ -513,26 +515,6 @@ ls_MonitorMetaData <- list(BioSampling = list(SampleType = f_GetEligibleValues("
                                                   SystemicTherapyRelationToSurgery = f_GetEligibleValues("SystemicTherapy", "SystemicTherapyRelationToSurgery")))
 
 try(ProgressBar$tick())
-
-
-# # Re-pack data frames into list in order to pass them to map-functions
-# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# #   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
-# #-------------------------------------------------------------------------------
-# ls_DataSet <- list(BioSampling = df_BioSampling,
-#                    Diagnosis = df_Diagnosis,
-#                    Histology = df_Histology,
-#                    Metastasis = df_Metastasis,
-#                    MolecularDiagnostics = df_MolecularDiagnostics,
-#                    Patient = df_Patient,
-#                    Progress = df_Progress,
-#                    RadiationTherapy = df_RadiationTherapy,
-#                    Staging = df_Staging,
-#                    Surgery = df_Surgery,
-#                    SystemicTherapy = df_SystemicTherapy)
-#                    #--- Update PB ---
-#                    try(ProgressBar$tick())
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1455,6 +1437,9 @@ CountPatientsWithDiagnosisRedundancies <- df_Diagnosis %>%
 Message <- paste0("Found ", CountDiagnosisRedundancies, " redundancies related to ", CountPatientsWithDiagnosisRedundancies, " patient IDs.")
 cli::cat_bullet(Message, bullet = "info")
 
+# Save message in output object
+Messages$DiagnosisRedundancies <- Message
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -1625,6 +1610,9 @@ CountPatientsWithDiagnosisAssociations <- df_Aux_Diagnosis_ClassifiedAssociation
 Message <- paste0("Classified ", CountDiagnosisAssociations, " associated diagnosis entries related to ", CountPatientsWithDiagnosisAssociations, " patient IDs.")
 cli::cat_bullet(Message, bullet = "info")
 
+# Save message in output object
+Messages$DiagnosisAssociation <- Message
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -1722,16 +1710,37 @@ ls_CurationReport <- list(UnlinkedEntries = CountUnlinkedEntries,      # Named v
                                                       DiagnosisAssociations = CountDiagnosisAssociations,
                                                       PatientsWithDiagnosisAssociations = CountPatientsWithDiagnosisAssociations))
 
-Messages$Completed <- TRUE
+Messages$CheckCurationCompletion <- "green"
+Messages$FinalMessage <- "Curation performed successfully!"
 
+},
+
+# In case of occurring warning:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+warning = function(w)
+          {
+              Messages$CheckCurationCompletion <- "yellow"
+              Messages$FinalMessage <- paste0("Completed Curation with following warning: \n", w)
+          },
+
+# In case of occurring error:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+error = function(e)
+        {
+            Messages$CheckCurationCompletion <- "red"
+            Messages$FinalMessage <- paste0("An error occured: \n", e)
+        },
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RETURN STATEMENT
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+finally =
+{
+  # Return the Curated Data Set (CDS) a Curation Report (defined above) and Messages
+  return(list(CuratedDataSet = ls_CuratedDataSet,
+              CurationReport = ls_CurationReport,
+              CurationMessages = Messages))
+})
 
-# Return the Curated Data Set (CDS) a Curation Report (defined above) and Messages
-return(list(CuratedDataSet = ls_CuratedDataSet,
-            CurationReport = ls_CurationReport,
-            CurationMessages = Messages))
 }
 
