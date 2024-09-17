@@ -67,6 +67,10 @@ require(tidyr)
 # Suppress summarize info messages
 options(dplyr.summarise.inform = FALSE)
 
+# Initiate output objects
+ls_AugmentedDataSet <- NULL
+ls_AugmentationReport <- NULL
+
 # Initiate Messaging objects
 Messages <- list()
 Messages$CheckAugmentationCompletion <- "red"
