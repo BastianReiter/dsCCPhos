@@ -52,7 +52,11 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #     - Evaluation and parsing of input
 #     - Loading of required package namespaces
 #
-#   MODULE 1)  Transformation of meta data (table names / feature names)
+#   MODULE 1)  Harmonization of Raw Data Set meta data and structure
+#     - Transform table names
+#     - Add empty tables in data set if they are missing in raw data
+#     - Rename features
+#     - In tables with missing features, add empty features accordingly
 #
 #   MODULE 2)  Primary table cleaning
 #     - Remove entries that are not linked to related tables
@@ -136,8 +140,13 @@ tryCatch({
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE 1)  Transformation of table and feature names
+# MODULE 1)  Harmonization of Raw Data Set meta data and structure
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Transform table names
+#   - Add empty tables in data set if they are missing in raw data
+#   - Rename features
+#   - In tables with missing features, add empty features accordingly
+#-------------------------------------------------------------------------------
 
 # Setting up 'ls_DataSet' as object that holds all data throughout the function. It will be un- and repacked a couple of times during processing.
 ls_DataSet <- RawDataSet
@@ -195,6 +204,30 @@ ls_DataSet <- ls_DataSet %>%
 
                               return(df)
                           }
+                       })
+
+
+# In tables with missing features, add empty features accordingly
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ls_DataSet <- ls_DataSet %>%
+                  imap(function(dataframe, name)
+                       {
+                          # Determine missing features
+                          RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Curated
+                          PresentFeatureNames <- names(dataframe)
+                          MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
+
+                          # If a table misses features, add empty columns accordingly
+                          if (length(MissingFeatures) > 0)
+                          {
+                              ComplementedDataFrame <- dataframe %>%
+                                                          mutate(!!!set_names(rep(list(NA_character_), length(MissingFeatures)), MissingFeatures))
+
+                              return(ComplementedDataFrame)
+                          }
+                          else
+                          { return(dataframe) }
                        })
 
 
