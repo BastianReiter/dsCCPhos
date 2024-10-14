@@ -15,7 +15,7 @@
 #' @author Daniel Maier
 
 
-ADS_CongruencyTransformation <- function (data = ADS){
+ADS_CongruencyTransformationDS <- function (data = ADS){
 
   # auxfunction
   require(dplyr)

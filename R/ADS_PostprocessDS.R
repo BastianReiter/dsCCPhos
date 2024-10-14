@@ -16,10 +16,10 @@
 ADS_PostprocessDS <- function(data = ADS){
 
   # 1. Congruency Transformation
-  ADS_Congruent <- ADS_CongruencyTransformation(data)
+  ADS_Congruent <- ADS_CongruencyTransformationDS(data)
 
   # 2. Standardization of events data
-  ADS_Congruent$Events <- ADS_CongruentEventsClean(ADS_Congruent)
+  ADS_Congruent$Events <- ADS_CongruentEventsCleanDS(ADS_Congruent)
 
   # 3. Select relevant features from Patients and Diagnoses
   ADS_Congruent$Patients <- ADS_Congruent$Patients %>%
@@ -32,7 +32,7 @@ ADS_PostprocessDS <- function(data = ADS){
     select(-PatientAgeAtDiagnosis, -TimeDiagnosisToDeath, -TimeFollowUp, -IsDocumentedDeceased)
 
   # 4. Secure congruency of Patients, Diagnoses and Events
-  ADS_Postprocessed <- ADS_CongruencyTransformation(ADS_Congruent)
+  ADS_Postprocessed <- ADS_CongruencyTransformationDS(ADS_Congruent)
 
   return(ADS_Postprocessed)
 }

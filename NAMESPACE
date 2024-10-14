@@ -36,3 +36,7 @@ export(ReplaceDiagnosisIDs)
 export(SummarizeEventData)
 export(TrackValueCounts)
 export(XMLToDataModel)
+export(ADS_PostprocessDS)
+export(ADS_CongruentEventsDS)
+export(ADS_CongruencyTransformationDS)
+
