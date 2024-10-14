@@ -131,18 +131,19 @@ ADS_CongruentEventsCleanDS <- function(ADS_Congruent){
     select(PatientID, DiagnosisID, EventDate, EventDateEnd, EventClass, EventSubclass, EventDetails) %>%
     filter(EventSubclass %in% c("Progress")) %>%
     tidyr::unnest(EventDetails)# %>%
-    #select(-LocalRelapseDate)
 
   ep0 <- nrow(EventProgression)
 
-  EventProgression <- EventProgression %>%
-    distinct() %>%
-    tidyr::nest(EventDetails = c(GlobalStatus, LocalStatus, LymphnodalStatus, MetastasisStatus))
+  if(ep0 > 0){
+    EventProgression <- EventProgression %>%
+      select(-LocalrelapseDate) %>%
+      distinct() %>%
+      tidyr::nest(EventDetails = c(GlobalStatus, LocalStatus, LymphnodalStatus, MetastasisStatus))
 
-  ep1 <- nrow(EventProgression)
+    ep1 <- nrow(EventProgression)
 
-  print(paste0("Progression events intial: ", ep0, " -> progression events cleaned: ", ep1, "; difference: ", ep0-ep1))
-
+    print(paste0("Progression events intial: ", ep0, " -> progression events cleaned: ", ep1, "; difference: ", ep0-ep1))
+  }
   # Metastasis
   EventMetastasis <- E %>%
     select(PatientID, DiagnosisID, EventDate, EventDateEnd, EventClass, EventSubclass, EventDetails) %>%
@@ -150,15 +151,15 @@ ADS_CongruentEventsCleanDS <- function(ADS_Congruent){
     tidyr::unnest(EventDetails)
 
   em0 <- nrow(EventMetastasis)
+  if(em > 0){
+    EventMetastasis <- EventMetastasis %>%
+      distinct() %>%
+      tidyr::nest(EventDetails = c(HasMetastasis, MetastasisLocalization))
 
-  EventMetastasis <- EventMetastasis %>%
-    distinct() %>%
-    tidyr::nest(EventDetails = c(HasMetastasis, MetastasisLocalization))
+    em1 <- nrow(EventMetastasis)
 
-  em1 <- nrow(EventMetastasis)
-
-  print(paste0("Metastasis events intial: ", em0, " -> metastasis events cleaned: ", em1, "; difference: ", em0-em1))
-
+    print(paste0("Metastasis events intial: ", em0, " -> metastasis events cleaned: ", em1, "; difference: ", em0-em1))
+  }
   ADS_CongruentCleanedEvents <- rbind(EventRetained, EventSystemic, EventRadiation, EventSurgery, EventProgression, EventMetastasis) %>%
     select(PatientID, DiagnosisID, EventDate, EventDateEnd, EventClass, EventSubclass, EventDetails) %>%
     arrange(PatientID, DiagnosisID, EventDate)
