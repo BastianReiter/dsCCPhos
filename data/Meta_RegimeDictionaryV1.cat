@@ -1,0 +1,60 @@
+REGIME
+	5-FU Oxaliplatin
+		FUFOX (1)
+	5-FU Folinsaeure
+		ARDALAN (1)
+	Folinsäure 5-FU Oxaliplatin Docetaxel
+		FLOT (1)
+	Folinsäure 5-FU Irinotecan
+		FOLFIRI (1)
+	Folinsäure 5-FU Oxaliplatin Irinotecan
+		FOLFOXIRI (1)
+		FOLFIRINOX (1)
+	Folinsäure 5-FU Oxaliplatin
+		FOLFOX (1)
+		FOLFOX6 (1)
+		mFOLFOX* (1)
+	Rituximab Cyclophosphamid Hydroxydaunomycin Vincristin Prednison
+		R-CHOP (1)
+	Capecitabin Irinotecan		
+		XELIRI (1)
+	Capecitabin Oxaliplatin
+		XELOX (1)
+		CapOx (1)
+	S-1 Oxaliplatin
+		SOX (1)
+	Trifluridin Tipiracil
+		TAS-102 (1)
+	Adriamycin Bleomycin Vinblastin Dacarbazin
+		ABVD (1)
+	Cisplatin Etoposid Bleomycin
+		PEB (1)
+		PEB-Chemotherapie (1)
+	Cyclophosphamid ADRIAMYCIN Dexamethason
+		CAD (1)
+	Rituximab Dexamethason Hochdosis-Ara-C/Cytarabin Cisplatin
+		R-DHAP (1)
+	Cyclophosphamid Doxorubicin Vincristin Etopsid Prednison
+		CHOEP (1)
+	Rituximab Fludarabin Cyclophosphamid 
+		R-FC (1)
+	Cyclophosphamid Doxorubicin Vincristin Prednison
+		CHOP (1)
+	Dexamethason Cytarabin Cisplatin
+		DHAP (1)
+	Rituximab Bendamustin
+		R-BENDA (1)
+	Vincristin Ifosfamid Doxorubicin Etopsid
+		VIDE (1)
+	Bortezomib Dexamethason Doxorubicin 
+		PAD (1)
+	Bortezomib Dexamethason Cyclophosphamid
+		VCD (1)
+	Bortezomib Dexamethason Lenalidomid
+		VRD (1)
+	Carfilzomib Lenalidomid Dexamethason
+		KRD (1)
+	Doxorubicin Vinblastin Dacarbacin
+		AVD (1)
+	Doxorubicin Cyclophosphamid Vincristin
+		ACO (1)
