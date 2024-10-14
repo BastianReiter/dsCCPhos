@@ -12,4 +12,7 @@ AssignMethods:
     AugmentDataDS,
     CurateDataDS,
     ExtractFromListDS,
-    CreateCheckpointsDS
+    CreateCheckpointsDS,
+    ADS_CongruencyTransformationDS,
+    ADS_PostprocessDS,
+    ADS_CongruentEventsCleanDS
