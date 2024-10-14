@@ -130,8 +130,8 @@ ADS_CongruentEventsCleanDS <- function(ADS_Congruent){
   EventProgression <- E %>%
     select(PatientID, DiagnosisID, EventDate, EventDateEnd, EventClass, EventSubclass, EventDetails) %>%
     filter(EventSubclass %in% c("Progress")) %>%
-    tidyr::unnest(EventDetails) %>%
-    select(-LocalRelapseDate)
+    tidyr::unnest(EventDetails)# %>%
+    #select(-LocalRelapseDate)
 
   ep0 <- nrow(EventProgression)
 
