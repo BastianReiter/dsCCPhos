@@ -37,6 +37,6 @@ export(SummarizeEventData)
 export(TrackValueCounts)
 export(XMLToDataModel)
 export(ADS_PostprocessDS)
-export(ADS_CongruentEventsDS)
+export(ADS_CongruentEventsCleanDS)
 export(ADS_CongruencyTransformationDS)
 
