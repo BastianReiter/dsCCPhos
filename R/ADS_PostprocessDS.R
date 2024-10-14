@@ -15,6 +15,8 @@
 
 ADS_PostprocessDS <- function(data = ADS){
 
+  data <- eval(parse(text = data), envir = parent.frame())
+
   # 1. Congruency Transformation
   ADS_Congruent <- ADS_CongruencyTransformationDS(data)
 
