@@ -12,13 +12,26 @@ RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
 #RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData_WithMissingTables.rds")
 
 
+# names(RawDataSet) <- c("patient",
+#                        "diagnosis",
+#                        "progress",
+#                        "histology",
+#                        "metastasis",
+#                        "tnm",
+#                        "system-therapy",
+#                        "surgery",
+#                        "radiation-therapy",
+#                        "molecular-marker",
+#                        "sample")
+
+
 
 # - - OPTIONAL START - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # OPTIONAL: Sub-sample test data for easier testing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-NumberOfPatients <- 1000
+NumberOfPatients <- 5000
 
 # Get a random sample of PatientIDs
 SamplePatientIDs <- sample(RawDataSet$patient$"_id",

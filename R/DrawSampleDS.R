@@ -1,9 +1,9 @@
 
-#' CheckRDSTablesDS
+#' DrawSampleDS
 #'
-#' Checks existence and completeness of RawDataSet (RDS) tables and returns an informative list object.
+#' Draws a sample (subset) from Raw Data Set
 #'
-#' Server-side AGGREGATE method
+#' Server-side ASSIGN method
 #'
 #' @param RawDataSetName.S String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
 #'
@@ -12,7 +12,7 @@
 #'
 #' @examples
 #' @author Bastian Reiter
-CheckRDSTablesDS <- function(RawDataSetName.S = "RawDataSet")
+DrawSampleDS <- function(RawDataSetName.S = "RawDataSet")
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding

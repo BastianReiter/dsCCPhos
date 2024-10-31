@@ -39,7 +39,8 @@ SummarizeEventData <- function(EventEntries,
                                                           EventDaysSinceDiagnosis[EventSubclass == "Deceased"],
                                                           NA),
                             TimeFollowUp = case_when(!is.na(TimeDiagnosisToDeath) ~ TimeDiagnosisToDeath,
-                                                     .default = max(EventDaysSinceDiagnosis, na.rm = TRUE)),
+                                                     !all(is.na(EventDaysSinceDiagnosis)) ~ max(EventDaysSinceDiagnosis, na.rm = TRUE),
+                                                     TRUE ~ NA),
                             IsDocumentedDeceased = case_when(!is.na(TimeDiagnosisToDeath) ~ TRUE,
                                                              .default = FALSE))
 
