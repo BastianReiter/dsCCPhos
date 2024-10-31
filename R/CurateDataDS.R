@@ -246,14 +246,16 @@ ls_DataSet <- ls_DataSet %>%
 
 # Count entries in data frames before cleaning
 CountEntriesBeforeCleaning <- ls_DataSet %>%
-                                  map_int(\(dataframe) nrow(dataframe))
+                                  map_int(\(dataframe) ifelse (!is.null(nrow(dataframe)), nrow(dataframe), 0))
 
 
 # Set up progress bar
-CountProgressItems <- 12
+#-------------------------------------------------------------------------------
+CountProgressItems <- 15
 ProgressBar <- progress_bar$new(format = "Cleaning table entries [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width = 100)
 try(ProgressBar$tick())
+#-------------------------------------------------------------------------------
 
 
 
@@ -320,6 +322,24 @@ ls_DataSet <- ls_DataSet %>%
                                 else (return(dataframe))
                             }
 
+                            if (name == "GeneralCondition")
+                            {
+                                if (!(is.null(dataframe) | length(dataframe) == 0))
+                                {
+                                    # Get vector of GeneralConditionIDs that are linked with a PatientID
+                                    vc_EligibleGeneralConditionIDs <- dataframe %>%
+                                                                          left_join(ls_DataSet$Patient, by = join_by(PatientID)) %>%
+                                                                          filter(!is.na(PatientID)) %>%
+                                                                          pull(GeneralConditionID)
+
+                                    # Filter out...
+                                    return(dataframe %>%
+                                                filter(GeneralConditionID %in% vc_EligibleGeneralConditionIDs) %>%
+                                                distinct())
+                                }
+                                else (return(dataframe))
+                            }
+
                             if (name == "Metastasis")
                             {
                                 # Get vector of MetastasisIDs that are linked with a PatientID / DiagnosisID
@@ -350,6 +370,20 @@ ls_DataSet <- ls_DataSet %>%
                                                 distinct(across(-MolecularDiagnosticsID), .keep_all = TRUE))
                                 }
                                 else (return(dataframe))
+                            }
+
+                            if (name == "OtherClassification")
+                            {
+                                # Get vector of OtherClassifcationIDs that are linked with a PatientID / DiagnosisID
+                                vc_EligibleOtherClassificationIDs <- dataframe %>%
+                                                                          left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
+                                                                          filter(!is.na(DiagnosisID)) %>%
+                                                                          pull(OtherClassificationID)
+
+                                # Filter out...
+                                return(dataframe %>%
+                                            filter(OtherClassificationID %in% vc_EligibleOtherClassificationIDs) %>%
+                                            distinct(across(-OtherClassificationID), .keep_all = TRUE))
                             }
 
                             if (name == "Progress")
@@ -422,6 +456,20 @@ ls_DataSet <- ls_DataSet %>%
                                             distinct(across(-SystemicTherapyID), .keep_all = TRUE))
                             }
 
+                            if (name == "TherapyRecommendation")
+                            {
+                                # Get vector of TherapyRecommendationIDs that are linked with a PatientID / DiagnosisID
+                                vc_EligibleTherapyRecommendationIDs <- dataframe %>%
+                                                                            left_join(ls_DataSet$Diagnosis, by = join_by(PatientID)) %>%
+                                                                            filter(!is.na(DiagnosisID)) %>%
+                                                                            pull(TherapyRecommendationID)
+
+                                # Filter out...
+                                return(dataframe %>%
+                                            filter(TherapyRecommendationID %in% vc_EligibleTherapyRecommendationIDs) %>%
+                                            distinct(across(-TherapyRecommendationID), .keep_all = TRUE))
+                            }
+
                             try(ProgressBar$tick()) })
 
 try(ProgressBar$terminate())
@@ -433,7 +481,7 @@ try(ProgressBar$terminate())
 
 # Count entries in data frames after cleaning
 CountEntriesAfterCleaning <- ls_DataSet %>%
-                                  map_int(\(dataframe) nrow(dataframe))
+                                  map_int(\(dataframe) ifelse (!is.null(nrow(dataframe)), nrow(dataframe), 0))
 
 # Count unlinked entries
 CountUnlinkedEntries <- CountEntriesBeforeCleaning - CountEntriesAfterCleaning
@@ -472,7 +520,7 @@ for (i in 1:length(CountUnlinkedEntries))
 
 
 # Set up progress bar
-CountProgressItems <- 29
+CountProgressItems <- 37
 ProgressBar <- progress_bar$new(format = "Harmonizing data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
 try(ProgressBar$tick())
@@ -501,51 +549,79 @@ f_GetEligibleValues <- function(TableName,
 }
 
 # List object containing meta data
-ls_MonitorMetaData <- list(BioSampling = list(SampleType = f_GetEligibleValues("BioSampling", "SampleType"),
-                                              SampleTypeCXX = f_GetEligibleValues("BioSampling", "SampleTypeCXX"),
-                                              SampleAliquot = f_GetEligibleValues("BioSampling", "SampleAliquot")),
+ls_MonitorMetaData <- list(BioSampling = list(Aliquot = f_GetEligibleValues("BioSampling", "Aliquot"),
+                                              Type = f_GetEligibleValues("BioSampling", "Type"),
+                                              TypeCXX = f_GetEligibleValues("BioSampling", "TypeCXX"),
+                                              Status = f_GetEligibleValues("BioSampling", "Status")),
 
                            Diagnosis = list(ICD10Version = NULL,
-                                            LocalizationSide = f_GetEligibleValues("Diagnosis", "LocalizationSide")),
+                                            LocalizationSide = f_GetEligibleValues("Diagnosis", "LocalizationSide"),
+                                            DiagnosisConfirmation = f_GetEligibleValues("Diagnosis", "DiagnosisConfirmation")),
+
+                           GeneralCondition = list(ECOG = f_GetEligibleValues("GeneralCondition", "ECOG")),
 
                            Histology = list(Grading = f_GetEligibleValues("Histology", "Grading")),
 
-                           Metastasis = list(MetastasisLocalization = f_GetEligibleValues("Metastasis", "MetastasisLocalization")),
+                           Metastasis = list(Localization = f_GetEligibleValues("Metastasis", "Localization")),
 
                            MolecularDiagnostics = list(),
+
+                           OtherClassification = list(),
 
                            Patient = list(Gender = f_GetEligibleValues("Patient", "Gender"),
                                           LastVitalStatus = f_GetEligibleValues("Patient", "LastVitalStatus")),
 
                            Progress = list(GlobalStatus = f_GetEligibleValues("Progress", "GlobalStatus"),
-                                           PrimaryTumorStatus = f_GetEligibleValues("Progress", "PrimaryTumorStatus"),
                                            LymphnodalStatus = f_GetEligibleValues("Progress", "LymphnodalStatus"),
-                                           MetastasisStatus = f_GetEligibleValues("Progress", "MetastasisStatus")),
+                                           MetastasisStatus = f_GetEligibleValues("Progress", "MetastasisStatus"),
+                                           PrimarySiteStatus = f_GetEligibleValues("Progress", "PrimarySiteStatus")),
 
-                           RadiationTherapy = list(RadiationTherapyRelationToSurgery = f_GetEligibleValues("RadiationTherapy", "RadiationTherapyRelationToSurgery"),
-                                                   RadiationTherapyIntention = f_GetEligibleValues("RadiationTherapy", "RadiationTherapyIntention")),
+                           RadiationTherapy = list(ApplicationType = f_GetEligibleValues("RadiationTherapy", "ApplicationType"),
+                                                   Boost = f_GetEligibleValues("RadiationTherapy", "Boost"),
+                                                   Intention = f_GetEligibleValues("RadiationTherapy", "Intention"),
+                                                   RadiationType = f_GetEligibleValues("RadiationTherapy", "RadiationType"),
+                                                   RelationToSurgery = f_GetEligibleValues("RadiationTherapy", "RelationToSurgery"),
+                                                   SingleDailyDoseUnit = f_GetEligibleValues("RadiationTherapy", "SingleDailyDoseUnit"),
+                                                   EndReason = f_GetEligibleValues("RadiationTherapy", "EndReason"),
+                                                   TargetArea = f_GetEligibleValues("RadiationTherapy", "TargetArea"),
+                                                   TotalDoseUnit = f_GetEligibleValues("RadiationTherapy", "TotalDoseUnit")),
 
-                           Staging = list(UICCStage = f_GetEligibleValues("Staging", "UICCStage"),
-                                          TNM_T = f_GetEligibleValues("Staging", "TNM_T"),
-                                          TNM_N = f_GetEligibleValues("Staging", "TNM_N"),
+                           Staging = list(TNMVersion = f_GetEligibleValues("Staging", "TNMVersion"),
+                                          TNM_L = f_GetEligibleValues("Staging", "TNM_L"),
                                           TNM_M = f_GetEligibleValues("Staging", "TNM_M"),
-                                          TNM_T_Prefix = f_GetEligibleValues("Staging", "TNM_T_Prefix"),
-                                          TNM_N_Prefix = f_GetEligibleValues("Staging", "TNM_N_Prefix"),
                                           TNM_M_Prefix = f_GetEligibleValues("Staging", "TNM_M_Prefix"),
-                                          TNM_ySymbol = f_GetEligibleValues("Staging", "TNM_ySymbol"),
+                                          TNM_mSymbol = f_GetEligibleValues("Staging", "TNM_mSymbol"),
+                                          TNM_N = f_GetEligibleValues("Staging", "TNM_N"),
+                                          TNM_N_Prefix = f_GetEligibleValues("Staging", "TNM_N_Prefix"),
+                                          TNM_Pn = f_GetEligibleValues("Staging", "TNM_Pn"),
                                           TNM_rSymbol = f_GetEligibleValues("Staging", "TNM_rSymbol"),
-                                          TNM_mSymbol = NULL),
+                                          TNM_S = f_GetEligibleValues("Staging", "TNM_S"),
+                                          TNM_T = f_GetEligibleValues("Staging", "TNM_T"),
+                                          TNM_T_Prefix = f_GetEligibleValues("Staging", "TNM_T_Prefix"),
+                                          TNM_V = f_GetEligibleValues("Staging", "TNM_V"),
+                                          TNM_ySymbol = f_GetEligibleValues("Staging", "TNM_ySymbol"),
+                                          UICCStage = f_GetEligibleValues("Staging", "UICCStage")),
 
-                           Surgery = list(SurgeryIntention = f_GetEligibleValues("Surgery", "SurgeryIntention"),
+                           Surgery = list(Intention = f_GetEligibleValues("Surgery", "Intention"),
+                                          OPSVersion = f_GetEligibleValues("Surgery", "OPSVersion"),
                                           ResidualAssessmentLocal = f_GetEligibleValues("Surgery", "ResidualAssessmentLocal"),
-                                          ResidualAssessmentTotal = f_GetEligibleValues("Surgery", "ResidualAssessmentTotal")),
+                                          ResidualAssessmentTotal = f_GetEligibleValues("Surgery", "ResidualAssessmentTotal"),
+                                          SurgeryComplicationsADT = f_GetEligibleValues("Surgery", "SurgeryComplicationsADT")),
 
-                           SystemicTherapy = list(IsChemotherapy = NULL,
+                           SystemicTherapy = list(CTCAEGrade = f_GetEligibleValues("SystemicTherapy", "CTCAEGrade"),
+                                                  Intention = f_GetEligibleValues("SystemicTherapy", "Intention"),
+                                                  IsChemotherapy = NULL,
                                                   IsImmunotherapy = NULL,
                                                   IsHormoneTherapy = NULL,
                                                   IsBoneMarrowTransplant = NULL,
-                                                  SystemicTherapyIntention = f_GetEligibleValues("SystemicTherapy", "SystemicTherapyIntention"),
-                                                  SystemicTherapyRelationToSurgery = f_GetEligibleValues("SystemicTherapy", "SystemicTherapyRelationToSurgery")))
+                                                  RelationToSurgery = f_GetEligibleValues("SystemicTherapy", "RelationToSurgery"),
+                                                  Type = f_GetEligibleValues("SystemicTherapy", "Type")),
+
+                           TherapyRecommendation = list(Deviation = f_GetEligibleValues("TherapyRecommendation", "Deviation"),
+                                                        Type = f_GetEligibleValues("TherapyRecommendation", "Type")))
+
+# Make sure object names in ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
+ls_MonitorMetaData <- ls_MonitorMetaData[names(ls_DataSet)]
 
 try(ProgressBar$tick())
 
@@ -691,14 +767,16 @@ try(ProgressBar$tick())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_BioSampling <- ls_DataSet$BioSampling %>%
                       #--- Recoding --------------------------------------------
-                      mutate(SampleType = dsCCPhos::RecodeData(SampleType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleType"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
-                                                                                set_names(Value_Curated, Value_Raw))),      # This returns a vector of the form c("Value_Raw1" = "Value1", ...), thereby inducing replacement of original values with new ones as defined in Meta Data
-                             SampleTypeCXX = dsCCPhos::RecodeData(SampleTypeCXX, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleTypeCXX"),
-                                                                                      set_names(Value_Curated, Value_Raw))),
-                             SampleAliquot = dsCCPhos::RecodeData(SampleAliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "SampleAliquot"),
-                                                                                      set_names(Value_Curated, Value_Raw)))) %>%
+                      mutate(Aliquot = dsCCPhos::RecodeData(Aliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Aliquot"),
+                                                                          set_names(Value_Curated, Value_Raw))),
+                             Status = dsCCPhos::RecodeData(Status, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Status"),
+                                                                        set_names(Value_Curated, Value_Raw))),
+                             Type = dsCCPhos::RecodeData(Type, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Type"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
+                                                                    set_names(Value_Curated, Value_Raw))),      # This returns a vector of the form c("Value_Raw1" = "Value1", ...), thereby inducing replacement of original values with new ones as defined in Meta Data
+                             TypeCXX = dsCCPhos::RecodeData(TypeCXX, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "TypeCXX"),
+                                                                          set_names(Value_Curated, Value_Raw)))) %>%
                       #--- Formatting ------------------------------------------
-                      mutate(SampleTakingDate = format(as_datetime(SampleTakingDate), format = "%Y-%m-%d"))
+                      mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"))
                       #--- Update PB ---
                       try(ProgressBar$tick())
 
@@ -708,12 +786,26 @@ df_BioSampling <- ls_DataSet$BioSampling %>%
 df_Diagnosis <- ls_DataSet$Diagnosis %>%
                     #--- Recoding ------------------------------------------
                     mutate(LocalizationSide = dsCCPhos::RecodeData(LocalizationSide, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "LocalizationSide"),
-                                                                                          set_names(Value_Curated, Value_Raw)))) %>%
+                                                                                          set_names(Value_Curated, Value_Raw))),
+                           DiagnosisConfirmation = dsCCPhos::RecodeData(DiagnosisConfirmation, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "DiagnosisConfirmation"),
+                                                                                                    set_names(Value_Curated, Value_Raw)))) %>%
                     #--- Formatting ----------------------------------------
-                    mutate(InitialDiagnosisDate = format(as_datetime(InitialDiagnosisDate), format = "%Y-%m-%d"),
+                    mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"),
                            ICD10Version = as.integer(str_extract(ICD10Version, "\\d+")))      # Extract ICD-10 catalogue version year from string
                     #--- Update PB ---
                     try(ProgressBar$tick())
+
+
+# Recoding df_GeneralCondition
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+df_GeneralCondition <- ls_DataSet$GeneralCondition %>%
+                            #--- Recoding ------------------------------------------
+                            mutate(ECOG = dsCCPhos::RecodeData(ECOG, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "GeneralCondition" & Feature == "ECOG"),
+                                                                          set_names(Value_Curated, Value_Raw)))) %>%
+                            #--- Formatting ----------------------------------------
+                            mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"))
+                            #--- Update PB ---
+                            try(ProgressBar$tick())
 
 
 # Recoding df_Histology
@@ -723,7 +815,7 @@ df_Histology <- ls_DataSet$Histology %>%
                     mutate(Grading = dsCCPhos::RecodeData(Grading, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Histology" & Feature == "Grading"),
                                                                         set_names(Value_Curated, Value_Raw)))) %>%
                     #--- Formatting ----------------------------------------
-                    mutate(HistologyDate = format(as_datetime(HistologyDate), format = "%Y-%m-%d"))
+                    mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"))
                     #--- Update PB ---
                     try(ProgressBar$tick())
 
@@ -731,8 +823,11 @@ df_Histology <- ls_DataSet$Histology %>%
 # Recoding df_Metastasis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Metastasis <- ls_DataSet$Metastasis %>%
+                      #--- Recoding ------------------------------------------
+                      mutate(Localization = dsCCPhos::RecodeData(Localization, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Metastasis" & Feature == "Localization"),
+                                                                                    set_names(Value_Curated, Value_Raw)))) %>%
                       #--- Formatting --------------------------------------
-                      mutate(MetastasisDiagnosisDate = format(as_datetime(MetastasisDiagnosisDate), format = "%Y-%m-%d"),
+                      mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"),
                              HasMetastasis = as.logical(HasMetastasis))
                       #--- Update PB ---
                       try(ProgressBar$tick())
@@ -742,9 +837,18 @@ df_Metastasis <- ls_DataSet$Metastasis %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_MolecularDiagnostics <- ls_DataSet$MolecularDiagnostics %>%
                                 #--- Formatting ----------------------------
-                                mutate(MolecularDiagnosticsDate = format(as_datetime(MolecularDiagnosticsDate), format = "%Y-%m-%d"))
+                                mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"))
                                 #--- Update PB ---
                                 try(ProgressBar$tick())
+
+
+# Recoding df_OtherClassfication
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+df_OtherClassification <- ls_DataSet$OtherClassification %>%
+                              #--- Formatting ----------------------------
+                              mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"))
+                              #--- Update PB ---
+                              try(ProgressBar$tick())
 
 
 # Recoding df_Patient
@@ -767,14 +871,14 @@ df_Progress <- ls_DataSet$Progress %>%
                     #--- Recoding ------------------------------------------
                     mutate(GlobalStatus = dsCCPhos::RecodeData(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus"),
                                                                                   set_names(Value_Curated, Value_Raw))),
-                           PrimaryTumorStatus = dsCCPhos::RecodeData(PrimaryTumorStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "PrimaryTumorStatus"),
-                                                                                set_names(Value_Curated, Value_Raw))),
+                           PrimarySiteStatus = dsCCPhos::RecodeData(PrimarySiteStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "PrimarySiteStatus"),
+                                                                                            set_names(Value_Curated, Value_Raw))),
                            LymphnodalStatus = dsCCPhos::RecodeData(LymphnodalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "LymphnodalStatus"),
                                                                                           set_names(Value_Curated, Value_Raw))),
                            MetastasisStatus = dsCCPhos::RecodeData(MetastasisStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "MetastasisStatus"),
                                                                                           set_names(Value_Curated, Value_Raw)))) %>%
                     #--- Formatting ----------------------------------------
-                    mutate(ProgressReportDate = format(as_datetime(ProgressReportDate), format = "%Y-%m-%d"))
+                    mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"))
                            #LocalRelapseDate = format(as_datetime(LocalRelapseDate), format = "%Y-%m-%d"))
                     #--- Update PB ---
                     try(ProgressBar$tick())
@@ -784,13 +888,17 @@ df_Progress <- ls_DataSet$Progress %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_RadiationTherapy <- ls_DataSet$RadiationTherapy %>%
                             #--- Recoding ----------------------------------
-                            mutate(RadiationTherapyRelationToSurgery = dsCCPhos::RecodeData(RadiationTherapyRelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationTherapyRelationToSurgery"),
-                                                                                                                                    set_names(Value_Curated, Value_Raw))),
-                                   RadiationTherapyIntention = dsCCPhos::RecodeData(RadiationTherapyIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationTherapyIntention"),
-                                                                                                                    set_names(Value_Curated, Value_Raw)))) %>%
+                            mutate(RelationToSurgery = dsCCPhos::RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RelationToSurgery"),
+                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                   Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "Intention"),
+                                                                                    set_names(Value_Curated, Value_Raw))),
+                                   ApplicationType = dsCCPhos::RecodeData(ApplicationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "ApplicationType"),
+                                                                                                set_names(Value_Curated, Value_Raw))),
+                                   RadiationType = dsCCPhos::RecodeData(RadiationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationType"),
+                                                                                            set_names(Value_Curated, Value_Raw)))) %>%
                             #--- Formatting --------------------------------
-                            mutate(RadiationTherapyStart = format(as_datetime(RadiationTherapyStart), format = "%Y-%m-%d"),
-                                   RadiationTherapyEnd = format(as_datetime(RadiationTherapyEnd), format = "%Y-%m-%d"))
+                            mutate(StartDate = format(as_datetime(StartDate), format = "%Y-%m-%d"),
+                                   EndDate = format(as_datetime(EndDate), format = "%Y-%m-%d"))
                             #--- Update PB ---
                             try(ProgressBar$tick())
 
@@ -814,7 +922,7 @@ df_Staging <- ls_DataSet$Staging %>%
                          TNM_M_Prefix = dsCCPhos::RecodeData(TNM_M_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M_Prefix"),
                                                                                 set_names(Value_Curated, Value_Raw)))) %>%
                   #--- Formatting ------------------------------------------
-                  mutate(StagingReportDate = format(as_datetime(StagingReportDate), format = "%Y-%m-%d"))
+                  mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"))
                   #--- Update PB ---
                   try(ProgressBar$tick())
 
@@ -823,14 +931,14 @@ df_Staging <- ls_DataSet$Staging %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Surgery <- ls_DataSet$Surgery %>%
                   #--- Recoding --------------------------------------------
-                  mutate(SurgeryIntention = dsCCPhos::RecodeData(SurgeryIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "SurgeryIntention"),
-                                                                                        set_names(Value_Curated, Value_Raw))),
+                  mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "Intention"),
+                                                                          set_names(Value_Curated, Value_Raw))),
                          ResidualAssessmentLocal = dsCCPhos::RecodeData(ResidualAssessmentLocal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentLocal"),
                                                                                                       set_names(Value_Curated, Value_Raw))),
                          ResidualAssessmentTotal = dsCCPhos::RecodeData(ResidualAssessmentTotal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentTotal"),
                                                                                                       set_names(Value_Curated, Value_Raw)))) %>%
                   #--- Formatting ------------------------------------------
-                  mutate(SurgeryDate = format(as_datetime(SurgeryDate), format = "%Y-%m-%d"))
+                  mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"))
                   #--- Update PB ---
                   try(ProgressBar$tick())
 
@@ -839,19 +947,28 @@ df_Surgery <- ls_DataSet$Surgery %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SystemicTherapy <- ls_DataSet$SystemicTherapy %>%
                           #--- Recoding ------------------------------------
-                          mutate(SystemicTherapyIntention = dsCCPhos::RecodeData(SystemicTherapyIntention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "SystemicTherapyIntention"),
-                                                                                                                set_names(Value_Curated, Value_Raw))),
-                                 SystemicTherapyRelationToSurgery = dsCCPhos::RecodeData(SystemicTherapyRelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "SystemicTherapyRelationToSurgery"),
-                                                                                                                                set_names(Value_Curated, Value_Raw)))) %>%
+                          mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "Intention"),
+                                                                                  set_names(Value_Curated, Value_Raw))),
+                                 RelationToSurgery = dsCCPhos::RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "RelationToSurgery"),
+                                                                                                  set_names(Value_Curated, Value_Raw)))) %>%
                           #--- Formatting ----------------------------------
                           mutate(IsChemotherapy = as.logical(IsChemotherapy),
                                  IsImmunotherapy = as.logical(IsImmunotherapy),
                                  IsHormoneTherapy = as.logical(IsHormoneTherapy),
                                  IsBoneMarrowTransplant = as.logical(IsBoneMarrowTransplant),
-                                 SystemicTherapyStart = format(as_datetime(SystemicTherapyStart), format = "%Y-%m-%d"),
-                                 SystemicTherapyEnd = format(as_datetime(SystemicTherapyEnd), format = "%Y-%m-%d"))
+                                 StartDate = format(as_datetime(StartDate), format = "%Y-%m-%d"),
+                                 EndDate = format(as_datetime(EndDate), format = "%Y-%m-%d"))
                           #--- Update PB ---
                           try(ProgressBar$tick())
+
+
+# Recoding df_TherapyRecommendation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+df_TherapyRecommendation <- ls_DataSet$TherapyRecommendation %>%
+                                #--- Formatting ----------------------------
+                                mutate(Date = format(as_datetime(Date), format = "%Y-%m-%d"))
+                                #--- Update PB ---
+                                try(ProgressBar$tick())
 
 
 
@@ -865,15 +982,18 @@ df_SystemicTherapy <- ls_DataSet$SystemicTherapy %>%
 #-------------------------------------------------------------------------------
 ls_DataSet <- list(BioSampling = df_BioSampling,
                    Diagnosis = df_Diagnosis,
+                   GeneralCondition = df_GeneralCondition,
                    Histology = df_Histology,
                    Metastasis = df_Metastasis,
                    MolecularDiagnostics = df_MolecularDiagnostics,
+                   OtherClassification = df_OtherClassification,
                    Patient = df_Patient,
                    Progress = df_Progress,
                    RadiationTherapy = df_RadiationTherapy,
                    Staging = df_Staging,
                    Surgery = df_Surgery,
-                   SystemicTherapy = df_SystemicTherapy)
+                   SystemicTherapy = df_SystemicTherapy,
+                   TherapyRecommendation = df_TherapyRecommendation)
                    #--- Update PB ---
                    try(ProgressBar$tick())
 
@@ -948,9 +1068,9 @@ try(ProgressBar$tick())
 # Finalize df_BioSampling
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_BioSampling <- df_BioSampling %>%
-                      mutate(SampleType = dsCCPhos::FinalizeDataTransformation(SampleType, TableName = "BioSampling", FeatureName = "SampleType"),
-                             SampleType = dsCCPhos::FinalizeDataTransformation(SampleTypeCXX, TableName = "BioSampling", FeatureName = "SampleTypeCXX"),
-                             SampleAliquot = dsCCPhos::FinalizeDataTransformation(SampleAliquot, TableName = "BioSampling", FeatureName = "SampleAliquot"))
+                      mutate(Type = dsCCPhos::FinalizeDataTransformation(Type, TableName = "BioSampling", FeatureName = "Type"),
+                             TypeCXX = dsCCPhos::FinalizeDataTransformation(TypeCXX, TableName = "BioSampling", FeatureName = "TypeCXX"),
+                             Aliquot = dsCCPhos::FinalizeDataTransformation(Aliquot, TableName = "BioSampling", FeatureName = "Aliquot"))
                       #--- Update PB ---
                       try(ProgressBar$tick())
 
@@ -963,12 +1083,28 @@ df_Diagnosis <- df_Diagnosis %>%
                     try(ProgressBar$tick())
 
 
+# Finalize df_GeneralCondition
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+df_GeneralCondition <- df_GeneralCondition %>%
+                            mutate(ECOG = dsCCPhos::FinalizeDataTransformation(ECOG, TableName = "GeneralCondition", FeatureName = "ECOG"))   # Assign factor labels?
+                            #--- Update PB ---
+                            try(ProgressBar$tick())
+
+
 # Finalize df_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Histology <- df_Histology %>%
                     mutate(Grading = dsCCPhos::FinalizeDataTransformation(Grading, TableName = "Histology", FeatureName = "Grading"))   # Assign factor labels?
                     #--- Update PB ---
                     try(ProgressBar$tick())
+
+
+# Finalize df_OtherClassification
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+df_OtherClassification <- df_OtherClassification %>%
+                              mutate(Classification = dsCCPhos::FinalizeDataTransformation(Classification, TableName = "OtherClassification", FeatureName = "Classification"))
+                              #--- Update PB ---
+                              try(ProgressBar$tick())
 
 
 # Finalize df_Patient
@@ -984,7 +1120,7 @@ df_Patient <- df_Patient %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Progress <- df_Progress %>%
                     mutate(GlobalStatus = dsCCPhos::FinalizeDataTransformation(GlobalStatus, TableName = "Progress", FeatureName = "GlobalStatus"),   # Assign factor labels?
-                           PrimaryTumorStatus = dsCCPhos::FinalizeDataTransformation(PrimaryTumorStatus, TableName = "Progress", FeatureName = "PrimaryTumorStatus"),   # Assign factor labels?
+                           PrimarySiteStatus = dsCCPhos::FinalizeDataTransformation(PrimarySiteStatus, TableName = "Progress", FeatureName = "PrimarySiteStatus"),   # Assign factor labels?
                            LymphnodalStatus = dsCCPhos::FinalizeDataTransformation(LymphnodalStatus, TableName = "Progress", FeatureName = "LymphnodalStatus"),   # Assign factor labels?
                            MetastasisStatus = dsCCPhos::FinalizeDataTransformation(MetastasisStatus, TableName = "Progress", FeatureName = "MetastasisStatus"))   # Assign factor labels?
                     #--- Update PB ---
@@ -994,8 +1130,8 @@ df_Progress <- df_Progress %>%
 # Finalize df_RadiationTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_RadiationTherapy <- df_RadiationTherapy %>%
-                            mutate(RadiationTherapyRelationToSurgery = dsCCPhos::FinalizeDataTransformation(RadiationTherapyRelationToSurgery, TableName = "RadiationTherapy", FeatureName = "RadiationTherapyRelationToSurgery"),   # Assign factor labels?
-                                   RadiationTherapyIntention = dsCCPhos::FinalizeDataTransformation(RadiationTherapyIntention, TableName = "RadiationTherapy", FeatureName = "RadiationTherapyIntention"))   # Assign factor labels?
+                            mutate(RelationToSurgery = dsCCPhos::FinalizeDataTransformation(RelationToSurgery, TableName = "RadiationTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
+                                   Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "RadiationTherapy", FeatureName = "Intention"))   # Assign factor labels?
                             #--- Update PB ---
                             try(ProgressBar$tick())
 
@@ -1019,7 +1155,7 @@ df_Staging <- df_Staging %>%
 # Finalize df_Surgery
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Surgery <- df_Surgery %>%
-                  mutate(SurgeryIntention = dsCCPhos::FinalizeDataTransformation(SurgeryIntention, TableName = "Surgery", FeatureName = "SurgeryIntention"),   # Assign factor labels?
+                  mutate(Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "Surgery", FeatureName = "Intention"),   # Assign factor labels?
                          ResidualAssessmentLocal = dsCCPhos::FinalizeDataTransformation(ResidualAssessmentLocal, TableName = "Surgery", FeatureName = "ResidualAssessmentLocal"),
                          ResidualAssessmentTotal = dsCCPhos::FinalizeDataTransformation(ResidualAssessmentTotal, TableName = "Surgery", FeatureName = "ResidualAssessmentTotal"))
                   #--- Update PB ---
@@ -1029,10 +1165,18 @@ df_Surgery <- df_Surgery %>%
 # Finalize df_SystemicTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_SystemicTherapy <- df_SystemicTherapy %>%
-                          mutate(SystemicTherapyRelationToSurgery = dsCCPhos::FinalizeDataTransformation(SystemicTherapyRelationToSurgery, TableName = "SystemicTherapy", FeatureName = "SystemicTherapyRelationToSurgery"),   # Assign factor labels?
-                                 SystemicTherapyIntention = dsCCPhos::FinalizeDataTransformation(SystemicTherapyIntention, TableName = "SystemicTherapy", FeatureName = "SystemicTherapyIntention"))   # Assign factor labels?
+                          mutate(RelationToSurgery = dsCCPhos::FinalizeDataTransformation(RelationToSurgery, TableName = "SystemicTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
+                                 Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "SystemicTherapy", FeatureName = "Intention"))   # Assign factor labels?
                           #--- Update PB ---
                           try(ProgressBar$tick())
+
+
+# Finalize df_TherapyRecommendation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+df_TherapyRecommendation <- df_TherapyRecommendation %>%
+                                mutate(Type = dsCCPhos::FinalizeDataTransformation(Type, TableName = "TherapyRecommendation", FeatureName = "Type"))
+                                #--- Update PB ---
+                                try(ProgressBar$tick())
 
 
 
@@ -1046,15 +1190,18 @@ df_SystemicTherapy <- df_SystemicTherapy %>%
 #-------------------------------------------------------------------------------
 ls_DataSet <- list(BioSampling = df_BioSampling,
                    Diagnosis = df_Diagnosis,
+                   GeneralCondition = df_GeneralCondition,
                    Histology = df_Histology,
                    Metastasis = df_Metastasis,
                    MolecularDiagnostics = df_MolecularDiagnostics,
+                   OtherClassification = df_OtherClassification,
                    Patient = df_Patient,
                    Progress = df_Progress,
                    RadiationTherapy = df_RadiationTherapy,
                    Staging = df_Staging,
                    Surgery = df_Surgery,
-                   SystemicTherapy = df_SystemicTherapy)
+                   SystemicTherapy = df_SystemicTherapy,
+                   TherapyRecommendation = df_TherapyRecommendation)
                    #--- Update PB ---
                    try(ProgressBar$tick())
 
@@ -1349,15 +1496,18 @@ ls_ValueSetOverviews <- purrr::map(.x = ls_TransformationMonitors,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 try(df_BioSampling <- df_BioSampling %>% select(-TrackID))
 try(df_Diagnosis <- df_Diagnosis %>% select(-TrackID))
+try(df_GeneralCondition <- df_GeneralCondition %>% select(-TrackID))
 try(df_Histology <- df_Histology %>% select(-TrackID))
 try(df_Metastasis <- df_Metastasis %>% select(-TrackID))
 try(df_MolecularDiagnostics <- df_MolecularDiagnostics %>% select(-TrackID))
+try(df_OtherClassification <- df_OtherClassification %>% select(-TrackID))
 try(df_Patient <- df_Patient %>% select(-TrackID))
 try(df_Progress <- df_Progress %>% select(-TrackID))
 try(df_RadiationTherapy <- df_RadiationTherapy %>% select(-TrackID))
 try(df_Staging <- df_Staging %>% select(-TrackID))
 try(df_Surgery <- df_Surgery %>% select(-TrackID))
 try(df_SystemicTherapy <- df_SystemicTherapy %>% select(-TrackID))
+try(df_TherapyRecommendation <- df_TherapyRecommendation %>% select(-TrackID))
 
 
 try(ProgressBar$tick())
@@ -1387,7 +1537,7 @@ cli::cat_bullet("Data transformation monitors are stored in 'CurationReport$Tran
 #-------------------------------------------------------------------------------
 
 df_Diagnosis <- df_Diagnosis %>%
-                    left_join(df_Histology, by = join_by(PatientID, DiagnosisID)) %>%
+                    left_join(df_Histology, by = join_by(PatientID, DiagnosisID), suffix = c("_Diagnosis", "_Histology")) %>%
                     mutate(OriginalDiagnosisID = DiagnosisID,
                            DiagnosisID = paste0(DiagnosisID, "/", HistologyID)) %>%
                     relocate(DiagnosisID, .after = PatientID) %>%
@@ -1411,15 +1561,15 @@ df_Diagnosis <- df_Diagnosis %>%
 
 # Names of features that are required to compile rule calls from RuleSet_DiagnosisRedundancy.S
 PredictorFeatures_DiagnosisRedundancy = c("CountDeviatingValues",
-                                          "InitialDiagnosisDate",
+                                          "Date_Diagnosis",
                                           "ICD10Code",
                                           "ICDOTopographyCode",
                                           "LocalizationSide",
-                                          "HistologyDate",
+                                          "Date_Histology",
                                           "ICDOMorphologyCode",
                                           "Grading")
 
-# Pass required information to dsCCPhos::CompileClassificationCall to compile rull calls (dplyr::case_when-Statements)
+# Pass required information to dsCCPhos::CompileClassificationCall to compile rule calls (dplyr::case_when-Statements)
 Call_IsLikelyRedundant <- CompileClassificationCall(TargetFeature = "IsLikelyRedundant",
                                                     PredictorFeatures = PredictorFeatures_DiagnosisRedundancy,
                                                     RuleSet = RuleSet_DiagnosisRedundancy.S,
@@ -1431,9 +1581,11 @@ RuleCalls_DiagnosisRedundancy <- list(IsLikelyRedundant = Call_IsLikelyRedundant
 
 
 # Set up progress bar
+#-------------------------------------------------------------------------------
 CountProgressItems <- df_Diagnosis %>% filter(PatientCountInitialEntries > 1) %>% pull(PatientID) %>% n_distinct()
 ProgressBar <- progress_bar$new(format = "Classifying redundant diagnosis entries [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
+#-------------------------------------------------------------------------------
 
 
 # Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosisRedundancy()
@@ -1601,9 +1753,11 @@ RuleCalls_DiagnosisAssociation <- list(IsLikelyAssociated = Call_IsLikelyAssocia
 
 
 # Set up progress bar
+#-------------------------------------------------------------------------------
 CountProgressItems <- df_Diagnosis %>% filter(PatientCountDistinctEntries > 1) %>% pull(PatientID) %>% n_distinct()
 ProgressBar <- progress_bar$new(format = "Classifying associated diagnosis entries [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
+#-------------------------------------------------------------------------------
 
 # Filter patients with multiple distinct diagnosis entries and apply dsCCPhos::ClassifyDiagnosisAssociations()
 df_Aux_Diagnosis_ClassifiedAssociations <- df_Diagnosis %>%
@@ -1664,6 +1818,14 @@ df_Aux_Diagnosis_IDMappingAssociations <- df_Diagnosis %>%
 #     - Replace DiagnosisIDs to associate entries (and add SubDiagnosisIDs in same move)
 #     - Rearrange column order
 #-------------------------------------------------------------------------------
+
+if (nrow(df_GeneralCondition) > 0)
+{
+    df_GeneralCondition <- df_GeneralCondition %>%
+                                    ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                                    relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = GeneralConditionID)
+}
+
 df_Metastasis <- df_Metastasis %>%
                       ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
                       relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = MetastasisID)
@@ -1673,6 +1835,13 @@ if (nrow(df_MolecularDiagnostics) > 0)
     df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
                                     ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
                                     relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = MolecularDiagnosticsID)
+}
+
+if (nrow(df_OtherClassification) > 0)
+{
+    df_OtherClassification <- df_OtherClassification %>%
+                                    ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                                    relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = OtherClassificationID)
 }
 
 df_Progress <- df_Progress %>%
@@ -1695,6 +1864,13 @@ df_SystemicTherapy <- df_SystemicTherapy %>%
                           ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
                           relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = SystemicTherapyID)
 
+if (nrow(df_TherapyRecommendation ) > 0)
+{
+    df_TherapyRecommendation <- df_TherapyRecommendation %>%
+                                    ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                                    relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = TherapyRecommendationID)
+}
+
 
 
 # Module 4 D) Reconstruct df_Histology from df_Diagnosis
@@ -1706,6 +1882,7 @@ df_Diagnosis <-  df_Diagnosis %>%
 
 # Reconstruct df_Histology
 df_Histology <- df_Diagnosis %>%
+                    rename(Date = "Date_Histology") %>%
                     select(all_of(c("SubDiagnosisID", names(df_Histology)))) %>%
                     relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = HistologyID)
 
@@ -1719,15 +1896,18 @@ df_Histology <- df_Diagnosis %>%
 #-------------------------------------------------------------------------------
 ls_CuratedDataSet <- list(BioSampling = as.data.frame(df_BioSampling),
                           Diagnosis = as.data.frame(df_Diagnosis),
+                          GeneralCondition = as.data.frame(df_GeneralCondition),
                           Histology = as.data.frame(df_Histology),
                           Metastasis = as.data.frame(df_Metastasis),
                           MolecularDiagnostics = as.data.frame(df_MolecularDiagnostics),
+                          OtherClassification = as.data.frame(df_OtherClassification),
                           Patient = as.data.frame(df_Patient),
                           Progress = as.data.frame(df_Progress),
                           RadiationTherapy = as.data.frame(df_RadiationTherapy),
                           Staging = as.data.frame(df_Staging),
                           Surgery = as.data.frame(df_Surgery),
-                          SystemicTherapy = as.data.frame(df_SystemicTherapy))
+                          SystemicTherapy = as.data.frame(df_SystemicTherapy),
+                          TherapyRecommendation = as.data.frame(df_TherapyRecommendation))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

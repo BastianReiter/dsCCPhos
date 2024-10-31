@@ -189,7 +189,7 @@ df_ADS_Events <- df_CDS_Patient %>%
                       right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
                       group_by(PatientID, DiagnosisID) %>%
                           mutate(EventType = "Point",
-                                 EventDate = InitialDiagnosisDate,
+                                 EventDate = Date_Diagnosis,
                                  EventDateEnd = NULL,      # For events of type "Period"
                                  EventDateIsAdjusted = FALSE,      # In case event date is adjusted later for plausibility reasons
                                  EventClass = "Diagnosis",
@@ -203,7 +203,7 @@ df_ADS_Events <- df_CDS_Patient %>%
                           select(PatientID,
                                  DateOfBirth,
                                  DiagnosisID,
-                                 InitialDiagnosisDate,
+                                 Date_Diagnosis,
                                  starts_with("Event"))
                           #--- Update PB ---
                           try(ProgressBar$tick())
@@ -225,7 +225,7 @@ df_Events_LastVitalStatus <- df_CDS_Patient %>%
                                   select(PatientID,
                                          DateOfBirth,
                                          DiagnosisID,
-                                         InitialDiagnosisDate,
+                                         Date_Diagnosis,
                                          starts_with("Event"))
                                   #--- Update PB ---
                                   try(ProgressBar$tick())
@@ -246,9 +246,9 @@ if (nrow(df_CDS_BioSampling) > 0)
 {
     df_Events_BioSampling <- df_CDS_BioSampling %>%
                                   group_by(PatientID) %>%
-                                      arrange(SampleTakingDate, .by_group = TRUE) %>%
+                                      arrange(Date, .by_group = TRUE) %>%
                                       mutate(EventType = "Point",
-                                             EventDate = SampleTakingDate,
+                                             EventDate = Date,
                                              EventDateIsAdjusted = FALSE,
                                              EventClass = "Diagnostics",
                                              EventSubclass = "Sample Taking",
@@ -256,12 +256,12 @@ if (nrow(df_CDS_BioSampling) > 0)
                                              EventOrderSignificance = case_when(row_number() == 1 ~ "First Sample Taking",
                                                                                 row_number() == n() ~ "Last Sample Taking",
                                                                                 TRUE ~ NA)) %>%
-                                      nest(EventDetails = c(SampleAliquot,
-                                                            SampleType,
-                                                            SampleStatus,
-                                                            SampleQuantity,
-                                                            SampleUnit,
-                                                            SampleProjectName)) %>%
+                                      nest(EventDetails = c(Aliquot,
+                                                            Type,
+                                                            Status,
+                                                            Quantity,
+                                                            Unit,
+                                                            ProjectName)) %>%
                                   ungroup() %>%
                                   select(PatientID,
                                          starts_with("Event"))
@@ -275,9 +275,9 @@ try(ProgressBar$tick())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Histology <- df_CDS_Histology %>%
                             group_by(PatientID, DiagnosisID) %>%
-                                arrange(HistologyDate, HistologyID, .by_group = TRUE) %>%
+                                arrange(Date, HistologyID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
-                                       EventDate = HistologyDate,
+                                       EventDate = Date,
                                        EventDateIsAdjusted = FALSE,
                                        EventClass = "Diagnostics",
                                        EventSubclass = "Histology",
@@ -302,9 +302,9 @@ df_Events_Histology <- df_CDS_Histology %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Metastasis <- df_CDS_Metastasis %>%
                             group_by(PatientID, DiagnosisID) %>%
-                                arrange(MetastasisDiagnosisDate, MetastasisID, .by_group = TRUE) %>%
+                                arrange(Date, MetastasisID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
-                                       EventDate = MetastasisDiagnosisDate,
+                                       EventDate = Date,
                                        EventDateIsAdjusted = FALSE,
                                        EventClass = "Diagnosis",
                                        EventSubclass = "Metastasis",
@@ -313,7 +313,7 @@ df_Events_Metastasis <- df_CDS_Metastasis %>%
                                                                           row_number() == n() ~ "Last Metastasis Diagnosis",
                                                                           TRUE ~ NA)) %>%
                                 nest(EventDetails = c(HasMetastasis,
-                                                      MetastasisLocalization)) %>%
+                                                      Localization)) %>%
                             ungroup() %>%
                             select(PatientID,
                                    DiagnosisID,
@@ -331,9 +331,9 @@ if (nrow(df_CDS_MolecularDiagnostics) > 0)
 {
     df_Events_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
                                           group_by(PatientID, DiagnosisID) %>%
-                                              arrange(MolecularDiagnosticsDate, .by_group = TRUE) %>%
+                                              arrange(Date, .by_group = TRUE) %>%
                                               mutate(EventType = "Point",
-                                                     EventDate = MolecularDiagnosticsDate,
+                                                     EventDate = Date,
                                                      EventDateIsAdjusted = FALSE,
                                                      EventClass = "Diagnostics",
                                                      EventSubclass = "Molecular Diagnostics",
@@ -341,9 +341,9 @@ if (nrow(df_CDS_MolecularDiagnostics) > 0)
                                                      EventOrderSignificance = case_when(row_number() == 1 ~ "First Molecular Diagnostics",
                                                                                         row_number() == n() ~ "Last Molecular Diagnostics",
                                                                                         TRUE ~ NA)) %>%
-                                              nest(EventDetails = c(MolecularDiagnosticsName,
-                                                                    MolecularDiagnosticsStatus,
-                                                                    MolecularDiagnosticsDocumentation)) %>%
+                                              nest(EventDetails = c(Name,
+                                                                    Status,
+                                                                    Documentation)) %>%
                                           ungroup() %>%
                                           select(PatientID,
                                                  DiagnosisID,
@@ -358,9 +358,9 @@ try(ProgressBar$tick())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Progress <- df_CDS_Progress %>%
                           group_by(PatientID, DiagnosisID) %>%
-                              arrange(ProgressReportDate, .by_group = TRUE) %>%
+                              arrange(Date, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
-                                     EventDate = ProgressReportDate,
+                                     EventDate = Date,
                                      EventDateIsAdjusted = FALSE,
                                      EventClass = "Diagnosis",
                                      EventSubclass = "Progress",
@@ -369,7 +369,7 @@ df_Events_Progress <- df_CDS_Progress %>%
                                                                         row_number() == n() ~ "Last Progress Report",
                                                                         TRUE ~ NA)) %>%
                               nest(EventDetails = (c(GlobalStatus,
-                                                     PrimaryTumorStatus,
+                                                     PrimarySiteStatus,
                                                      LymphnodalStatus,
                                                      MetastasisStatus))) %>%
                           ungroup() %>%
@@ -385,10 +385,10 @@ df_Events_Progress <- df_CDS_Progress %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                   group_by(PatientID, DiagnosisID) %>%
-                                      arrange(RadiationTherapyStart, .by_group = TRUE) %>%
+                                      arrange(StartDate, .by_group = TRUE) %>%
                                       mutate(EventType = "Period",
-                                             EventDate = RadiationTherapyStart,
-                                             EventDateEnd = RadiationTherapyEnd,
+                                             EventDate = StartDate,
+                                             EventDateEnd = EndDate,
                                              EventDateIsAdjusted = FALSE,
                                              EventClass = "Therapy",
                                              EventSubclass = "Radiation Therapy",
@@ -396,8 +396,8 @@ df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                              EventOrderSignificance = case_when(row_number() == 1 ~ "First Radiation Period",
                                                                                 row_number() == n() ~ "Last Radiation Period",
                                                                                 TRUE ~ NA)) %>%
-                                      nest(EventDetails = c(RadiationTherapyIntention,
-                                                            RadiationTherapyRelationToSurgery)) %>%
+                                      nest(EventDetails = c(Intention,
+                                                            RelationToSurgery)) %>%
                                   ungroup() %>%
                                   select(PatientID,
                                          DiagnosisID,
@@ -411,9 +411,9 @@ df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Staging <- df_CDS_Staging %>%
                           group_by(PatientID, DiagnosisID) %>%
-                              arrange(StagingReportDate, .by_group = TRUE) %>%
+                              arrange(Date, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
-                                     EventDate = StagingReportDate,
+                                     EventDate = Date,
                                      EventDateIsAdjusted = FALSE,
                                      EventClass = "Diagnosis",
                                      EventSubclass = "Staging",
@@ -431,7 +431,11 @@ df_Events_Staging <- df_CDS_Staging %>%
                                                      TNM_mSymbol,
                                                      TNM_rSymbol,
                                                      TNM_ySymbol,
-                                                     TNMVersion))) %>%
+                                                     TNMVersion,
+                                                     TNM_L,
+                                                     TNM_V,
+                                                     TNM_Pn,
+                                                     TNM_S))) %>%
                           ungroup() %>%
                           select(PatientID,
                                  DiagnosisID,
@@ -445,9 +449,9 @@ df_Events_Staging <- df_CDS_Staging %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Surgery <- df_CDS_Surgery %>%
                           group_by(PatientID, DiagnosisID) %>%
-                              arrange(SurgeryDate, SurgeryID, .by_group = TRUE) %>%
+                              arrange(Date, SurgeryID, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
-                                     EventDate = SurgeryDate,
+                                     EventDate = Date,
                                      EventDateIsAdjusted = FALSE,
                                      EventClass = "Therapy",
                                      EventSubclass = "Surgery",
@@ -455,7 +459,7 @@ df_Events_Surgery <- df_CDS_Surgery %>%
                                      EventOrderSignificance = case_when(row_number() == 1 ~ "First Surgery",
                                                                         row_number() == n() ~ "Last Surgery",
                                                                         TRUE ~ NA)) %>%
-                              nest(EventDetails = (c(SurgeryIntention,
+                              nest(EventDetails = (c(Intention,
                                                      OPSCode,
                                                      ResidualAssessmentLocal,
                                                      ResidualAssessmentTotal))) %>%
@@ -472,10 +476,10 @@ df_Events_Surgery <- df_CDS_Surgery %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                   group_by(PatientID, DiagnosisID, SystemicTherapySubclass) %>%
-                                      arrange(SystemicTherapyStart, .by_group = TRUE) %>%
+                                      arrange(StartDate, .by_group = TRUE) %>%
                                       mutate(EventType = "Period",
-                                             EventDate = SystemicTherapyStart,
-                                             EventDateEnd = SystemicTherapyEnd,
+                                             EventDate = StartDate,
+                                             EventDateEnd = EndDate,
                                              EventDateIsAdjusted = FALSE,
                                              EventClass = "Therapy",
                                              EventSubclass = SystemicTherapySubclass,
@@ -483,9 +487,9 @@ df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                              EventOrderSignificance = case_when(row_number() == 1 ~ "First in Systemic Therapy Subclass",
                                                                                 row_number() == n() ~ "Last in Systemic Therapy Subclass",
                                                                                 TRUE ~ NA)) %>%
-                                      nest(EventDetails = c(SystemicTherapyIntention,
-                                                            SystemicTherapySubstances,
-                                                            SystemicTherapyRelationToSurgery)) %>%
+                                      nest(EventDetails = c(Intention,
+                                                            Substances,
+                                                            RelationToSurgery)) %>%
                                   ungroup() %>%
                                   select(PatientID,
                                          DiagnosisID,
@@ -511,6 +515,7 @@ df_ADS_Events <- df_ADS_Events %>%
                           fill(DateOfBirth,
                                .direction = "downup") %>%
                       group_by(PatientID, DiagnosisID) %>%
+                          filter(!is.na(EventDate)) %>%
                           arrange(EventDate, .by_group = TRUE) %>%
                           # Important adjustment!
                           mutate(FirstEventDate = min(EventDate, na.rm = TRUE),
@@ -582,9 +587,9 @@ df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
 
 
 df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
-                            left_join(df_CDS_Staging, by = join_by(PatientID, DiagnosisID, SubDiagnosisID)) %>%
+                            left_join(df_CDS_Staging, by = join_by(PatientID, DiagnosisID, SubDiagnosisID), suffix = c("_Diagnosis", "_Staging")) %>%
                             group_by(DiagnosisID) %>%
-                                arrange(StagingReportDate) %>%
+                                arrange(Date) %>%
                                 slice_head() %>%
                             ungroup()
                             #--- Update PB ---
@@ -656,7 +661,7 @@ df_ADS_Patients <- df_CDS_Patient %>%
                         left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID)) %>%
                         left_join(df_ADS_Diagnoses, by = join_by(PatientID)) %>%      # <--- TEMPORARY: Joining with ADS_Diagnoses
                         group_by(PatientID) %>%
-                            arrange(InitialDiagnosisDate) %>%
+                            arrange(Date_Diagnosis) %>%
                             slice_head() %>%      # <--- TEMPORARY: Slice performed
                         ungroup()
                         #--- Update PB ---
