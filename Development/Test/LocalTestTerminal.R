@@ -12,17 +12,17 @@ RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
 #RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData_WithMissingTables.rds")
 
 
-# names(RawDataSet) <- c("patient",
-#                        "diagnosis",
-#                        "progress",
-#                        "histology",
-#                        "metastasis",
-#                        "tnm",
-#                        "system-therapy",
-#                        "surgery",
-#                        "radiation-therapy",
-#                        "molecular-marker",
-#                        "sample")
+names(RawDataSet) <- c("patient",
+                       "diagnosis",
+                       "progress",
+                       "histology",
+                       "metastasis",
+                       "tnm",
+                       "system-therapy",
+                       "surgery",
+                       "radiation-therapy",
+                       "molecular-marker",
+                       "sample")
 
 
 
@@ -95,6 +95,15 @@ TableCheck <- CheckRDSTablesDS("RawDataSet")
 RDSValidationReport <- GetRDSValidationReportDS("RawDataSet")
 
 summary(RDSValidationReport$RDS_BioSampling)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# OPTIONAL: Draw sample from Raw Data Set
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+RawDataSet <- DrawSampleDS(RawDataSetName.S = "RawDataSet",
+                           SampleSize.S = "1000")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
