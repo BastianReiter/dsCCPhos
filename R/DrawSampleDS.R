@@ -5,26 +5,28 @@
 #'
 #' Server-side ASSIGN method
 #'
-#' @param RawDataSetName.S String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
+#' @param RawDataSetName.S \code{string} | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
+#' @param SampleSize \code{string} | Number of patients in sample
 #'
-#' @return A list containing information about existence and completeness of RDS tables
+#' @return A list containing a subset of Raw Data Set
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
-DrawSampleDS <- function(RawDataSetName.S = "RawDataSet")
+DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
+                         SampleSize.S = "10")
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if (is.character(RawDataSetName.S))
+if (is.character(RawDataSetName.S) & is.character(SampleSize.S))
 {
     RawDataSet <- eval(parse(text = RawDataSetName.S), envir = parent.frame())
+    SampleSize <- as.integer(SampleSize.S)
 }
 else
 {
-    ClientMessage <- "ERROR: 'RawDataSetName.S' must be specified as a character string"
+    ClientMessage <- "ERROR: 'RawDataSetName.S' and 'SampleSize.S' must be specified as character strings"
     stop(ClientMessage, call. = FALSE)
 }
 
@@ -38,68 +40,31 @@ require(purrr)
 require(stringr)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Check existence and completeness of tables
+# Sample PatientIDs and subset RDS tables accordingly
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Create template of info about all required RDS tables ("assume as empty/missing")
-TableCheckTemplate <- dsCCPhos::Meta_TableNames$TableName_Curated %>%
-                          map(function(tablename)
-                              {
-                                  RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == tablename)$FeatureName_Raw
+AllPatientIDs <- RawDataSet$RDS_Patient$PatientID
+AvailableNumberPatients <- length(unique(AllPatientIDs))
 
-                                  FeatureExistence <- tibble(FeatureName = RequiredFeatureNames) %>%
-                                                          mutate(Exists = FALSE)
-
-                                  MissingFeatures <- RequiredFeatureNames
-
-                                  return(list(TableExists = FALSE,
-                                              TableComplete = FALSE,
-                                              FeatureExistence = FeatureExistence,
-                                              MissingFeatures = MissingFeatures))
-                              }) %>%
-                          set_names(paste0("RDS_", dsCCPhos::Meta_TableNames$TableName_Curated))
+if (SampleSize > AvailableNumberPatients) { SampleSize <- AvailableNumberPatients }
 
 
-# Go through available data frames in RawDataSet and check for feature completeness
-TableCheckExisting <- RawDataSet %>%
-                          imap(function(Table, name)
-                               {
-                                  if (!is_empty(Table))
-                                  {
-                                      RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == str_remove(name, "RDS_"))$FeatureName_Raw
-                                      PresentFeatureNames <- names(Table)
+# Get a random sample of PatientIDs
+SampleIDs <- sample(AllPatientIDs,
+                    size = SampleSize)
 
-                                      FeatureExistence <- tibble(FeatureName = RequiredFeatureNames) %>%
-                                                                 mutate(Exists = case_when(FeatureName %in% PresentFeatureNames ~ TRUE,
-                                                                                           TRUE ~ FALSE))
-
-                                      MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
-
-                                      TableComplete <- (length(MissingFeatures) == 0)
-
-                                      #FeatureTypes <-
-
-                                      return(list(TableExists = TRUE,
-                                                  TableComplete = TableComplete,
-                                                  FeatureExistence = FeatureExistence,
-                                                  MissingFeatures = MissingFeatures))
-                                  }
-                                  else { return(NULL) }
-                               })
-
-
-# Replace info in TableCheckTemplate with info about existing tables to get coherent summary
-TableCheck <- TableCheckTemplate %>%
-                  imap(function(Table, tablename)
-                       {
-                          if (tablename %in% names(TableCheckExisting)) { return(TableCheckExisting[[tablename]]) }
-                          else { return(Table) }
-                       })
+# Subset RDS tables with sampled PatientIDs
+RawDataSetSample <- RawDataSet %>%
+                        map(function(Table)
+                            {
+                              if (!is.null(Table)) { return(filter(Table, PatientID %in% SampleIDs)) }
+                              else { return(NULL) }
+                            })
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Return list
+# Return sample of RDS
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-return(TableCheck)
+return(RawDataSetSample)
 
 }

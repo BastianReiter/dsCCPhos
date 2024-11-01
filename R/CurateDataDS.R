@@ -520,7 +520,7 @@ for (i in 1:length(CountUnlinkedEntries))
 
 
 # Set up progress bar
-CountProgressItems <- 37
+CountProgressItems <- 35
 ProgressBar <- progress_bar$new(format = "Harmonizing data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
 try(ProgressBar$tick())
@@ -1882,7 +1882,9 @@ df_Diagnosis <-  df_Diagnosis %>%
 
 # Reconstruct df_Histology
 df_Histology <- df_Diagnosis %>%
-                    rename(Date = "Date_Histology") %>%
+                    rename(Date = "Date_Histology")
+
+df_Histology <- df_Histology %>%
                     select(all_of(c("SubDiagnosisID", names(df_Histology)))) %>%
                     relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = HistologyID)
 
