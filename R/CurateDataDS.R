@@ -136,7 +136,7 @@ Messages$FinalMessage <- "Curation not completed"
 
 # Use tryCatch to catch warnings and errors
 # Note: Warnings and errors must be defined and thrown explicitly for this to work. Unspecified errors will not be caught directly but will also not lead to harsh stops.
-tryCatch({
+#tryCatch({
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1928,34 +1928,34 @@ ls_CurationReport <- list(UnlinkedEntries = CountUnlinkedEntries,      # Named v
 Messages$CheckCurationCompletion <- "green"
 Messages$FinalMessage <- "Curation performed successfully!"
 
-},
-
-# In case of occurring warning:
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-warning = function(w)
-          {
-              Messages$CheckCurationCompletion <- "yellow"
-              Messages$FinalMessage <- paste0("Completed Curation with following warning: \n", w)
-          },
-
-# In case of occurring error:
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-error = function(e)
-        {
-            Messages$CheckCurationCompletion <- "red"
-            Messages$FinalMessage <- paste0("An error occured: \n", e)
-        },
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RETURN STATEMENT
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-finally =
-{
-  # Return the Curated Data Set (CDS) a Curation Report (defined above) and Messages
+# },
+#
+# # In case of occurring warning:
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# warning = function(w)
+#           {
+#               Messages$CheckCurationCompletion <- "yellow"
+#               Messages$FinalMessage <- paste0("Completed Curation with following warning: \n", w)
+#           },
+#
+# # In case of occurring error:
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# error = function(e)
+#         {
+#             Messages$CheckCurationCompletion <- "red"
+#             Messages$FinalMessage <- paste0("An error occured: \n", e)
+#         },
+#
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# # RETURN STATEMENT
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# finally =
+# {
+#   # Return the Curated Data Set (CDS) a Curation Report (defined above) and Messages
   return(list(CuratedDataSet = ls_CuratedDataSet,
               CurationReport = ls_CurationReport,
               CurationMessages = Messages))
-})
+# })
 
 }
 
