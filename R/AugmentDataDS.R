@@ -79,7 +79,7 @@ Messages$FinalMessage <- "Augmentation not completed"
 
 # Use tryCatch to catch warnings and errors
 # Note: Warnings and errors must be defined and thrown explicitly for this to work. Unspecified errors will not be caught directly but will also not lead to harsh stops.
-tryCatch({
+# tryCatch({
 
 
 # Extract data frames from list
@@ -189,7 +189,7 @@ df_ADS_Events <- df_CDS_Patient %>%
                       right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
                       group_by(PatientID, DiagnosisID) %>%
                           mutate(EventType = "Point",
-                                 EventDate = Date_Diagnosis,
+                                 EventDate = DiagnosisDate,
                                  EventDateEnd = NULL,      # For events of type "Period"
                                  EventDateIsAdjusted = FALSE,      # In case event date is adjusted later for plausibility reasons
                                  EventClass = "Diagnosis",
@@ -203,7 +203,7 @@ df_ADS_Events <- df_CDS_Patient %>%
                           select(PatientID,
                                  DateOfBirth,
                                  DiagnosisID,
-                                 Date_Diagnosis,
+                                 DiagnosisDate,
                                  starts_with("Event"))
                           #--- Update PB ---
                           try(ProgressBar$tick())
@@ -225,7 +225,7 @@ df_Events_LastVitalStatus <- df_CDS_Patient %>%
                                   select(PatientID,
                                          DateOfBirth,
                                          DiagnosisID,
-                                         Date_Diagnosis,
+                                         DiagnosisDate,
                                          starts_with("Event"))
                                   #--- Update PB ---
                                   try(ProgressBar$tick())
@@ -246,9 +246,9 @@ if (nrow(df_CDS_BioSampling) > 0)
 {
     df_Events_BioSampling <- df_CDS_BioSampling %>%
                                   group_by(PatientID) %>%
-                                      arrange(Date, .by_group = TRUE) %>%
+                                      arrange(BioSamplingDate, .by_group = TRUE) %>%
                                       mutate(EventType = "Point",
-                                             EventDate = Date,
+                                             EventDate = BioSamplingDate,
                                              EventDateIsAdjusted = FALSE,
                                              EventClass = "Diagnostics",
                                              EventSubclass = "Sample Taking",
@@ -275,9 +275,9 @@ try(ProgressBar$tick())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Histology <- df_CDS_Histology %>%
                             group_by(PatientID, DiagnosisID) %>%
-                                arrange(Date, HistologyID, .by_group = TRUE) %>%
+                                arrange(HistologyDate, HistologyID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
-                                       EventDate = Date,
+                                       EventDate = HistologyDate,
                                        EventDateIsAdjusted = FALSE,
                                        EventClass = "Diagnostics",
                                        EventSubclass = "Histology",
@@ -302,9 +302,9 @@ df_Events_Histology <- df_CDS_Histology %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Metastasis <- df_CDS_Metastasis %>%
                             group_by(PatientID, DiagnosisID) %>%
-                                arrange(Date, MetastasisID, .by_group = TRUE) %>%
+                                arrange(MetastasisDate, MetastasisID, .by_group = TRUE) %>%
                                 mutate(EventType = "Point",
-                                       EventDate = Date,
+                                       EventDate = MetastasisDate,
                                        EventDateIsAdjusted = FALSE,
                                        EventClass = "Diagnosis",
                                        EventSubclass = "Metastasis",
@@ -331,9 +331,9 @@ if (nrow(df_CDS_MolecularDiagnostics) > 0)
 {
     df_Events_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
                                           group_by(PatientID, DiagnosisID) %>%
-                                              arrange(Date, .by_group = TRUE) %>%
+                                              arrange(MolecularDiagnosticsDate, .by_group = TRUE) %>%
                                               mutate(EventType = "Point",
-                                                     EventDate = Date,
+                                                     EventDate = MolecularDiagnosticsDate,
                                                      EventDateIsAdjusted = FALSE,
                                                      EventClass = "Diagnostics",
                                                      EventSubclass = "Molecular Diagnostics",
@@ -358,9 +358,9 @@ try(ProgressBar$tick())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Progress <- df_CDS_Progress %>%
                           group_by(PatientID, DiagnosisID) %>%
-                              arrange(Date, .by_group = TRUE) %>%
+                              arrange(ProgressDate, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
-                                     EventDate = Date,
+                                     EventDate = ProgressDate,
                                      EventDateIsAdjusted = FALSE,
                                      EventClass = "Diagnosis",
                                      EventSubclass = "Progress",
@@ -385,10 +385,10 @@ df_Events_Progress <- df_CDS_Progress %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                   group_by(PatientID, DiagnosisID) %>%
-                                      arrange(StartDate, .by_group = TRUE) %>%
+                                      arrange(RadiationTherapyStartDate, .by_group = TRUE) %>%
                                       mutate(EventType = "Period",
-                                             EventDate = StartDate,
-                                             EventDateEnd = EndDate,
+                                             EventDate = RadiationTherapyStartDate,
+                                             EventDateEnd = RadiationTherapyEndDate,
                                              EventDateIsAdjusted = FALSE,
                                              EventClass = "Therapy",
                                              EventSubclass = "Radiation Therapy",
@@ -411,9 +411,9 @@ df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Staging <- df_CDS_Staging %>%
                           group_by(PatientID, DiagnosisID) %>%
-                              arrange(Date, .by_group = TRUE) %>%
+                              arrange(StagingDate, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
-                                     EventDate = Date,
+                                     EventDate = StagingDate,
                                      EventDateIsAdjusted = FALSE,
                                      EventClass = "Diagnosis",
                                      EventSubclass = "Staging",
@@ -449,9 +449,9 @@ df_Events_Staging <- df_CDS_Staging %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_Surgery <- df_CDS_Surgery %>%
                           group_by(PatientID, DiagnosisID) %>%
-                              arrange(Date, SurgeryID, .by_group = TRUE) %>%
+                              arrange(SurgeryDate, SurgeryID, .by_group = TRUE) %>%
                               mutate(EventType = "Point",
-                                     EventDate = Date,
+                                     EventDate = SurgeryDate,
                                      EventDateIsAdjusted = FALSE,
                                      EventClass = "Therapy",
                                      EventSubclass = "Surgery",
@@ -476,10 +476,10 @@ df_Events_Surgery <- df_CDS_Surgery %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                   group_by(PatientID, DiagnosisID, SystemicTherapySubclass) %>%
-                                      arrange(StartDate, .by_group = TRUE) %>%
+                                      arrange(SystemicTherapyStartDate, .by_group = TRUE) %>%
                                       mutate(EventType = "Period",
-                                             EventDate = StartDate,
-                                             EventDateEnd = EndDate,
+                                             EventDate = SystemicTherapyStartDate,
+                                             EventDateEnd = SystemicTherapyEndDate,
                                              EventDateIsAdjusted = FALSE,
                                              EventClass = "Therapy",
                                              EventSubclass = SystemicTherapySubclass,
@@ -589,7 +589,7 @@ df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
 df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
                             left_join(df_CDS_Staging, by = join_by(PatientID, DiagnosisID, SubDiagnosisID), suffix = c("_Diagnosis", "_Staging")) %>%
                             group_by(DiagnosisID) %>%
-                                arrange(Date) %>%
+                                arrange(DiagnosisDate) %>%
                                 slice_head() %>%
                             ungroup()
                             #--- Update PB ---
@@ -661,7 +661,7 @@ df_ADS_Patients <- df_CDS_Patient %>%
                         left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID)) %>%
                         left_join(df_ADS_Diagnoses, by = join_by(PatientID)) %>%      # <--- TEMPORARY: Joining with ADS_Diagnoses
                         group_by(PatientID) %>%
-                            arrange(Date_Diagnosis) %>%
+                            arrange(DiagnosisDate) %>%
                             slice_head() %>%      # <--- TEMPORARY: Slice performed
                         ungroup()
                         #--- Update PB ---
@@ -693,34 +693,34 @@ ls_AugmentationReport <- list(Test = c("TestReport"))
 Messages$CheckAugmentationCompletion <- "green"
 Messages$FinalMessage <- "Augmentation performed successfully!"
 
-},
-
-# In case of occurring warning:
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-warning = function(w)
-          {
-              Messages$CheckAugmentationCompletion <- "yellow"
-              Messages$FinalMessage <- paste0("Completed Augmentation with following warning: \n", w)
-          },
-
-# In case of occurring error:
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-error = function(e)
-        {
-            Messages$CheckAugmentationCompletion <- "red"
-            Messages$FinalMessage <- paste0("An error occured: \n", e)
-        },
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RETURN STATEMENT
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-finally =
-{
-  # Return the Augmented Data Set (ADS), an Augmentation Report (defined above) and Messages
+# },
+#
+# # In case of occurring warning:
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# warning = function(w)
+#           {
+#               Messages$CheckAugmentationCompletion <- "yellow"
+#               Messages$FinalMessage <- paste0("Completed Augmentation with following warning: \n", w)
+#           },
+#
+# # In case of occurring error:
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# error = function(e)
+#         {
+#             Messages$CheckAugmentationCompletion <- "red"
+#             Messages$FinalMessage <- paste0("An error occured: \n", e)
+#         },
+#
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# # RETURN STATEMENT
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# finally =
+# {
+#   # Return the Augmented Data Set (ADS), an Augmentation Report (defined above) and Messages
   return(list(AugmentedDataSet = ls_AugmentedDataSet,
               AugmentationReport = ls_AugmentationReport,
               AugmentationMessages = Messages))
-})
+# })
 
 }
 

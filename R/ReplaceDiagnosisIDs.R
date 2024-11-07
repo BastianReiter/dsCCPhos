@@ -9,7 +9,6 @@
 #' @return Data frame with replaced DiagnosisIDs
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 ReplaceDiagnosisIDs <- function(Table,
                                 IDMapping)

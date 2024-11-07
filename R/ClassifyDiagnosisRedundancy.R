@@ -37,24 +37,24 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
 
 
     # Create vector of names of features that determine identification of redundant diagnosis entry
-    PredictorFeatures = c("Date_Diagnosis",
+    PredictorFeatures = c("DiagnosisDate",
                           "ICD10Code",
                           "ICDOTopographyCode",
                           "LocalizationSide",
-                          "Date_Histology",
+                          "HistologyDate",
                           "ICDOMorphologyCode",
                           "Grading")
 
-    # Arrange diagnosis entries by Date_Diagnosis and lowest number of relevant NAs
+    # Arrange diagnosis entries by DiagnosisDate and lowest number of relevant NAs
     DiagnosisEntries <- DiagnosisEntries %>%
                             rowwise() %>%
                                 mutate(CountRelevantNAs = sum(is.na(across(all_of(PredictorFeatures))))) %>%
                             ungroup() %>%
-                            arrange(Date_Diagnosis, CountRelevantNAs)
+                            arrange(DiagnosisDate, CountRelevantNAs)
 
     # First reference diagnosis
     Reference <- DiagnosisEntries %>%
-                      slice_min(tibble(Date_Diagnosis, Date_Histology)) %>%      # Select earliest diagnosis (or diagnoses)
+                      slice_min(tibble(DiagnosisDate, HistologyDate)) %>%      # Select earliest diagnosis (or diagnoses)
                       first()
 
     # First set of candidates that are compared to reference diagnosis
@@ -113,7 +113,7 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
             if (nrow(Reference) > 0)
             {
                 Reference <- Reference %>%
-                                  slice_min(tibble(Date_Diagnosis, Date_Histology)) %>%
+                                  slice_min(tibble(DiagnosisDate, HistologyDate)) %>%
                                   first()
             }
 
