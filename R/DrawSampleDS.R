@@ -13,7 +13,7 @@
 #'
 #' @author Bastian Reiter
 DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
-                         SampleSize.S = "10")
+                         SampleSize.S = "100")
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
@@ -37,13 +37,13 @@ else
 # Use require() to load package namespaces
 require(dplyr)
 require(purrr)
-require(stringr)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Sample PatientIDs and subset RDS tables accordingly
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AllPatientIDs <- RawDataSet$RDS_Patient$PatientID
+AllPatientIDs <- RawDataSet$RDS_Patient$"_id"
+#AllPatientIDs <- RawDataSet$RDS_Patient$PatientID
 AvailableNumberPatients <- length(unique(AllPatientIDs))
 
 if (SampleSize > AvailableNumberPatients) { SampleSize <- AvailableNumberPatients }
@@ -55,9 +55,13 @@ SampleIDs <- sample(AllPatientIDs,
 
 # Subset RDS tables with sampled PatientIDs
 RawDataSetSample <- RawDataSet %>%
-                        map(function(Table)
+                        imap(function(Table, tablename)
                             {
-                              if (!is.null(Table)) { return(filter(Table, PatientID %in% SampleIDs)) }
+                              if (!is.null(Table))
+                              {
+                                if (tablename == "RDS_Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
+                                else { return(filter(Table, Table$'patient-id' %in% SampleIDs)) }
+                              }
                               else { return(NULL) }
                             })
 

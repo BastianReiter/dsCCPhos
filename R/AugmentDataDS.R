@@ -217,8 +217,7 @@ df_Events_LastVitalStatus <- df_CDS_Patient %>%
                                              EventDate = LastVitalStatusDate,
                                              EventDateIsAdjusted = FALSE,
                                              EventClass = "VitalStatus",
-                                             EventSubclass = case_when(NA ~ "Unknown",
-                                                                       .default = LastVitalStatus)) %>%
+                                             EventSubclass = if_else(is.na(LastVitalStatus), "Unknown", LastVitalStatus)) %>%
                                       nest(EventDetails = c(DeathCancerRelated,
                                                             CausesOfDeath)) %>%
                                   ungroup() %>%
