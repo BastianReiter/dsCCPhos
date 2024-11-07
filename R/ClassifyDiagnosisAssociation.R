@@ -46,7 +46,7 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
 
     # Enhance diagnosis entries by auxiliary variables
     DiagnosisEntries <- DiagnosisEntries %>%
-                            arrange(Date_Diagnosis, Date_Histology) %>%
+                            arrange(DiagnosisDate, HistologyDate) %>%
                             mutate(ICD10CodeShort = case_when(str_starts(ICD10Code, "C") ~ str_sub(ICD10Code, end = 3),
                                                               str_starts(ICD10Code, "D") ~ str_sub(ICD10Code, end = 5),
                                                               TRUE ~ str_sub(ICD10Code, end = 3)),
@@ -57,7 +57,7 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
 
     # First reference diagnosis
     Reference <- DiagnosisEntries %>%
-                      slice_min(Date_Diagnosis) %>%     # Select oldest diagnosis (or diagnoses)
+                      slice_min(DiagnosisDate) %>%     # Select oldest diagnosis (or diagnoses)
                       arrange(desc(ICD10Code)) %>%      # If there are more than one diagnoses with the same date, prefer the one that starts with "D" over one that starts with "C" (to account for line in progression)
                       slice_head() %>%
                       mutate(ReferenceDiagnosisID = DiagnosisID,
@@ -104,7 +104,7 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
         # Assign new reference diagnosis
         Reference <- Candidates %>%
                           filter(IsLikelyAssociated == FALSE) %>%
-                          slice_min(tibble(Date_Diagnosis, Date_Histology)) %>%
+                          slice_min(tibble(DiagnosisDate, HistologyDate)) %>%
                           arrange(desc(ICD10Code)) %>%      # If there are more than one diagnoses with the same date, prefer the one that starts with "D" over one that starts with "C" (to account for line in progression)
                           slice_head() %>%
                           mutate(ReferenceDiagnosisID = DiagnosisID)

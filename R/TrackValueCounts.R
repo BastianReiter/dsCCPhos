@@ -11,7 +11,6 @@
 #' @return A tibble
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 TrackValueCounts <- function(DataFrame,
                              FeatureNames,

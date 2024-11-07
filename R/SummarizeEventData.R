@@ -11,7 +11,6 @@
 #' @return Data frame containing summarized information
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 SummarizeEventData <- function(EventEntries,
                                ProgressBarObject = NULL)
