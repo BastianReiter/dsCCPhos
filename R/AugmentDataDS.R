@@ -586,7 +586,7 @@ df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
 
 
 df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
-                            left_join(df_CDS_Staging, by = join_by(PatientID, DiagnosisID, SubDiagnosisID), suffix = c("_Diagnosis", "_Staging")) %>%
+                            left_join(df_CDS_Staging, by = join_by(PatientID, DiagnosisID), suffix = c("_Diagnosis", "_Staging")) %>%
                             group_by(DiagnosisID) %>%
                                 arrange(DiagnosisDate) %>%
                                 slice_head() %>%

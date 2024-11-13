@@ -142,3 +142,33 @@ SampleStatistics <- GetSampleStatisticsDS(TableName.S = "ADS$Patients",
                                           FeatureName.S = "LastVitalStatus")
 SampleStatistics$Statistics
 
+
+library(survival)
+library(ggsurvfit)
+
+Curve <- SurvDS(TableName.S = "ADS$Patients",
+                TimeFeature.S = "TimeFollowUp",
+                EventFeature.S = "IsDocumentedDeceased")
+
+# PatientsSurvival <- ADS$Patients %>%
+#                         select(PatientID,
+#                                "UICCStage",
+#                                PatientAgeAtDiagnosis,
+#                                TimeFollowUp,
+#                                IsDocumentedDeceased)
+#
+# SurvTest <- with(PatientsSurvival, Surv(time = TimeFollowUp,
+#                                         event = IsDocumentedDeceased,
+#                                         type = "right"))
+#
+# S1 <- survfit(SurvTest ~ 1, data = PatientsSurvival)
+
+Plot <- Curve %>%
+            ggsurvfit() +
+            xlim(0, 5 * 365) +
+            labs(x = "Days",
+                 y = "Overall survival probability") +
+            add_confidence_interval()
+
+
+
