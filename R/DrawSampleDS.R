@@ -57,10 +57,10 @@ SampleIDs <- sample(AllPatientIDs,
 RawDataSetSample <- RawDataSet %>%
                         imap(function(Table, tablename)
                             {
-                              if (!is.null(Table))
+                              if (!is.null(Table) & nrow(Table) > 0)
                               {
-                                if (tablename == "RDS_Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
-                                else { return(filter(Table, Table$'patient-id' %in% SampleIDs)) }
+                                  if (tablename == "RDS_Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
+                                  else { return(filter(Table, Table$'patient-id' %in% SampleIDs)) }
                               }
                               else { return(NULL) }
                             })

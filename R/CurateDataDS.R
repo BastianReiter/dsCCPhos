@@ -1809,7 +1809,7 @@ Messages$DiagnosisAssociation <- Message
 # Create table for DiagnosisID replacement in related tables
 df_Aux_Diagnosis_IDMappingAssociations <- df_Diagnosis %>%
                                               ungroup() %>%
-                                              select(PatientID, OriginalDiagnosisID, DiagnosisID, SubDiagnosisID) %>%
+                                              select(PatientID, OriginalDiagnosisID, DiagnosisID) %>%
                                               rename(all_of(c(OldDiagnosisID = "OriginalDiagnosisID",
                                                               NewDiagnosisID = "DiagnosisID"))) %>%
                                               distinct()
@@ -1818,7 +1818,7 @@ df_Aux_Diagnosis_IDMappingAssociations <- df_Diagnosis %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Update related tables
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#     - Replace DiagnosisIDs to associate entries (and add SubDiagnosisIDs in same move)
+#     - Replace DiagnosisIDs to associate entries
 #     - Rearrange column order
 #-------------------------------------------------------------------------------
 
@@ -1826,52 +1826,52 @@ if (nrow(df_GeneralCondition) > 0)
 {
     df_GeneralCondition <- df_GeneralCondition %>%
                                     ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                                    relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = GeneralConditionID)
+                                    relocate(c(PatientID, DiagnosisID), .before = GeneralConditionID)
 }
 
 df_Metastasis <- df_Metastasis %>%
                       ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                      relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = MetastasisID)
+                      relocate(c(PatientID, DiagnosisID), .before = MetastasisID)
 
 if (nrow(df_MolecularDiagnostics) > 0)
 {
     df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
                                     ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                                    relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = MolecularDiagnosticsID)
+                                    relocate(c(PatientID, DiagnosisID), .before = MolecularDiagnosticsID)
 }
 
 if (nrow(df_OtherClassification) > 0)
 {
     df_OtherClassification <- df_OtherClassification %>%
                                     ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                                    relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = OtherClassificationID)
+                                    relocate(c(PatientID, DiagnosisID), .before = OtherClassificationID)
 }
 
-df_Progress <- df_Progress %>%
+df_ProgressW <- df_Progress %>%
                     ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                    relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = ProgressID)
+                    relocate(c(PatientID, DiagnosisID), .before = ProgressID)
 
 df_RadiationTherapy <- df_RadiationTherapy %>%
                             ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                            relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = RadiationTherapyID)
+                            relocate(c(PatientID, DiagnosisID), .before = RadiationTherapyID)
 
 df_Staging <- df_Staging %>%
                   ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                  relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = StagingID)
+                  relocate(c(PatientID, DiagnosisID), .before = StagingID)
 
 df_Surgery <- df_Surgery %>%
                   ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                  relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = SurgeryID)
+                  relocate(c(PatientID, DiagnosisID), .before = SurgeryID)
 
 df_SystemicTherapy <- df_SystemicTherapy %>%
                           ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                          relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = SystemicTherapyID)
+                          relocate(c(PatientID, DiagnosisID), .before = SystemicTherapyID)
 
 if (nrow(df_TherapyRecommendation ) > 0)
 {
     df_TherapyRecommendation <- df_TherapyRecommendation %>%
                                     ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                                    relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = TherapyRecommendationID)
+                                    relocate(c(PatientID, DiagnosisID), .before = TherapyRecommendationID)
 }
 
 
