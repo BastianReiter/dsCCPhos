@@ -1,5 +1,5 @@
 
-#' SurvDS
+#' GetSurvModelDS
 #'
 #' Return Kaplan-Meier curve
 #'
@@ -10,10 +10,10 @@
 #'
 #' @return A \code{survival curve object}
 #' @export
-SurvDS <- function(TableName.S,
-                   TimeFeature.S,
-                   EventFeature.S,
-                   Covariates.S = NULL)
+GetSurvModelDS <- function(TableName.S,
+                           TimeFeature.S,
+                           EventFeature.S,
+                           Covariates.S = NULL)
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Check, evaluate and parse input before proceeding
@@ -57,8 +57,8 @@ Data <- Table %>%
                    IsDocumentedDeceased)
 
 SurvObject <- Surv(time = Data$TimeFollowUp,
-                 event = Data$IsDocumentedDeceased,
-                 type = "right")
+                   event = Data$IsDocumentedDeceased,
+                   type = "right")
 
 Curve <- survfit(SurvObject ~ 1, data = Data)
 

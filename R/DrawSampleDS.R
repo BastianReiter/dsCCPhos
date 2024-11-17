@@ -60,6 +60,7 @@ RawDataSetSample <- RawDataSet %>%
                               if (!is.null(Table) & nrow(Table) > 0)
                               {
                                   if (tablename == "RDS_Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
+                                  else if (tablename %in% c("RDS_GeneralPerformance", "RDS_OtherClassification", "RDS_TherapyRecommendation")) { return(filter(Table, Table$PatientID %in% SampleIDs)) }
                                   else { return(filter(Table, Table$'patient-id' %in% SampleIDs)) }
                               }
                               else { return(NULL) }
