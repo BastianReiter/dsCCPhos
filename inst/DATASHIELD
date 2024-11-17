@@ -7,7 +7,8 @@ AggregateMethods:
     GetObjectStatusDS,
     GetRDSValidationReportDS,
     GetReportingObjectDS,
-    GetSampleStatisticsDS
+    GetSampleStatisticsDS,
+    GetSurvModelDS
 AssignMethods:
     AugmentDataDS,
     CurateDataDS,
