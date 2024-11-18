@@ -45,8 +45,9 @@ require(survival)
 
 # For function testing purposes
 # Table <- ADS$Patients
-# FeatureName.S <- "TNM_T"
-# GroupingFeatureName.S <- "LastVitalStatus"
+# TimeFeature.S <- "TimeFollowUp"
+# EventFeature.S <- "IsDocumentedDeceased"
+# Covariates.S <-
 
 
 Data <- Table %>%
