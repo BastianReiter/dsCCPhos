@@ -16,7 +16,7 @@ ReplaceDiagnosisIDs <- function(Table,
 {
     require(dplyr)
 
-    if (nrow(Table) > 0)
+    if (!is.null(Table) & nrow(Table) > 0 & all(c("PatientID", "DiagnosisID") %in% names(Table)))
     {
         Table <- Table %>%
                       left_join(IDMapping, by = join_by(PatientID,
