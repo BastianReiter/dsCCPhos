@@ -100,9 +100,9 @@ df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
 # Augmented Data Model (ADM)
 # Augmented Data Set (ADS)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#                      ________________
+#                      _________________
 #                     / df_ADS_Patients \
-#                     \________________/
+#                     \_________________/
 #
 #                      __________________
 #                     / df_ADS_Diagnoses \

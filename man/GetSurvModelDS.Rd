@@ -4,7 +4,15 @@
 \alias{GetSurvModelDS}
 \title{GetSurvModelDS}
 \usage{
-GetSurvModelDS(TableName.S, TimeFeature.S, EventFeature.S, Covariates.S = NULL)
+GetSurvModelDS(
+  TableName.S,
+  TimeFeature.S,
+  EventFeature.S,
+  CovariateA.S = NULL,
+  CovariateB.S = NULL,
+  CovariateC.S = NULL,
+  MinFollowUpTime.S = 1
+)
 }
 \arguments{
 \item{TableName.S}{\code{string} | Name of the data frame that holds time and event features}
@@ -13,7 +21,13 @@ GetSurvModelDS(TableName.S, TimeFeature.S, EventFeature.S, Covariates.S = NULL)
 
 \item{EventFeature.S}{\code{string} | Name of event feature}
 
-\item{Covariates.S}{\code{character vector}}
+\item{CovariateA.S}{\code{string} | Name of optional Covariate A}
+
+\item{CovariateB.S}{\code{string} | Name of optional Covariate B}
+
+\item{CovariateC.S}{\code{string} | Name of optional Covariate C}
+
+\item{MinFollowUpTime.S}{\code{integer} | Optional minimum of observed follow up time}
 }
 \value{
 A \code{survival curve object}

@@ -143,22 +143,11 @@ SampleStatistics <- GetSampleStatisticsDS(TableName.S = "ADS$Patients",
 SampleStatistics$Statistics
 
 
-library(survival)
-library(ggsurvfit)
-
-Curve <- GetSurvModelDS(TableName.S = "ADS$Patients",
-                        TimeFeature.S = "TimeFollowUp",
-                        EventFeature.S = "IsDocumentedDeceased")
 
 
 
 
-Plot <- Curve %>%
-            ggsurvfit() +
-            xlim(0, 5 * 365) +
-            labs(x = "Days",
-                 y = "Overall survival probability") +
-            add_confidence_interval()
+
 
 
 
