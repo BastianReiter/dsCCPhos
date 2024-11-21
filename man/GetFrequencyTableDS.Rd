@@ -19,3 +19,6 @@ A \code{tibble} containing absolute and relative frequencies
 \description{
 Return table of absolute and relative value frequencies for a nominal / ordinal feature.
 }
+\author{
+Bastian Reiter
+}
