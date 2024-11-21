@@ -9,8 +9,7 @@
 #'
 #' @return A \code{tibble} containing absolute and relative frequencies
 #' @export
-#'
-#' @examples
+#' @author Bastian Reiter
 GetFrequencyTableDS <- function(TableName.S,
                                 FeatureName.S,
                                 GroupingFeatureName.S = NULL)
