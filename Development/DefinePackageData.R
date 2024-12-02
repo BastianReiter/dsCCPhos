@@ -7,11 +7,11 @@ library(usethis)
 # Meta Data: CCP Table names
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_TableNames <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                              sheet = "TableNames")
+Meta_Tables <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                          sheet = "Tables")
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_TableNames, overwrite = TRUE)
+use_data(Meta_Tables, overwrite = TRUE)
 
 
 
@@ -19,11 +19,11 @@ use_data(Meta_TableNames, overwrite = TRUE)
 # Meta Data: CCP Feature names
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_FeatureNames <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                sheet = "FeatureNames")
+Meta_Features <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                            sheet = "Features")
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_FeatureNames, overwrite = TRUE)
+use_data(Meta_Features, overwrite = TRUE)
 
 
 

@@ -74,8 +74,8 @@ RawDataSet <- list(sample = sample,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rename tables of RawDataSet (the names are also changed when tables are being loaded into R server sessions)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-vc_Lookup <- paste0("RDS_", dsCCPhos::Meta_TableNames$TableName_Curated)
-names(vc_Lookup) <- dsCCPhos::Meta_TableNames$TableName_Raw
+vc_Lookup <- paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated)
+names(vc_Lookup) <- dsCCPhos::Meta_Tables$TableName_Raw
 
 names(RawDataSet) <- sapply(names(RawDataSet),
                             function(TableName) { vc_Lookup[TableName] })
