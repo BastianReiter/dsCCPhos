@@ -158,11 +158,11 @@ ls_DataSet <- RawDataSet
 names(ls_DataSet) <- sapply(names(ls_DataSet),
                             function(TableName) { str_remove(TableName, "RDS_") })
 
-
+f
 # If tables are missing, create corresponding empty tables for easier management throughout following processing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AllTableNames <- dsCCPhos::Meta_TableNames$TableName_Curated
+AllTableNames <- dsCCPhos::Meta_Tables$TableName_Curated
 MissingTableNames <- AllTableNames[!(AllTableNames %in% names(ls_DataSet))]
 
 # Create empty data frames for missing tables
@@ -186,8 +186,8 @@ ls_DataSet <- ls_DataSet %>%
                   imap(function(dataframe, name)
                        {
                           # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
-                          vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Raw
-                          names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Curated
+                          vc_Lookup <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Raw
+                          names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Curated
 
                           if (!is_empty(dataframe))
                           {
@@ -214,7 +214,7 @@ ls_DataSet <- ls_DataSet %>%
                   imap(function(dataframe, name)
                        {
                           # Determine missing features
-                          RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Curated
+                          RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Curated
                           PresentFeatureNames <- names(dataframe)
                           MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
 
@@ -1866,13 +1866,6 @@ df_Surgery <- df_Surgery %>%
 df_SystemicTherapy <- df_SystemicTherapy %>%
                           ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
                           relocate(c(PatientID, DiagnosisID), .before = SystemicTherapyID)
-
-if (nrow(df_TherapyRecommendation ) > 0)
-{
-    df_TherapyRecommendation <- df_TherapyRecommendation %>%
-                                    ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                                    relocate(c(PatientID, DiagnosisID), .before = TherapyRecommendationID)
-}
 
 
 

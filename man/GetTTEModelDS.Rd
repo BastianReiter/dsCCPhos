@@ -36,7 +36,7 @@ GetTTEModelDS(
 \item{MinFollowUpTime.S}{\code{integer} | Optional minimum of observed follow up time}
 }
 \value{
-A \code{survival curve object}
+A Time-to-Event model object
 }
 \description{
 Return Time-to-Event model implemented in the \code{survival} package

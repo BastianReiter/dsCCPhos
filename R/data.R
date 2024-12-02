@@ -102,14 +102,14 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_TableNames.rda
+# Meta_Tables.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' CCP meta data: Table names
+#' CCP meta data: Tables
 #'
 #' A tibble containing meta data about corresponding table names in Raw Data Model (RDM) and Curated Data Model (CDM)
 #'
-#' @format ## `Meta_TableNames`
+#' @format ## `Meta_Tables`
 #' Tibble
 #' \describe{
 #'   \item{TableName_Raw}{Table name in Raw Data Model}
@@ -117,29 +117,33 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_TableNames"
+"Meta_Tables"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_FeatureNames.rda
+# Meta_Features.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' CCP meta data: Feature names
+#' CCP meta data: Features
 #'
 #' A tibble containing meta data about corresponding feature names in Raw Data Model (RDM) and Curated Data Model (CDM)
 #'
-#' @format ## `Meta_FeatureNames`
+#' @format ## `Meta_Features`
 #' Tibble
 #' \describe{
-#'   \item{TableName_Curated}{Table selector}
+#'   \item{TableName_Raw}{Name of table in Opal}
+#'   \item{TableName_Curated}{Name of table after loading into R session}
 #'   \item{FeaturePosition}{Position of Feature in Table}
 #'   \item{FeatureName_Raw}{Feature name in Raw Data Model}
 #'   \item{FeatureName_Curated}{Corresponding feature name in Curated Data Model}
+#'   \item{Scale}
+#'   \item{HasEligibleValueSet}
+#'   \item{IsObligatory}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_FeatureNames"
+"Meta_Features"
 
 
 
