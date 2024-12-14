@@ -116,8 +116,8 @@ df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
 
 # Temporary !!!
 
-df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
-                        filter(IsReferenceEntry == TRUE)
+# df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
+#                         filter(IsReferenceEntry == TRUE)
 
 
 
@@ -187,6 +187,7 @@ try(ProgressBar$tick())
 # Initiation 1: Initial diagnosis event
 df_ADS_Events <- df_CDS_Patient %>%
                       right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
+                      filter(IsReferenceEntry == TRUE) %>%
                       group_by(PatientID, DiagnosisID) %>%
                           mutate(EventType = "Point",
                                  EventDate = DiagnosisDate,
@@ -212,6 +213,7 @@ df_ADS_Events <- df_CDS_Patient %>%
 # Initiation 2: Last known vital status
 df_Events_LastVitalStatus <- df_CDS_Patient %>%
                                   right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
+                                  filter(IsReferenceEntry == TRUE) %>%
                                   group_by(PatientID, DiagnosisID) %>%
                                       mutate(EventType = "Point",
                                              EventDate = LastVitalStatusDate,
@@ -233,6 +235,7 @@ df_Events_LastVitalStatus <- df_CDS_Patient %>%
 # Initiation 3: Row-bind data frames from Initiation 1 and 2
 df_ADS_Events <- df_ADS_Events %>%
                       bind_rows(df_Events_LastVitalStatus)
+
 try(ProgressBar$tick())
 
 
@@ -340,8 +343,8 @@ if (nrow(df_CDS_MolecularDiagnostics) > 0)
                                                      EventOrderSignificance = case_when(row_number() == 1 ~ "First Molecular Diagnostics",
                                                                                         row_number() == n() ~ "Last Molecular Diagnostics",
                                                                                         TRUE ~ NA)) %>%
-                                              nest(EventDetails = c(Name,
-                                                                    Status,
+                                              nest(EventDetails = c(MolecularMarker,
+                                                                    MolecularMarkerStatus,
                                                                     Documentation)) %>%
                                           ungroup() %>%
                                           select(PatientID,
@@ -586,7 +589,7 @@ df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
 
 
 df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
-                            left_join(df_CDS_Staging, by = join_by(PatientID, DiagnosisID), suffix = c("_Diagnosis", "_Staging")) %>%
+                            left_join(df_CDS_Staging, by = join_by(PatientID, DiagnosisID), relationship = "many-to-many") %>%
                             group_by(DiagnosisID) %>%
                                 arrange(DiagnosisDate) %>%
                                 slice_head() %>%
@@ -618,8 +621,11 @@ try(ProgressBar$terminate())
 #   - Overall response rate
 
 #   - Disease specific survival (Death from disease or from treatment)
+#      - TimeSurgeryToDeath
+#      - TimeLastTherapyToDeath
 #
-#
+#   - TimeTherapyToProgression
+#   - TimeTherapyToDeath
 
 # df_DiagnosisSummary_Histology <- df_CDS_Histology %>%
 #                                       group_by(DiagnosisID) %>%

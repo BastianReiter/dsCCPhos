@@ -27,7 +27,7 @@
 #'                               \item Surgery
 #'                               \item SystemicTherapy}
 #'                  \item CurationReport (list)
-#'                      \itemize{\item UnlinkedEntries (named vector)
+#'                      \itemize{\item IneligibleEntries (named vector)
 #'                               \item Transformation (list of data frames)
 #'                                    \itemize{\item BioSampling
 #'                                             \item Diagnosis
@@ -61,6 +61,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #   MODULE 2)  Primary table cleaning
 #     - Remove entries that are not linked to related tables
 #     - Remove duplicate entries
+#     - Remove entries missing obligatory features (defined in meta data)
 #
 #   MODULE 3)  Data Harmonization / Transformation
 #     - Transform feature names
@@ -118,7 +119,7 @@ ls_CurationReport <- NULL
 
 # Initiate Messaging objects
 Messages <- list()
-Messages$UnlinkedEntries <- character()
+Messages$IneligibleEntries <- character()
 Messages$DiagnosisRedundancies <- character()
 Messages$DiagnosisAssociation <- character()
 Messages$CheckCurationCompletion <- "red"
@@ -148,87 +149,87 @@ Messages$FinalMessage <- "Curation not completed"
 #   - In tables with missing features, add empty features accordingly
 #-------------------------------------------------------------------------------
 
-# Setting up 'ls_DataSet' as object that holds all data throughout the function. It will be un- and repacked a couple of times during processing.
-ls_DataSet <- RawDataSet
+# Setting up 'DataSet' as object that holds all data throughout the function. It will be un- and repacked a couple of times during processing.
+DataSet <- RawDataSet
 
 
 # Rename tables (Remove the 'RDS_'-prefix)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-names(ls_DataSet) <- sapply(names(ls_DataSet),
-                            function(TableName) { str_remove(TableName, "RDS_") })
+names(DataSet) <- sapply(names(DataSet),
+                         function(TableName) { str_remove(TableName, "RDS_") })
 
-f
+
 # If tables are missing, create corresponding empty tables for easier management throughout following processing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 AllTableNames <- dsCCPhos::Meta_Tables$TableName_Curated
-MissingTableNames <- AllTableNames[!(AllTableNames %in% names(ls_DataSet))]
+MissingTableNames <- AllTableNames[!(AllTableNames %in% names(DataSet))]
 
 # Create empty data frames for missing tables
 if (length(MissingTableNames) > 0)
 {
     for (i in 1:length(MissingTableNames))
     {
-        ls_DataSet[[MissingTableNames[i]]] <- data.frame()
+        DataSet[[MissingTableNames[i]]] <- data.frame()
     }
 }
 
-# Reestablish original order of tables in ls_DataSet
-ls_DataSet <- ls_DataSet[AllTableNames]
+# Reestablish original order of tables in DataSet
+DataSet <- DataSet[AllTableNames]
 
 
 # Rename features
 #~~~~~~~~~~~~~~~~
 
 # Looping through tables to rename features
-ls_DataSet <- ls_DataSet %>%
-                  imap(function(dataframe, name)
-                       {
-                          # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
-                          vc_Lookup <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Raw
-                          names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Curated
+DataSet <- DataSet %>%
+                imap(function(dataframe, name)
+                     {
+                        # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
+                        vc_Lookup <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Raw
+                        names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Curated
 
-                          if (!is_empty(dataframe))
-                          {
-                              # Rename feature names according to look-up vector
-                              dplyr::rename(dataframe, any_of(vc_Lookup))      # Returns a tibble
-                          }
-                          else
-                          {
-                              # Create empty data.frame with pre-defined column names
-                              df <- data.frame(matrix(nrow = 0,
-                                                      ncol = length(names(vc_Lookup)))) %>%
-                                        setNames(names(vc_Lookup)) %>%
-                                        mutate(across(everything(), ~ as.character(.x)))
+                        if (!is_empty(dataframe))
+                        {
+                            # Rename feature names according to look-up vector
+                            dplyr::rename(dataframe, any_of(vc_Lookup))      # Returns a tibble
+                        }
+                        else
+                        {
+                            # Create empty data.frame with pre-defined column names
+                            df <- data.frame(matrix(nrow = 0,
+                                                    ncol = length(names(vc_Lookup)))) %>%
+                                      setNames(names(vc_Lookup)) %>%
+                                      mutate(across(everything(), ~ as.character(.x)))
 
-                              return(df)
-                          }
-                       })
+                            return(df)
+                        }
+                     })
 
 
 # In tables with missing features, add empty features accordingly
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_DataSet <- ls_DataSet %>%
-                  imap(function(dataframe, name)
-                       {
-                          # Determine missing features
-                          RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Curated
-                          PresentFeatureNames <- names(dataframe)
-                          MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
+DataSet <- DataSet %>%
+                imap(function(dataframe, name)
+                     {
+                        # Determine missing features
+                        RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Curated
+                        PresentFeatureNames <- names(dataframe)
+                        MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
 
-                          # If a table misses features, add empty columns accordingly
-                          if (length(MissingFeatures) > 0)
-                          {
-                              ComplementedDataFrame <- dataframe %>%
-                                                          mutate(!!!set_names(rep(list(NA_character_), length(MissingFeatures)), MissingFeatures))
+                        # If a table misses features, add empty columns accordingly
+                        if (length(MissingFeatures) > 0)
+                        {
+                            ComplementedDataFrame <- dataframe %>%
+                                                        mutate(!!!set_names(rep(list(NA_character_), length(MissingFeatures)), MissingFeatures))
 
-                              return(ComplementedDataFrame)
-                          }
-                          else
-                          { return(dataframe) }
-                       })
+                            return(ComplementedDataFrame)
+                        }
+                        else
+                        { return(dataframe) }
+                     })
 
 
 
@@ -237,15 +238,16 @@ ls_DataSet <- ls_DataSet %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Remove entries that are not linked to related tables
 #   - Remove duplicate entries
+#   - Remove entries missing obligatory features (defined in meta data)
 #-------------------------------------------------------------------------------
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MONITORING: Count unlinked entries (Part 1)
+# MONITORING: Count ineligible entries (Part 1)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Count entries in data frames before cleaning
-CountEntriesBeforeCleaning <- ls_DataSet %>%
+CountEntriesBeforeCleaning <- DataSet %>%
                                   map_int(\(dataframe) ifelse (!is.null(nrow(dataframe)), nrow(dataframe), 0))
 
 
@@ -258,247 +260,94 @@ try(ProgressBar$tick())
 #-------------------------------------------------------------------------------
 
 
+# Get obligatory features of tables 'Patient' and 'Diagnosis' from meta data
+ObligatoryFeatures <- dsCCPhos::Meta_Features %>%
+                          filter(TableName_Curated %in% c("Diagnosis", "Patient"), IsObligatory == TRUE) %>%
+                          pull(FeatureName_Curated)
 
-ls_DataSet <- ls_DataSet %>%
+
+# By merging 'Patient' and 'Diagnosis', create auxiliary data frame containing all eligible combinations of PatientIDs and DiagnosisIDs
+# Do NOT simply delete (pseudo-)duplicate entries (because different DiagnosisIDs of same patient and diagnosis can e.g. be related to different Histologies).
+DataSetRoot <- DataSet$Patient %>%
+                    left_join(DataSet$Diagnosis, by = join_by(PatientID)) %>%
+                    filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%       # Filter out any entry that has missings in features marked as obligatory in meta data (thereby also removing 'rogue'/unlinked patient or diagnosis entries because this way every patient needs to have at least one related diagnosis and vice versa)
+                    select(PatientID, DiagnosisID) %>%
+                    distinct()
+
+
+# - Loop through whole DataSet to only keep entries that belong to eligible 'root'
+# - Remove entries that have missing values in obligatory features (defined in meta data)
+# - Remove duplicate entries
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DataSet <- DataSet %>%
                   imap(function(dataframe, name)
-                         {
-                            if (name == "Patient")
-                            {
-                                # Get vector of PatientIDs that are linked with one or more DiagnosisIDs
-                                vc_EligiblePatientIDs <- dataframe %>%
-                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID)) %>%
-                                                              filter(!is.na(DiagnosisID)) %>%
-                                                              pull(PatientID)
+                       {
+                          if (!(is.null(dataframe) | length(dataframe) == 0))
+                          {
+                              # Get current table's set of obligatory features (if defined) from meta data
+                              ObligatoryFeatures <- dsCCPhos::Meta_Features %>%
+                                                        filter(TableName_Curated == name, IsObligatory == TRUE) %>%
+                                                        pull(FeatureName_Curated)
 
-                                # Filter out patient entries with no related diagnosis data and keep only distinct rows (removal of duplicates)
-                                return(dataframe %>%
-                                            filter(PatientID %in% vc_EligiblePatientIDs) %>%
-                                            distinct())
-                            }
+                              # Get each tables primary key feature (ID column), necessary for identification of duplicate entries
+                              IDFeature <- dsCCPhos::Meta_Features %>%
+                                                filter(TableName_Curated == name, IsPrimaryKey == TRUE) %>%
+                                                pull(FeatureName_Curated)
 
-                            if (name == "Diagnosis")
-                            {
-                                # Get vector of DiagnosisIDs that are linked with a PatientID
-                                vc_EligibleDiagnosisIDs <- dataframe %>%
-                                                                left_join(ls_DataSet$Patient, by = join_by(PatientID)) %>%
-                                                                filter(!is.na(PatientID)) %>%
-                                                                pull(DiagnosisID)
+                              if (name %in% c("BioSampling", "GeneralCondition", "Patient", "TherapyRecommendation"))
+                              {
+                                  CleanTable <- DataSetRoot %>%
+                                                    select(PatientID) %>%
+                                                    distinct() %>%
+                                                    left_join(dataframe, by = join_by(PatientID)) %>%
+                                                    filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%
+                                                    distinct(across(-all_of(IDFeature)), .keep_all = TRUE)
+                              }
+                              else
+                              {
+                                  CleanTable <- DataSetRoot %>%
+                                                    left_join(dataframe, by = join_by(PatientID, DiagnosisID)) %>%
+                                                    filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%
+                                                    distinct(across(-all_of(IDFeature)), .keep_all = TRUE)
+                              }
 
-                                # Filter out diagnosis entries with no related patient data and keep only distinct rows (removal of duplicates)
-                                return(dataframe %>%
-                                            filter(DiagnosisID %in% vc_EligibleDiagnosisIDs) %>%
-                                            distinct(across(-DiagnosisID), .keep_all = TRUE))      # Keep only rows that are distinct (everywhere but DiagnosisID)
-                            }
+                              return(CleanTable)
+                          }
+                          else
+                          {
+                              return(dataframe)
+                          }
 
-                            if (name == "Histology")
-                            {
-                                # Get vector of HistologyIDs that are linked with a PatientID / DiagnosisID
-                                vc_EligibleHistologyIDs <- dataframe %>%
-                                                                left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                                                filter(!is.na(DiagnosisID)) %>%
-                                                                pull(HistologyID)
-
-                                # Filter out histology entries with no related diagnosis data and keep only distinct rows (removal of duplicates)
-                                return(dataframe %>%
-                                            filter(HistologyID %in% vc_EligibleHistologyIDs) %>%
-                                            distinct(across(-HistologyID), .keep_all = TRUE))
-                            }
-
-                            if (name == "BioSampling")
-                            {
-                                if (!(is.null(dataframe) | length(dataframe) == 0))
-                                {
-                                    # Get vector of SampleIDs that are linked with a PatientID
-                                    vc_EligibleSampleIDs <- dataframe %>%
-                                                                left_join(ls_DataSet$Patient, by = join_by(PatientID)) %>%
-                                                                filter(!is.na(PatientID)) %>%
-                                                                pull(SampleID)
-
-                                    # Filter out...
-                                    return(dataframe %>%
-                                                filter(SampleID %in% vc_EligibleSampleIDs) %>%
-                                                distinct())
-                                }
-                                else (return(dataframe))
-                            }
-
-                            if (name == "GeneralCondition")
-                            {
-                                if (!(is.null(dataframe) | length(dataframe) == 0))
-                                {
-                                    # Get vector of GeneralConditionIDs that are linked with a PatientID
-                                    vc_EligibleGeneralConditionIDs <- dataframe %>%
-                                                                          left_join(ls_DataSet$Patient, by = join_by(PatientID)) %>%
-                                                                          filter(!is.na(PatientID)) %>%
-                                                                          pull(GeneralConditionID)
-
-                                    # Filter out...
-                                    return(dataframe %>%
-                                                filter(GeneralConditionID %in% vc_EligibleGeneralConditionIDs) %>%
-                                                distinct())
-                                }
-                                else (return(dataframe))
-                            }
-
-                            if (name == "Metastasis")
-                            {
-                                # Get vector of MetastasisIDs that are linked with a PatientID / DiagnosisID
-                                vc_EligibleMetastasisIDs <- dataframe %>%
-                                                                left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                                                filter(!is.na(DiagnosisID)) %>%
-                                                                pull(MetastasisID)
-
-                                # Filter out...
-                                return(dataframe %>%
-                                            filter(MetastasisID %in% vc_EligibleMetastasisIDs) %>%
-                                            distinct(across(-MetastasisID), .keep_all = TRUE))
-                            }
-
-                            if (name == "MolecularDiagnostics")
-                            {
-                                if (!(is.null(dataframe) | length(dataframe) == 0))
-                                {
-                                    # Get vector of MolecularDiagnosticsIDs that are linked with a PatientID / DiagnosisID
-                                    vc_EligibleMolecularDiagnosticsIDs <- dataframe %>%
-                                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                                                              filter(!is.na(DiagnosisID)) %>%
-                                                                              pull(MolecularDiagnosticsID)
-
-                                    # Filter out...
-                                    return(dataframe %>%
-                                                filter(MolecularDiagnosticsID %in% vc_EligibleMolecularDiagnosticsIDs) %>%
-                                                distinct(across(-MolecularDiagnosticsID), .keep_all = TRUE))
-                                }
-                                else (return(dataframe))
-                            }
-
-                            if (name == "OtherClassification")
-                            {
-                                # Get vector of OtherClassifcationIDs that are linked with a PatientID / DiagnosisID
-                                vc_EligibleOtherClassificationIDs <- dataframe %>%
-                                                                          left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                                                          filter(!is.na(DiagnosisID)) %>%
-                                                                          pull(OtherClassificationID)
-
-                                # Filter out...
-                                return(dataframe %>%
-                                            filter(OtherClassificationID %in% vc_EligibleOtherClassificationIDs) %>%
-                                            distinct(across(-OtherClassificationID), .keep_all = TRUE))
-                            }
-
-                            if (name == "Progress")
-                            {
-                                # Get vector of ProgressIDs that are linked with a PatientID / DiagnosisID
-                                vc_EligibleProgressIDs <- dataframe %>%
-                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                                              filter(!is.na(DiagnosisID)) %>%
-                                                              pull(ProgressID)
-
-                                # Filter out...
-                                return(dataframe %>%
-                                            filter(ProgressID %in% vc_EligibleProgressIDs) %>%
-                                            distinct(across(-ProgressID), .keep_all = TRUE))
-                            }
-
-                            if (name == "RadiationTherapy")
-                            {
-                                # Get vector of RadiationTherapyIDs that are linked with a PatientID / DiagnosisID
-                                vc_EligibleRadiationTherapyIDs <- dataframe %>%
-                                                                      left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                                                      filter(!is.na(DiagnosisID)) %>%
-                                                                      pull(RadiationTherapyID)
-
-                                # Filter out...
-                                return(dataframe %>%
-                                            filter(RadiationTherapyID %in% vc_EligibleRadiationTherapyIDs) %>%
-                                            distinct(across(-RadiationTherapyID), .keep_all = TRUE))
-                            }
-
-                            if (name == "Staging")
-                            {
-                                # Get vector of StagingIDs that are linked with a PatientID / DiagnosisID
-                                vc_EligibleStagingIDs <- dataframe %>%
-                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                                              filter(!is.na(DiagnosisID)) %>%
-                                                              pull(StagingID)
-
-                                # Filter out...
-                                return(dataframe %>%
-                                            filter(StagingID %in% vc_EligibleStagingIDs) %>%
-                                            distinct(across(-StagingID), .keep_all = TRUE))
-                            }
-
-                            if (name == "Surgery")
-                            {
-                                # Get vector of SurgeryIDs that are linked with a PatientID / DiagnosisID
-                                vc_EligibleSurgeryIDs <- dataframe %>%
-                                                              left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                                              filter(!is.na(DiagnosisID)) %>%
-                                                              pull(SurgeryID)
-
-                                # Filter out...
-                                return(dataframe %>%
-                                            filter(SurgeryID %in% vc_EligibleSurgeryIDs) %>%
-                                            distinct(across(-SurgeryID), .keep_all = TRUE))
-                            }
-
-                            if (name == "SystemicTherapy")
-                            {
-                                # Get vector of SystemicTherapyIDs that are linked with a PatientID / DiagnosisID
-                                vc_EligibleSystemicTherapyIDs <- dataframe %>%
-                                                                      left_join(ls_DataSet$Diagnosis, by = join_by(PatientID, DiagnosisID)) %>%
-                                                                      filter(!is.na(DiagnosisID)) %>%
-                                                                      pull(SystemicTherapyID)
-
-                                # Filter out...
-                                return(dataframe %>%
-                                            filter(SystemicTherapyID %in% vc_EligibleSystemicTherapyIDs) %>%
-                                            distinct(across(-SystemicTherapyID), .keep_all = TRUE))
-                            }
-
-                            if (name == "TherapyRecommendation")
-                            {
-                                # Get vector of TherapyRecommendationIDs that are linked with a PatientID / DiagnosisID
-                                vc_EligibleTherapyRecommendationIDs <- dataframe %>%
-                                                                            left_join(ls_DataSet$Diagnosis, by = join_by(PatientID)) %>%
-                                                                            filter(!is.na(DiagnosisID)) %>%
-                                                                            pull(TherapyRecommendationID)
-
-                                # Filter out...
-                                return(dataframe %>%
-                                            filter(TherapyRecommendationID %in% vc_EligibleTherapyRecommendationIDs) %>%
-                                            distinct(across(-TherapyRecommendationID), .keep_all = TRUE))
-                            }
-
-                            try(ProgressBar$tick()) })
+                          try(ProgressBar$tick())
+                       })
 
 try(ProgressBar$terminate())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MONITORING: Count unlinked entries (Part 2)
+# MONITORING: Count ineligible entries (Part 2)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Count entries in data frames after cleaning
-CountEntriesAfterCleaning <- ls_DataSet %>%
+CountEntriesAfterCleaning <- DataSet %>%
                                   map_int(\(dataframe) ifelse (!is.null(nrow(dataframe)), nrow(dataframe), 0))
 
-# Count unlinked entries
-CountUnlinkedEntries <- CountEntriesBeforeCleaning - CountEntriesAfterCleaning
-
+# Count ineligible entries
+CountIneligibleEntries <- CountEntriesBeforeCleaning - CountEntriesAfterCleaning
 
 
 # Print messages for live monitoring in local tests
 cat("\n")
-for (i in 1:length(CountUnlinkedEntries))
+for (i in 1:length(CountIneligibleEntries))
 {
-    Message <- paste0("Removed ", CountUnlinkedEntries[i], " unlinked entries from '", names(CountUnlinkedEntries)[i], "' table.")
+    Message <- paste0("Removed ", CountIneligibleEntries[i], " ineligible entries from '", names(CountIneligibleEntries)[i], "' table.")
     cli::cat_bullet(Message, bullet = "info")
 
     # Save messages in output object
-    Messages$UnlinkedEntries <- c(Messages$UnlinkedEntries,
+    Messages$IneligibleEntries <- c(Messages$IneligibleEntries,
                                   info = Message)
 }
+
 
 
 
@@ -530,7 +379,7 @@ try(ProgressBar$tick())
 # Module 3 A)  Definition of tracked features and their sets of eligible values
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #     - Create a list of meta data objects to make them passable to functions (alphabetic order)
-#     - Names must be in same order as in ls_DataSet
+#     - Names must be in same order as in DataSet
 #     - Element object syntax: List of vectors
 #         - Vector names = Name of feature to be monitored during Curation (Transformation)
 #         - Vector values = Set of eligible values obtained from meta data by auxiliary function f_GetEligibleValues()
@@ -620,8 +469,8 @@ ls_MonitorMetaData <- list(BioSampling = list(Aliquot = f_GetEligibleValues("Bio
                            TherapyRecommendation = list(Deviation = f_GetEligibleValues("TherapyRecommendation", "Deviation"),
                                                         Type = f_GetEligibleValues("TherapyRecommendation", "Type")))
 
-# Make sure object names in ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
-ls_MonitorMetaData <- ls_MonitorMetaData[names(ls_DataSet)]
+# Make sure object names in DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
+ls_MonitorMetaData <- ls_MonitorMetaData[names(DataSet)]
 
 try(ProgressBar$tick())
 
@@ -633,12 +482,12 @@ try(ProgressBar$tick())
 #   - Copy values of monitored features and mark them with TrackID that has correspondent in actually processed data frames
 #-------------------------------------------------------------------------------
 
-# Check if object names in ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
-if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
+# Check if object names in DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
+if (all(names(DataSet) == names(ls_MonitorMetaData)))
 {
     # Initiate list of data frames containing transformation tracks
     # First step: Store copied raw values of monitored features and mark them with "TrackID" to track them along transformation process
-    ls_TransformationTracks <- purrr::map2(.x = ls_DataSet,
+    ls_TransformationTracks <- purrr::map2(.x = DataSet,
                                            .y = ls_MonitorMetaData,
                                            .f = function(DataFrame, MonitorMetaData)
                                                 {
@@ -653,7 +502,7 @@ if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
                                                     else { return(data.frame()) }
                                                 })
 
-    ls_ValueCounts_Raw <- purrr::map2(.x = ls_DataSet,
+    ls_ValueCounts_Raw <- purrr::map2(.x = DataSet,
                                       .y = ls_MonitorMetaData,
                                       .f = function(DataFrame, MonitorMetaData)
                                            {
@@ -667,7 +516,7 @@ if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
                                                           Count_Raw = Frequency)
                                            })
 } else {
-    stop("Internal error: Object names in ls_DataSet and ls_MonitorMetaData must be identical and in the same order.")
+    stop("Internal error: Object names in DataSet and ls_MonitorMetaData must be identical and in the same order.")
 }
 
 try(ProgressBar$tick())
@@ -681,8 +530,8 @@ try(ProgressBar$tick())
 #   - Direct value replacement using hash tables defined in rule set
 #-------------------------------------------------------------------------------
 
-ls_DataSet <- purrr::map2(.x = ls_DataSet,
-                          .y = names(ls_DataSet),
+DataSet <- purrr::map2(.x = DataSet,
+                          .y = names(DataSet),
                           .f = function(DataFrame, TableName)
                                {
                                    DataFrame %>%
@@ -700,11 +549,11 @@ ls_DataSet <- purrr::map2(.x = ls_DataSet,
 # Map raw values to their harmonized state to get transformation tracks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Check if object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
-if (all(names(ls_TransformationTracks) == names(ls_DataSet)) & all(names(ls_DataSet) == names(ls_MonitorMetaData)))
+# Check if object names in ls_TransformationTracks, DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
+if (all(names(ls_TransformationTracks) == names(DataSet)) & all(names(DataSet) == names(ls_MonitorMetaData)))
 {
     ls_TransformationTracks <- purrr::pmap(.l = list(ls_TransformationTracks,
-                                                     ls_DataSet,
+                                                     DataSet,
                                                      ls_MonitorMetaData),
                                            .f = function(TransformationTracks, HarmonizedDataFrame, MonitorMetaData)
                                                 {
@@ -722,17 +571,17 @@ if (all(names(ls_TransformationTracks) == names(ls_DataSet)) & all(names(ls_Data
                                                      else { return(data.frame()) }
                                                 })
 } else {
-    stop("Internal error: Object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData must be identical and in the same order.")
+    stop("Internal error: Object names in ls_TransformationTracks, DataSet and ls_MonitorMetaData must be identical and in the same order.")
 }
 
 
 # Get counts of all distinct values in harmonized data sets
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Check if object names in ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
-if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
+# Check if object names in DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
+if (all(names(DataSet) == names(ls_MonitorMetaData)))
 {
-    ls_ValueCounts_Harmonized <- map2(.x = ls_DataSet,
+    ls_ValueCounts_Harmonized <- map2(.x = DataSet,
                                       .y = ls_MonitorMetaData,
                                       .f = function(DataFrame, MonitorMetaData)
                                            {
@@ -746,7 +595,7 @@ if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
                                                          Count_Harmonized = Frequency)
                                            })
 } else {
-    stop("Internal error: Object names in ls_DataSet and ls_MonitorMetaData must be identical and in the same order.")
+    stop("Internal error: Object names in DataSet and ls_MonitorMetaData must be identical and in the same order.")
 }
 
 
@@ -765,7 +614,7 @@ try(ProgressBar$tick())
 
 # Recoding df_BioSampling
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_BioSampling <- ls_DataSet$BioSampling %>%
+df_BioSampling <- DataSet$BioSampling %>%
                       #--- Recoding --------------------------------------------
                       mutate(Aliquot = dsCCPhos::RecodeData(Aliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Aliquot"),
                                                                           set_names(Value_Curated, Value_Raw))),
@@ -783,7 +632,7 @@ df_BioSampling <- ls_DataSet$BioSampling %>%
 
 # Recoding df_Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Diagnosis <- ls_DataSet$Diagnosis %>%
+df_Diagnosis <- DataSet$Diagnosis %>%
                     #--- Recoding ------------------------------------------
                     mutate(LocalizationSide = dsCCPhos::RecodeData(LocalizationSide, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "LocalizationSide"),
                                                                                           set_names(Value_Curated, Value_Raw))),
@@ -798,7 +647,7 @@ df_Diagnosis <- ls_DataSet$Diagnosis %>%
 
 # Recoding df_GeneralCondition
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_GeneralCondition <- ls_DataSet$GeneralCondition %>%
+df_GeneralCondition <- DataSet$GeneralCondition %>%
                             #--- Recoding ------------------------------------------
                             mutate(ECOG = dsCCPhos::RecodeData(ECOG, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "GeneralCondition" & Feature == "ECOG"),
                                                                           set_names(Value_Curated, Value_Raw)))) %>%
@@ -810,7 +659,7 @@ df_GeneralCondition <- ls_DataSet$GeneralCondition %>%
 
 # Recoding df_Histology
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Histology <- ls_DataSet$Histology %>%
+df_Histology <- DataSet$Histology %>%
                     #--- Recoding ------------------------------------------
                     mutate(Grading = dsCCPhos::RecodeData(Grading, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Histology" & Feature == "Grading"),
                                                                         set_names(Value_Curated, Value_Raw)))) %>%
@@ -822,7 +671,7 @@ df_Histology <- ls_DataSet$Histology %>%
 
 # Recoding df_Metastasis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Metastasis <- ls_DataSet$Metastasis %>%
+df_Metastasis <- DataSet$Metastasis %>%
                       #--- Recoding ------------------------------------------
                       mutate(Localization = dsCCPhos::RecodeData(Localization, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Metastasis" & Feature == "Localization"),
                                                                                     set_names(Value_Curated, Value_Raw)))) %>%
@@ -835,7 +684,7 @@ df_Metastasis <- ls_DataSet$Metastasis %>%
 
 # Recoding df_MolecularDiagnostics
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_MolecularDiagnostics <- ls_DataSet$MolecularDiagnostics %>%
+df_MolecularDiagnostics <- DataSet$MolecularDiagnostics %>%
                                 #--- Formatting ----------------------------
                                 mutate(MolecularDiagnosticsDate = format(as_datetime(MolecularDiagnosticsDate), format = "%Y-%m-%d"))
                                 #--- Update PB ---
@@ -844,7 +693,7 @@ df_MolecularDiagnostics <- ls_DataSet$MolecularDiagnostics %>%
 
 # Recoding df_OtherClassfication
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_OtherClassification <- ls_DataSet$OtherClassification %>%
+df_OtherClassification <- DataSet$OtherClassification %>%
                               #--- Formatting ----------------------------
                               mutate(OtherClassificationDate = format(as_datetime(OtherClassificationDate), format = "%Y-%m-%d"))
                               #--- Update PB ---
@@ -853,7 +702,7 @@ df_OtherClassification <- ls_DataSet$OtherClassification %>%
 
 # Recoding df_Patient
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Patient <- ls_DataSet$Patient %>%
+df_Patient <- DataSet$Patient %>%
                   #--- Recoding ------------------------------------------
                   mutate(Gender = dsCCPhos::RecodeData(Gender, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "Gender"),
                                                                     set_names(Value_Curated, Value_Raw))),
@@ -867,7 +716,7 @@ df_Patient <- ls_DataSet$Patient %>%
 
 # Recoding df_Progress
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Progress <- ls_DataSet$Progress %>%
+df_Progress <- DataSet$Progress %>%
                     #--- Recoding ------------------------------------------
                     mutate(GlobalStatus = dsCCPhos::RecodeData(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus"),
                                                                                   set_names(Value_Curated, Value_Raw))),
@@ -886,7 +735,7 @@ df_Progress <- ls_DataSet$Progress %>%
 
 # Recoding df_RadiationTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_RadiationTherapy <- ls_DataSet$RadiationTherapy %>%
+df_RadiationTherapy <- DataSet$RadiationTherapy %>%
                             #--- Recoding ----------------------------------
                             mutate(RelationToSurgery = dsCCPhos::RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RelationToSurgery"),
                                                                                                     set_names(Value_Curated, Value_Raw))),
@@ -905,7 +754,7 @@ df_RadiationTherapy <- ls_DataSet$RadiationTherapy %>%
 
 # Recoding df_Staging
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Staging <- ls_DataSet$Staging %>%
+df_Staging <- DataSet$Staging %>%
                   #--- Recoding --------------------------------------------
                   mutate(UICCStage = dsCCPhos::RecodeData(UICCStage, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "UICCStage"),
                                                                           set_names(Value_Curated, Value_Raw))),
@@ -929,7 +778,7 @@ df_Staging <- ls_DataSet$Staging %>%
 
 # Recoding df_Surgery
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Surgery <- ls_DataSet$Surgery %>%
+df_Surgery <- DataSet$Surgery %>%
                   #--- Recoding --------------------------------------------
                   mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "Intention"),
                                                                           set_names(Value_Curated, Value_Raw))),
@@ -945,7 +794,7 @@ df_Surgery <- ls_DataSet$Surgery %>%
 
 # Recoding df_SystemicTherapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_SystemicTherapy <- ls_DataSet$SystemicTherapy %>%
+df_SystemicTherapy <- DataSet$SystemicTherapy %>%
                           #--- Recoding ------------------------------------
                           mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "Intention"),
                                                                                   set_names(Value_Curated, Value_Raw))),
@@ -964,7 +813,7 @@ df_SystemicTherapy <- ls_DataSet$SystemicTherapy %>%
 
 # Recoding df_TherapyRecommendation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_TherapyRecommendation <- ls_DataSet$TherapyRecommendation %>%
+df_TherapyRecommendation <- DataSet$TherapyRecommendation %>%
                                 #--- Formatting ----------------------------
                                 mutate(TherapyRecommendationDate = format(as_datetime(TherapyRecommendationDate), format = "%Y-%m-%d"))
                                 #--- Update PB ---
@@ -980,7 +829,7 @@ df_TherapyRecommendation <- ls_DataSet$TherapyRecommendation %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
 #-------------------------------------------------------------------------------
-ls_DataSet <- list(BioSampling = df_BioSampling,
+DataSet <- list(BioSampling = df_BioSampling,
                    Diagnosis = df_Diagnosis,
                    GeneralCondition = df_GeneralCondition,
                    Histology = df_Histology,
@@ -1001,11 +850,11 @@ ls_DataSet <- list(BioSampling = df_BioSampling,
 # Map raw values to their recoded state to get transformation tracks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Check if object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
-if (all(names(ls_TransformationTracks) == names(ls_DataSet)) & all(names(ls_DataSet) == names(ls_MonitorMetaData)))
+# Check if object names in ls_TransformationTracks, DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
+if (all(names(ls_TransformationTracks) == names(DataSet)) & all(names(DataSet) == names(ls_MonitorMetaData)))
 {
     ls_TransformationTracks <- purrr::pmap(.l = list(ls_TransformationTracks,
-                                                     ls_DataSet,
+                                                     DataSet,
                                                      ls_MonitorMetaData),
                                            .f = function(TransformationTracks, RecodedDataFrame, MonitorMetaData)
                                                 {
@@ -1024,17 +873,17 @@ if (all(names(ls_TransformationTracks) == names(ls_DataSet)) & all(names(ls_Data
                                                      else { return(data.frame()) }
                                                 })
 } else {
-    stop("Internal error: Object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData must be identical and in the same order.")
+    stop("Internal error: Object names in ls_TransformationTracks, DataSet and ls_MonitorMetaData must be identical and in the same order.")
 }
 
 
 # Get counts of all distinct values in recoded data sets
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Check if object names in ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
-if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
+# Check if object names in DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
+if (all(names(DataSet) == names(ls_MonitorMetaData)))
 {
-    ls_ValueCounts_Recoded <- map2(.x = ls_DataSet,
+    ls_ValueCounts_Recoded <- map2(.x = DataSet,
                                    .y = ls_MonitorMetaData,
                                    .f = function(DataFrame, MonitorMetaData)
                                         {
@@ -1048,7 +897,7 @@ if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
                                                       Count_Recoded = Frequency)
                                         })
 } else {
-    stop("Internal error: Object names in ls_DataSet and ls_MonitorMetaData must be identical and in the same order.")
+    stop("Internal error: Object names in DataSet and ls_MonitorMetaData must be identical and in the same order.")
 }
 
 
@@ -1188,7 +1037,7 @@ df_TherapyRecommendation <- df_TherapyRecommendation %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
 #-------------------------------------------------------------------------------
-ls_DataSet <- list(BioSampling = df_BioSampling,
+DataSet <- list(BioSampling = df_BioSampling,
                    Diagnosis = df_Diagnosis,
                    GeneralCondition = df_GeneralCondition,
                    Histology = df_Histology,
@@ -1209,11 +1058,11 @@ ls_DataSet <- list(BioSampling = df_BioSampling,
 # Map raw values to their finalized state to get transformation tracks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Check if object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
-if (all(names(ls_TransformationTracks) == names(ls_DataSet)) & all(names(ls_DataSet) == names(ls_MonitorMetaData)))
+# Check if object names in ls_TransformationTracks, DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
+if (all(names(ls_TransformationTracks) == names(DataSet)) & all(names(DataSet) == names(ls_MonitorMetaData)))
 {
     ls_TransformationTracks <- purrr::pmap(.l = list(ls_TransformationTracks,
-                                                     ls_DataSet,
+                                                     DataSet,
                                                      ls_MonitorMetaData),
                                            .f = function(TransformationTrack, FinalizedDataFrame, MonitorMetaData)
                                                 {
@@ -1232,17 +1081,17 @@ if (all(names(ls_TransformationTracks) == names(ls_DataSet)) & all(names(ls_Data
                                                      else { return(data.frame()) }
                                                 })
 } else {
-    stop("Internal error: Object names in ls_TransformationTracks, ls_DataSet and ls_MonitorMetaData must be identical and in the same order.")
+    stop("Internal error: Object names in ls_TransformationTracks, DataSet and ls_MonitorMetaData must be identical and in the same order.")
 }
 
 
 # Get counts of all distinct values in finalized data sets
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Check if object names in ls_DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
-if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
+# Check if object names in DataSet and ls_MonitorMetaData are identical to avoid incorrect mapping
+if (all(names(DataSet) == names(ls_MonitorMetaData)))
 {
-    ls_ValueCounts_Final <- map2(.x = ls_DataSet,
+    ls_ValueCounts_Final <- map2(.x = DataSet,
                                  .y = ls_MonitorMetaData,
                                  .f = function(DataFrame, MonitorMetaData)
                                       {
@@ -1256,7 +1105,7 @@ if (all(names(ls_DataSet) == names(ls_MonitorMetaData)))
                                                      Count_Final = Frequency)
                                       })
 } else {
-    stop("Internal error: Object names in ls_DataSet and ls_MonitorMetaData must be identical and in the same order.")
+    stop("Internal error: Object names in DataSet and ls_MonitorMetaData must be identical and in the same order.")
 }
 
 
@@ -1847,7 +1696,7 @@ if (nrow(df_OtherClassification) > 0)
                                     relocate(c(PatientID, DiagnosisID), .before = OtherClassificationID)
 }
 
-df_ProgressW <- df_Progress %>%
+df_Progress <- df_Progress %>%
                     ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
                     relocate(c(PatientID, DiagnosisID), .before = ProgressID)
 
@@ -1909,7 +1758,7 @@ ls_CuratedDataSet <- list(BioSampling = as.data.frame(df_BioSampling),
 # Define content of CurationReport
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_CurationReport <- list(UnlinkedEntries = CountUnlinkedEntries,      # Named vector
+ls_CurationReport <- list(IneligibleEntries = CountIneligibleEntries,      # Named vector
                           Transformation = list(Monitors = ls_TransformationMonitors,      # List of lists
                                                 EligibilityOverviews = ls_EligibilityOverviews,
                                                 ValueSetOverviews = ls_ValueSetOverviews),
