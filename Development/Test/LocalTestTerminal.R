@@ -85,16 +85,16 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 # Check Tables for existence and completeness
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TableCheck <- CheckRDSTablesDS("RawDataSet")
+# TableCheck <- CheckRDSTablesDS("RawDataSet")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Validate Raw Data Set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RDSValidationReport <- GetRDSValidationReportDS("RawDataSet")
+# RDSValidationReport <- GetRDSValidationReportDS("RawDataSet")
 
-summary(RDSValidationReport$RDS_BioSampling)
+# summary(RDSValidationReport$RDS_BioSampling)
 
 
 
@@ -102,8 +102,8 @@ summary(RDSValidationReport$RDS_BioSampling)
 # OPTIONAL: Draw sample from Raw Data Set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RawDataSet <- DrawSampleDS(RawDataSetName.S = "RawDataSet",
-                           SampleSize.S = "1000")
+# RawDataSet <- DrawSampleDS(RawDataSetName.S = "RawDataSet",
+#                            SampleSize.S = "1000")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -115,19 +115,19 @@ CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
                                          RuleProfile_DiagnosisAssociation.S = "Default")
 
 
-CurationOutput$CurationReport$UnlinkedEntries
-View(CurationOutput$CurationReport$Transformation$Monitors$Staging)
-View(CurationOutput$CurationReport$Transformation$EligibilityOverviews$Staging)
-View(CurationOutput$CurationReport$Transformation$ValueSetOverviews$Staging$Harmonized)
+# CurationOutput$CurationReport$UnlinkedEntries
+# View(CurationOutput$CurationReport$Transformation$Monitors$Staging)
+# View(CurationOutput$CurationReport$Transformation$EligibilityOverviews$Staging)
+# View(CurationOutput$CurationReport$Transformation$ValueSetOverviews$Staging$Harmonized)
 
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Augment data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CuratedDataSet <- CurationOutput$CuratedDataSet
 
-View(CuratedDataSet$Patient)
-
-
-# Augment data
 AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 
 ADS <- AugmentationOutput$AugmentedDataSet
