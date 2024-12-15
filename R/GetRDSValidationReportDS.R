@@ -49,8 +49,8 @@ RawDataSet <- RawDataSet %>%
                        {
                           # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
                           name <- str_remove(name, "RDS_")   # Remove "RDS_" prefix from table names
-                          vc_Lookup <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Raw
-                          names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == name)$FeatureName_Curated
+                          vc_Lookup <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Raw
+                          names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Curated
 
                           if (!is_empty(dataframe))
                           {
@@ -71,9 +71,9 @@ ValidationRules <- names(RawDataSet) %>%
                               # Get table feature names from meta data
                               tablename <- str_remove(tablename, "RDS_")   # Remove "RDS_" prefix from table names
                               # Raw feature names
-                              vc_FeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == tablename)$FeatureName_Raw
+                              vc_FeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Raw
                               # Corresponding curated feature names (used for ensured compatibility with R naming rules)
-                              names(vc_FeatureNames) <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == tablename)$FeatureName_Curated
+                              names(vc_FeatureNames) <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Curated
 
                               # Validation rules: data type
                               Rules_DataType <- names(vc_FeatureNames) %>%
