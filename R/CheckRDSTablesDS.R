@@ -42,10 +42,10 @@ require(stringr)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Create template of info about all required RDS tables ("assume as empty/missing")
-TableCheckTemplate <- dsCCPhos::Meta_TableNames$TableName_Curated %>%
+TableCheckTemplate <- dsCCPhos::Meta_Tables$TableName_Curated %>%
                           map(function(tablename)
                               {
-                                  RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == tablename)$FeatureName_Raw
+                                  RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Raw
 
                                   FeatureExistence <- tibble(FeatureName = RequiredFeatureNames) %>%
                                                           mutate(Exists = FALSE)
@@ -57,7 +57,7 @@ TableCheckTemplate <- dsCCPhos::Meta_TableNames$TableName_Curated %>%
                                               FeatureExistence = FeatureExistence,
                                               MissingFeatures = MissingFeatures))
                               }) %>%
-                          set_names(paste0("RDS_", dsCCPhos::Meta_TableNames$TableName_Curated))
+                          set_names(paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated))
 
 
 # Go through available data frames in RawDataSet and check for feature completeness
@@ -66,7 +66,7 @@ TableCheckExisting <- RawDataSet %>%
                                {
                                   if (!is_empty(Table))
                                   {
-                                      RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_FeatureNames, TableName_Curated == str_remove(name, "RDS_"))$FeatureName_Raw
+                                      RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == str_remove(name, "RDS_"))$FeatureName_Raw
                                       PresentFeatureNames <- names(Table)
 
                                       FeatureExistence <- tibble(FeatureName = RequiredFeatureNames) %>%

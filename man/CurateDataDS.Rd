@@ -38,7 +38,7 @@ A list containing the following objects:
 \item Surgery
 \item SystemicTherapy}
 \item CurationReport (list)
-\itemize{\item UnlinkedEntries (named vector)
+\itemize{\item IneligibleEntries (named vector)
 \item Transformation (list of data frames)
 \itemize{\item BioSampling
 \item Diagnosis
