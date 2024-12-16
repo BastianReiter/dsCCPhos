@@ -257,7 +257,7 @@ if (nrow(df_CDS_BioSampling) > 0)
                                              EventRankWithinSubclass = row_number(),
                                              EventOrderSignificance = case_when(row_number() == 1 ~ "First Sample Taking",
                                                                                 row_number() == n() ~ "Last Sample Taking",
-                                                                                TRUE ~ NA)) %>%
+                                                                                TRUE ~ NA_character_)) %>%
                                       nest(EventDetails = c(Aliquot,
                                                             Type,
                                                             Status,
@@ -286,7 +286,7 @@ df_Events_Histology <- df_CDS_Histology %>%
                                        EventRankWithinSubclass = row_number(),
                                        EventOrderSignificance = case_when(row_number() == 1 ~ "First Histology",
                                                                           row_number() == n() ~ "Last Histology",
-                                                                          TRUE ~ NA)) %>%
+                                                                          TRUE ~ NA_character_)) %>%
                                 nest(EventDetails = c(ICDOMorphologyCode,
                                                       ICDOMorphologyVersion,
                                                       Grading,
@@ -313,7 +313,7 @@ df_Events_Metastasis <- df_CDS_Metastasis %>%
                                        EventRankWithinSubclass = row_number(),
                                        EventOrderSignificance = case_when(row_number() == 1 ~ "First Metastasis Diagnosis",
                                                                           row_number() == n() ~ "Last Metastasis Diagnosis",
-                                                                          TRUE ~ NA)) %>%
+                                                                          TRUE ~ NA_character_)) %>%
                                 nest(EventDetails = c(HasMetastasis,
                                                       Localization)) %>%
                             ungroup() %>%
@@ -342,7 +342,7 @@ if (nrow(df_CDS_MolecularDiagnostics) > 0)
                                                      EventRankWithinSubclass = row_number(),
                                                      EventOrderSignificance = case_when(row_number() == 1 ~ "First Molecular Diagnostics",
                                                                                         row_number() == n() ~ "Last Molecular Diagnostics",
-                                                                                        TRUE ~ NA)) %>%
+                                                                                        TRUE ~ NA_character_)) %>%
                                               nest(EventDetails = c(MolecularMarker,
                                                                     MolecularMarkerStatus,
                                                                     Documentation)) %>%
@@ -369,7 +369,7 @@ df_Events_Progress <- df_CDS_Progress %>%
                                      EventRankWithinSubclass = row_number(),
                                      EventOrderSignificance = case_when(row_number() == 1 ~ "First Progress Report",
                                                                         row_number() == n() ~ "Last Progress Report",
-                                                                        TRUE ~ NA)) %>%
+                                                                        TRUE ~ NA_character_)) %>%
                               nest(EventDetails = (c(GlobalStatus,
                                                      PrimarySiteStatus,
                                                      LymphnodalStatus,
@@ -397,7 +397,7 @@ df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
                                              EventRankWithinSubclass = row_number(),
                                              EventOrderSignificance = case_when(row_number() == 1 ~ "First Radiation Period",
                                                                                 row_number() == n() ~ "Last Radiation Period",
-                                                                                TRUE ~ NA)) %>%
+                                                                                TRUE ~ NA_character_)) %>%
                                       nest(EventDetails = c(Intention,
                                                             RelationToSurgery)) %>%
                                   ungroup() %>%
@@ -422,7 +422,7 @@ df_Events_Staging <- df_CDS_Staging %>%
                                      EventRankWithinSubclass = row_number(),
                                      EventOrderSignificance = case_when(row_number() == 1 ~ "First Staging",
                                                                         row_number() == n() ~ "Last Staging",
-                                                                        TRUE ~ NA)) %>%
+                                                                        TRUE ~ NA_character_)) %>%
                               nest(EventDetails = (c(UICCStage,
                                                      TNM_T_Prefix,
                                                      TNM_T,
@@ -460,7 +460,7 @@ df_Events_Surgery <- df_CDS_Surgery %>%
                                      EventRankWithinSubclass = row_number(),
                                      EventOrderSignificance = case_when(row_number() == 1 ~ "First Surgery",
                                                                         row_number() == n() ~ "Last Surgery",
-                                                                        TRUE ~ NA)) %>%
+                                                                        TRUE ~ NA_character_)) %>%
                               nest(EventDetails = (c(Intention,
                                                      OPSCode,
                                                      ResidualAssessmentLocal,
@@ -488,7 +488,7 @@ df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
                                              EventRankWithinSubclass = row_number(),
                                              EventOrderSignificance = case_when(row_number() == 1 ~ "First in Systemic Therapy Subclass",
                                                                                 row_number() == n() ~ "Last in Systemic Therapy Subclass",
-                                                                                TRUE ~ NA)) %>%
+                                                                                TRUE ~ NA_character_)) %>%
                                       nest(EventDetails = c(Intention,
                                                             Substances,
                                                             RelationToSurgery)) %>%
@@ -593,7 +593,15 @@ df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
                             group_by(DiagnosisID) %>%
                                 arrange(DiagnosisDate) %>%
                                 slice_head() %>%
-                            ungroup()
+                            ungroup() %>%
+                            mutate(UICCStageCategory = case_match(UICCStage,
+                                                                  c("0", "0is", "0a") ~ "0",
+                                                                  c("I", "IA", "IA1", "IA2", "IA3", "IB", "IB1", "IB2", "IC", "IS") ~ "I",
+                                                                  c("II", "IIA", "IIA1", "IIA2", "IIB", "IIC") ~ "II",
+                                                                  c("III", "IIIA", "IIIB", "IIIC", "IIIC1", "IIIC2", "IIID") ~ "III",
+                                                                  c("IV", "IVA", "IVB", "IVC") ~ "IV",
+                                                                  .default = NA_character_),
+                                                       .after = UICCStage)
                             #--- Update PB ---
                             try(ProgressBar$tick())
 
