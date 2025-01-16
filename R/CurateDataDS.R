@@ -5,33 +5,38 @@
 #'
 #' Server-side ASSIGN method
 #'
-#' @param RawDataSetName.S String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
-#' @param RuleSet_RawDataHarmonization.S Data frame
-#' @param RuleProfile_RawDataHarmonization.S String | Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{\link{RuleSet_RawDataHarmonization.S}. | Default: 'Default'
-#' @param RuleSet_DiagnosisRedundancy.S Data frame
-#' @param RuleProfile_DiagnosisRedundancy.S String | Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{\link{RuleSet_DiagnosisRedundancy.S}. | Default: 'Default'
-#' @param RuleSet_DiagnosisAssociation.S Data frame
-#' @param RuleProfile_DiagnosisAssociation.S String | Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{\link{RuleSet_DiagnosisAssociation.S}. | Default: 'Default'
+#' @param RawDataSetName.S \code{character} | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
+#' @param RuleSet_RawDataHarmonization.S \code{data.frame}
+#' @param RuleProfile_RawDataHarmonization.S \code{character} | Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{\link{RuleSet_RawDataHarmonization.S}. | Default: 'Default'
+#' @param PerformDiagnosisRedundancyCheck.S \code{logical}
+#' @param RuleSet_DiagnosisRedundancy.S \code{data.frame}
+#' @param RuleProfile_DiagnosisRedundancy.S \code{character} | Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{\link{RuleSet_DiagnosisRedundancy.S}. | Default: 'Default'
+#' @param PerformDiagnosisAssociationCheck.S \code{logical}
+#' @param RuleSet_DiagnosisAssociation.S \code{data.frame}
+#' @param RuleProfile_DiagnosisAssociation.S \code{character} | Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{\link{RuleSet_DiagnosisAssociation.S}. | Default: 'Default'
 #'
 #' @return A list containing the following objects:
 #'         \itemize{\item CuratedDataSet (list)
 #'                      \itemize{\item BioSampling
 #'                               \item Diagnosis
+#'                               \item GeneralCondition
 #'                               \item Histology
 #'                               \item Metastasis
 #'                               \item MolecularDiagnostics
+#'                               \item OtherClassification
 #'                               \item Patient
 #'                               \item Progress
 #'                               \item RadiationTherapy
 #'                               \item Staging
 #'                               \item Surgery
-#'                               \item SystemicTherapy}
+#'                               \item SystemicTherapy
+#'                               \item TherapyRecommendation}
 #'                  \item CurationReport (list)
 #'                      \itemize{\item IneligibleEntries (named vector)
-#'                               \item Transformation (list of data frames)
-#'                                    \itemize{\item BioSampling
-#'                                             \item Diagnosis
-#'                                             \item ...}
+#'                               \item Transformation (list of lists)
+#'                                    \itemize{\item Monitors
+#'                                             \item EligibilityOverviews
+#'                                             \item ValueSetOverviews}
 #'                               \item DiagnosisClassification (named vector)}
 #'                  \item CurationMessages (list)}
 #' @export
@@ -39,8 +44,10 @@
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                          RuleSet_RawDataHarmonization.S = dsCCPhos::RuleSet_RawDataHarmonization,
                          RuleProfile_RawDataHarmonization.S = "Default",
+                         PerformDiagnosisRedundancyCheck.S = TRUE,
                          RuleSet_DiagnosisRedundancy.S = dsCCPhos::RuleSet_DiagnosisRedundancy,
                          RuleProfile_DiagnosisRedundancy.S = "Default",
+                         PerformDiagnosisAssociationCheck.S = TRUE,
                          RuleSet_DiagnosisAssociation.S = dsCCPhos::RuleSet_DiagnosisAssociation,
                          RuleProfile_DiagnosisAssociation.S = "Default")
 {
@@ -129,8 +136,10 @@ Messages$FinalMessage <- "Curation not completed"
 # For testing purposes
 # RuleSet_RawDataHarmonization.S <- dsCCPhos::RuleSet_RawDataHarmonization
 # RuleProfile_RawDataHarmonization.S <- "Default"
+# PerformDiagnosisRedundancyCheck.S <- TRUE
 # RuleSet_DiagnosisRedundancy.S <- dsCCPhos::RuleSet_DiagnosisRedundancy
 # RuleProfile_DiagnosisRedundancy.S <- "Default"
+# PerformDiagnosisAssociationCheck.S <- TRUE
 # RuleSet_DiagnosisAssociation.S <- dsCCPhos::RuleSet_DiagnosisAssociation
 # RuleProfile_DiagnosisAssociation.S <- "Default"
 
@@ -275,51 +284,52 @@ DataSetRoot <- DataSet$Patient %>%
                     distinct()
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # - Loop through whole DataSet to only keep entries that belong to eligible 'root'
 # - Remove entries that have missing values in obligatory features (defined in meta data)
 # - Remove duplicate entries
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#-------------------------------------------------------------------------------
 DataSet <- DataSet %>%
-                  imap(function(dataframe, name)
-                       {
-                          if (!(is.null(dataframe) | length(dataframe) == 0))
-                          {
-                              # Get current table's set of obligatory features (if defined) from meta data
-                              ObligatoryFeatures <- dsCCPhos::Meta_Features %>%
-                                                        filter(TableName_Curated == name, IsObligatory == TRUE) %>%
-                                                        pull(FeatureName_Curated)
+                imap(function(Table, tablename)
+                     {
+                        try(ProgressBar$tick())
 
-                              # Get each tables primary key feature (ID column), necessary for identification of duplicate entries
-                              IDFeature <- dsCCPhos::Meta_Features %>%
-                                                filter(TableName_Curated == name, IsPrimaryKey == TRUE) %>%
-                                                pull(FeatureName_Curated)
+                        if (!(is.null(Table) | length(Table) == 0 | nrow(Table) == 0))
+                        {
+                            # Get current table's set of obligatory features (if defined) from meta data
+                            ObligatoryFeatures <- dsCCPhos::Meta_Features %>%
+                                                      filter(TableName_Curated == tablename, IsObligatory == TRUE) %>%
+                                                      pull(FeatureName_Curated)
 
-                              if (name %in% c("BioSampling", "GeneralCondition", "Patient", "TherapyRecommendation"))
-                              {
-                                  CleanTable <- DataSetRoot %>%
-                                                    select(PatientID) %>%
-                                                    distinct() %>%
-                                                    left_join(dataframe, by = join_by(PatientID)) %>%
-                                                    filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%
-                                                    distinct(across(-all_of(IDFeature)), .keep_all = TRUE)
-                              }
-                              else
-                              {
-                                  CleanTable <- DataSetRoot %>%
-                                                    left_join(dataframe, by = join_by(PatientID, DiagnosisID)) %>%
-                                                    filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%
-                                                    distinct(across(-all_of(IDFeature)), .keep_all = TRUE)
-                              }
+                            # Get each tables primary key feature (ID column), necessary for identification of duplicate entries
+                            IDFeature <- dsCCPhos::Meta_Features %>%
+                                              filter(TableName_Curated == tablename, IsPrimaryKey == TRUE) %>%
+                                              pull(FeatureName_Curated)
 
-                              return(CleanTable)
-                          }
-                          else
-                          {
-                              return(dataframe)
-                          }
+                            if (tablename %in% c("BioSampling", "GeneralCondition", "Patient", "TherapyRecommendation"))
+                            {
+                                CleanTable <- DataSetRoot %>%
+                                                  select(PatientID) %>%
+                                                  distinct() %>%
+                                                  left_join(Table, by = join_by(PatientID)) %>%
+                                                  filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%
+                                                  distinct(across(-all_of(IDFeature)), .keep_all = TRUE)
+                            }
+                            else
+                            {
+                                CleanTable <- DataSetRoot %>%
+                                                  left_join(Table, by = join_by(PatientID, DiagnosisID)) %>%
+                                                  filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%
+                                                  distinct(across(-all_of(IDFeature)), .keep_all = TRUE)
+                            }
 
-                          try(ProgressBar$tick())
-                       })
+                            return(CleanTable)
+                        }
+                        else
+                        {
+                            return(Table)
+                        }
+                     })
 
 try(ProgressBar$terminate())
 
@@ -1038,21 +1048,21 @@ df_TherapyRecommendation <- df_TherapyRecommendation %>%
 #   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
 #-------------------------------------------------------------------------------
 DataSet <- list(BioSampling = df_BioSampling,
-                   Diagnosis = df_Diagnosis,
-                   GeneralCondition = df_GeneralCondition,
-                   Histology = df_Histology,
-                   Metastasis = df_Metastasis,
-                   MolecularDiagnostics = df_MolecularDiagnostics,
-                   OtherClassification = df_OtherClassification,
-                   Patient = df_Patient,
-                   Progress = df_Progress,
-                   RadiationTherapy = df_RadiationTherapy,
-                   Staging = df_Staging,
-                   Surgery = df_Surgery,
-                   SystemicTherapy = df_SystemicTherapy,
-                   TherapyRecommendation = df_TherapyRecommendation)
-                   #--- Update PB ---
-                   try(ProgressBar$tick())
+                Diagnosis = df_Diagnosis,
+                GeneralCondition = df_GeneralCondition,
+                Histology = df_Histology,
+                Metastasis = df_Metastasis,
+                MolecularDiagnostics = df_MolecularDiagnostics,
+                OtherClassification = df_OtherClassification,
+                Patient = df_Patient,
+                Progress = df_Progress,
+                RadiationTherapy = df_RadiationTherapy,
+                Staging = df_Staging,
+                Surgery = df_Surgery,
+                SystemicTherapy = df_SystemicTherapy,
+                TherapyRecommendation = df_TherapyRecommendation)
+                #--- Update PB ---
+                try(ProgressBar$tick())
 
 
 # Map raw values to their finalized state to get transformation tracks
@@ -1213,11 +1223,11 @@ ls_TransformationMonitors <- purrr::pmap(.l = list(ls_TransformationTracks_Summa
                                                            left_join(ValueCountsHarmonized, by = c("Feature", "Value_Harmonized")) %>%
                                                            left_join(ValueCountsRecoded, by = c("Feature", "Value_Recoded")) %>%
                                                            left_join(ValueCountsFinal, by = c("Feature", "Value_Final")) %>%
-                                                           mutate(Count_Harmonized = case_when(IsOccurring == FALSE ~ NA,
+                                                           mutate(Count_Harmonized = case_when(IsOccurring == FALSE ~ NA_integer_,
                                                                                                TRUE ~ Count_Harmonized),
-                                                                  Count_Recoded = case_when(IsOccurring == FALSE ~ NA,
+                                                                  Count_Recoded = case_when(IsOccurring == FALSE ~ NA_integer_,
                                                                                             TRUE ~ Count_Recoded),
-                                                                  Count_Final = case_when(IsOccurring == FALSE ~ NA,
+                                                                  Count_Final = case_when(IsOccurring == FALSE ~ NA_integer_,
                                                                                           TRUE ~ Count_Final)) %>%
                                                            arrange(Feature,
                                                                    desc(IsOccurring),
@@ -1396,7 +1406,7 @@ df_Diagnosis <- df_Diagnosis %>%
 
 
 
-# Module 4 B) Classification and removal of redundant entries
+# Module 4 B) Classification and removal of redundant diagnosis entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - In patients with multiple diagnosis entries:
 #     Use dsCCPhos-function ClassifyDiagnosisRedundancy() to identify and consolidate redundant diagnosis entries
@@ -1404,23 +1414,14 @@ df_Diagnosis <- df_Diagnosis %>%
 #   - Replace redundant DiagnosisIDs in all related tables
 #-------------------------------------------------------------------------------
 
+if (PerformDiagnosisRedundancyCheck.S == TRUE)
+{
 
 # Compile rule calls from data in RuleSet_DiagnosisRedundancy.S using dsCCPhos::CompileClassificationCall
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Names of features that are required to compile rule calls from RuleSet_DiagnosisRedundancy.S
-PredictorFeatures_DiagnosisRedundancy = c("CountDeviatingValues",
-                                          "DiagnosisDate",
-                                          "ICD10Code",
-                                          "ICDOTopographyCode",
-                                          "LocalizationSide",
-                                          "HistologyDate",
-                                          "ICDOMorphologyCode",
-                                          "Grading")
-
 # Pass required information to dsCCPhos::CompileClassificationCall to compile rule calls (dplyr::case_when-Statements)
 Call_IsLikelyRedundant <- CompileClassificationCall(TargetFeature = "IsLikelyRedundant",
-                                                    PredictorFeatures = PredictorFeatures_DiagnosisRedundancy,
                                                     RuleSet = RuleSet_DiagnosisRedundancy.S,
                                                     RuleProfile = RuleProfile_DiagnosisRedundancy.S,
                                                     ValueIfNoRuleMet = FALSE)
@@ -1507,6 +1508,22 @@ df_Diagnosis <-  df_Diagnosis %>%
                                 RedundantOriginalIDs,
                                 CountRedundancies))
 
+} else {   # In case no diagnosis redundancy check was performed
+
+    df_Diagnosis <- df_Diagnosis %>%
+                        mutate(PatientCountDistinctEntries = PatientCountInitialEntries)
+
+    CountDiagnosisRedundancies <- NA
+    CountPatientsWithDiagnosisRedundancies <- NA
+
+    # Print warning message if Diagnosis Redundancy Check was skipped
+    Message <- "Diagnosis Redundancy Check was skipped!"
+    cli::cat_bullet(Message, bullet = "warning")
+
+    # Save message in output object
+    Messages$DiagnosisRedundancies <- Message
+}
+
 
 
 # Module 4 C) Classify associations between diagnosis entries
@@ -1517,75 +1534,58 @@ df_Diagnosis <-  df_Diagnosis %>%
 #   - Replace DiagnosisIDs in all related tables with ReferenceDiagnosisID
 #-------------------------------------------------------------------------------
 
-# Names of features that are required to compile rule calls from RuleSet_DiagnosisAssociation.S
-PredictorFeatures_DiagnosisAssociation <- c("ICD10Code",
-                                            "ICD10CodeShort",
-                                            "ICD10Group",
-                                            "ICDOTopographyCode",
-                                            "ICDOTopographyCodeShort",
-                                            "LocalizationSide",
-                                            "ICDOMorphologyCode",
-                                            "ICDOMorphologyCodeShort",
-                                            "Grading")
+if (PerformDiagnosisAssociationCheck.S == TRUE)
+{
+
 
 # Compile rule calls (unevaluated dplyr::case_when-Statements) with dsCCPhos::CompileClassificationCall
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Call_IsLikelyAssociated <- CompileClassificationCall(TargetFeature = "IsLikelyAssociated",
-                                                     PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                      RuleSet = RuleSet_DiagnosisAssociation.S,
                                                      RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                      ValueIfNoRuleMet = FALSE)
 
 Call_InconsistencyCheck <- CompileClassificationCall(TargetFeature = "InconsistencyCheck",
-                                                     PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                      RuleSet = RuleSet_DiagnosisAssociation.S,
                                                      RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                      ValueIfNoRuleMet = "No apparent inconsistency")
 
 Call_ImplausibilityCheck <- CompileClassificationCall(TargetFeature = "ImplausibilityCheck",
-                                                      PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                       RuleSet = RuleSet_DiagnosisAssociation.S,
                                                       RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                       ValueIfNoRuleMet = "No apparent implausibility")
 
 Call_Relation_ICD10 <- CompileClassificationCall(TargetFeature = "Relation_ICD10",
-                                                 PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                  RuleSet = RuleSet_DiagnosisAssociation.S,
                                                  RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                  ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_ICDOTopography <- CompileClassificationCall(TargetFeature = "Relation_ICDOTopography",
-                                                          PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                           RuleSet = RuleSet_DiagnosisAssociation.S,
                                                           RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                           ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_LocalizationSide <- CompileClassificationCall(TargetFeature = "Relation_LocalizationSide",
-                                                            PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                             RuleSet = RuleSet_DiagnosisAssociation.S,
                                                             RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                             ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_ICDOMorphology <- CompileClassificationCall(TargetFeature = "Relation_ICDOMorphology",
-                                                            PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                             RuleSet = RuleSet_DiagnosisAssociation.S,
                                                             RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                             ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_Grading <- CompileClassificationCall(TargetFeature = "Relation_Grading",
-                                                   PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                    RuleSet = RuleSet_DiagnosisAssociation.S,
                                                    RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                    ValueIfNoRuleMet = NA_character_)
 
 Call_IsLikelyProgression <- CompileClassificationCall(TargetFeature = "IsLikelyProgression",
-                                                      PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                       RuleSet = RuleSet_DiagnosisAssociation.S,
                                                       RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                       ValueIfNoRuleMet = NA)
 
 Call_IsLikelyRecoding <- CompileClassificationCall(TargetFeature = "IsLikelyRecoding",
-                                                   PredictorFeatures = PredictorFeatures_DiagnosisAssociation,
                                                    RuleSet = RuleSet_DiagnosisAssociation.S,
                                                    RuleProfile = RuleProfile_DiagnosisAssociation.S,
                                                    ValueIfNoRuleMet = NA)
@@ -1716,6 +1716,19 @@ df_SystemicTherapy <- df_SystemicTherapy %>%
                           ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
                           relocate(c(PatientID, DiagnosisID), .before = SystemicTherapyID)
 
+} else {
+
+    CountDiagnosisAssociations <- NA
+    CountPatientsWithDiagnosisAssociations <- NA
+
+    # Print warning message if Diagnosis Association Check was skipped
+    Message <- "Diagnosis Association Check was skipped!"
+    cli::cat_bullet(Message, bullet = "warning")
+
+    # Save message in output object
+    Messages$DiagnosisAssociation <- Message
+}
+
 
 
 # Module 4 D) Reconstruct df_Histology from df_Diagnosis
@@ -1725,10 +1738,18 @@ df_SystemicTherapy <- df_SystemicTherapy %>%
 df_Diagnosis <-  df_Diagnosis %>%
                       select(-OriginalDiagnosisID)
 
-# Reconstruct df_Histology
-df_Histology <- df_Diagnosis %>%
-                    select(all_of(c("SubDiagnosisID", names(df_Histology)))) %>%
-                    relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = HistologyID)
+if (PerformDiagnosisAssociationCheck.S == TRUE)
+{
+    # Reconstruct df_Histology
+    df_Histology <- df_Diagnosis %>%
+                        select(all_of(c("SubDiagnosisID", names(df_Histology)))) %>%
+                        relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = HistologyID)
+} else {
+
+    df_Histology <- df_Diagnosis %>%
+                        select(all_of(names(df_Histology))) %>%
+                        mutate(SubDiagnosisID = DiagnosisID, .after = DiagnosisID)
+}
 
 
 

@@ -111,7 +111,9 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
                                          RuleProfile_RawDataHarmonization.S = "Default",
+                                         PerformDiagnosisRedundancyCheck = TRUE,
                                          RuleProfile_DiagnosisRedundancy.S = "Default",
+                                         PerformDiagnosisAssociationCheck = TRUE,
                                          RuleProfile_DiagnosisAssociation.S = "Default")
 
 
@@ -126,9 +128,9 @@ CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
 # Augment data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-CuratedDataSet <- CurationOutput$CuratedDataSet
+CDS <- CurationOutput$CuratedDataSet
 
-AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
+AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CDS")
 
 ADS <- AugmentationOutput$AugmentedDataSet
 

@@ -56,8 +56,7 @@ use_data(RuleSet_RawDataHarmonization, overwrite = TRUE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 RuleSet_DiagnosisAssociation <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                           sheet = "DiagnosisAssociation",
-                                           skip = 2)
+                                           sheet = "DiagnosisAssociation")
 
 # Save data in .rda-file and make it part of package
 use_data(RuleSet_DiagnosisAssociation, overwrite = TRUE)
@@ -69,8 +68,7 @@ use_data(RuleSet_DiagnosisAssociation, overwrite = TRUE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 RuleSet_DiagnosisRedundancy <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                          sheet = "DiagnosisRedundancy",
-                                          skip = 2)
+                                          sheet = "DiagnosisRedundancy")
 
 # Save data in .rda-file and make it part of package
 use_data(RuleSet_DiagnosisRedundancy, overwrite = TRUE)

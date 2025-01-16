@@ -44,7 +44,7 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet")
 
 if (is.character(CuratedDataSetName.S))
 {
-    CuratedDataSet <- eval(parse(text = CuratedDataSetName.S), envir = parent.frame())
+    CDS <- eval(parse(text = CuratedDataSetName.S), envir = parent.frame())
 }
 else
 {
@@ -83,17 +83,18 @@ Messages$FinalMessage <- "Augmentation not completed"
 
 
 # Extract data frames from list
-df_CDS_BioSampling <- CuratedDataSet$BioSampling
-df_CDS_Diagnosis <- CuratedDataSet$Diagnosis
-df_CDS_Histology <- CuratedDataSet$Histology
-df_CDS_Metastasis <- CuratedDataSet$Metastasis
-df_CDS_MolecularDiagnostics <- CuratedDataSet$MolecularDiagnostics
-df_CDS_Patient <- CuratedDataSet$Patient
-df_CDS_Progress <- CuratedDataSet$Progress
-df_CDS_RadiationTherapy <- CuratedDataSet$RadiationTherapy
-df_CDS_Staging <- CuratedDataSet$Staging
-df_CDS_Surgery <- CuratedDataSet$Surgery
-df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
+# df_CDS_BioSampling <- CuratedDataSet$BioSampling
+# df_CDS_Diagnosis <- CuratedDataSet$Diagnosis
+# df_CDS_Histology <- CuratedDataSet$Histology
+# df_CDS_Metastasis <- CuratedDataSet$Metastasis
+# df_CDS_MolecularDiagnostics <- CuratedDataSet$MolecularDiagnostics
+# df_CDS_Patient <- CuratedDataSet$Patient
+# df_CDS_Progress <- CuratedDataSet$Progress
+# df_CDS_RadiationTherapy <- CuratedDataSet$RadiationTherapy
+# df_CDS_Staging <- CuratedDataSet$Staging
+# df_CDS_Surgery <- CuratedDataSet$Surgery
+# df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,55 +126,60 @@ df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
 # Processing of CDS tables
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-df_CDS_SystemicTherapy <- df_CDS_SystemicTherapy %>%
-                              mutate(SystemicTherapySubclass = case_when((IsChemotherapy == TRUE
-                                                                            & IsHormoneTherapy == FALSE
-                                                                            & IsImmunotherapy == FALSE
-                                                                            & IsBoneMarrowTransplant == FALSE) ~ "Chemotherapy Mono",
-                                                                          (IsChemotherapy == FALSE
-                                                                            & IsHormoneTherapy == TRUE
-                                                                            & IsImmunotherapy == FALSE
-                                                                            & IsBoneMarrowTransplant == FALSE) ~ "Hormone Therapy Mono",
-                                                                          (IsChemotherapy == FALSE
-                                                                            & IsHormoneTherapy == FALSE
-                                                                            & IsImmunotherapy == TRUE
-                                                                            & IsBoneMarrowTransplant == FALSE) ~ "Immunotherapy Mono",
-                                                                          (IsChemotherapy == FALSE
-                                                                            & IsHormoneTherapy == FALSE
-                                                                            & IsImmunotherapy == FALSE
-                                                                            & IsBoneMarrowTransplant == TRUE) ~ "Bone Marrow Transplant",
-                                                                          (IsChemotherapy == TRUE
-                                                                            & IsHormoneTherapy == TRUE
-                                                                            & IsImmunotherapy == FALSE
-                                                                            & IsBoneMarrowTransplant == FALSE) ~ "Chemo/Hormone Combination",
-                                                                          (IsChemotherapy == TRUE
-                                                                            & IsHormoneTherapy == FALSE
-                                                                            & IsImmunotherapy == TRUE
-                                                                            & IsBoneMarrowTransplant == FALSE) ~ "Chemo/Immuno Combination",
-                                                                          (IsChemotherapy == TRUE
-                                                                            & IsHormoneTherapy == FALSE
-                                                                            & IsImmunotherapy == FALSE
-                                                                            & IsBoneMarrowTransplant == TRUE) ~ "Chemo and BMT",
-                                                                          (IsChemotherapy == FALSE
-                                                                            & IsHormoneTherapy == TRUE
-                                                                            & IsImmunotherapy == TRUE
-                                                                            & IsBoneMarrowTransplant == FALSE) ~ "Hormone/Immuno Combination",
-                                                                          (IsChemotherapy == TRUE
-                                                                            & IsHormoneTherapy == TRUE
-                                                                            & IsImmunotherapy == TRUE
-                                                                            & IsBoneMarrowTransplant == FALSE) ~ "Chemo/Hormone/Immuno Combination",
-                                                                          IsObservantStrategy == TRUE ~ "Observant Strategy",
-                                                                          TRUE ~ "Other"))
+# Deprecated
+
+# CDS$SystemicTherapy <- CDS$SystemicTherapy %>%
+#                               mutate(SystemicTherapySubclass = case_when((IsChemotherapy == TRUE
+#                                                                             & IsHormoneTherapy == FALSE
+#                                                                             & IsImmunotherapy == FALSE
+#                                                                             & IsBoneMarrowTransplant == FALSE) ~ "Chemotherapy Mono",
+#                                                                           (IsChemotherapy == FALSE
+#                                                                             & IsHormoneTherapy == TRUE
+#                                                                             & IsImmunotherapy == FALSE
+#                                                                             & IsBoneMarrowTransplant == FALSE) ~ "Hormone Therapy Mono",
+#                                                                           (IsChemotherapy == FALSE
+#                                                                             & IsHormoneTherapy == FALSE
+#                                                                             & IsImmunotherapy == TRUE
+#                                                                             & IsBoneMarrowTransplant == FALSE) ~ "Immunotherapy Mono",
+#                                                                           (IsChemotherapy == FALSE
+#                                                                             & IsHormoneTherapy == FALSE
+#                                                                             & IsImmunotherapy == FALSE
+#                                                                             & IsBoneMarrowTransplant == TRUE) ~ "Bone Marrow Transplant",
+#                                                                           (IsChemotherapy == TRUE
+#                                                                             & IsHormoneTherapy == TRUE
+#                                                                             & IsImmunotherapy == FALSE
+#                                                                             & IsBoneMarrowTransplant == FALSE) ~ "Chemo/Hormone Combination",
+#                                                                           (IsChemotherapy == TRUE
+#                                                                             & IsHormoneTherapy == FALSE
+#                                                                             & IsImmunotherapy == TRUE
+#                                                                             & IsBoneMarrowTransplant == FALSE) ~ "Chemo/Immuno Combination",
+#                                                                           (IsChemotherapy == TRUE
+#                                                                             & IsHormoneTherapy == FALSE
+#                                                                             & IsImmunotherapy == FALSE
+#                                                                             & IsBoneMarrowTransplant == TRUE) ~ "Chemo and BMT",
+#                                                                           (IsChemotherapy == FALSE
+#                                                                             & IsHormoneTherapy == TRUE
+#                                                                             & IsImmunotherapy == TRUE
+#                                                                             & IsBoneMarrowTransplant == FALSE) ~ "Hormone/Immuno Combination",
+#                                                                           (IsChemotherapy == TRUE
+#                                                                             & IsHormoneTherapy == TRUE
+#                                                                             & IsImmunotherapy == TRUE
+#                                                                             & IsBoneMarrowTransplant == FALSE) ~ "Chemo/Hormone/Immuno Combination",
+#                                                                           IsObservantStrategy == TRUE ~ "Observant Strategy",
+#                                                                           TRUE ~ "Other"))
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MODULE 1)  Generate df_ADS_Events
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Initiation
+#   - Loop through CDS tables and generate event data
+#-------------------------------------------------------------------------------
 
 
 #--- Set up progress bar -------------------------------------------------------
-CountProgressItems <- 14
+CountProgressItems <- 17
 ProgressBar <- progress_bar$new(format = "Generating diagnosis-related events [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width = 100)
 try(ProgressBar$tick())
@@ -185,8 +191,8 @@ try(ProgressBar$tick())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Initiation 1: Initial diagnosis event
-df_ADS_Events <- df_CDS_Patient %>%
-                      right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
+df_ADS_Events <- CDS$Patient %>%
+                      right_join(CDS$Diagnosis, join_by(PatientID)) %>%
                       filter(IsReferenceEntry == TRUE) %>%
                       group_by(PatientID, DiagnosisID) %>%
                           mutate(EventType = "Point",
@@ -211,8 +217,8 @@ df_ADS_Events <- df_CDS_Patient %>%
 
 
 # Initiation 2: Last known vital status
-df_Events_LastVitalStatus <- df_CDS_Patient %>%
-                                  right_join(df_CDS_Diagnosis, join_by(PatientID)) %>%
+df_Events_LastVitalStatus <- CDS$Patient %>%
+                                  right_join(CDS$Diagnosis, join_by(PatientID)) %>%
                                   filter(IsReferenceEntry == TRUE) %>%
                                   group_by(PatientID, DiagnosisID) %>%
                                       mutate(EventType = "Point",
@@ -240,279 +246,181 @@ try(ProgressBar$tick())
 
 
 
-# Transform BioSampling data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_BioSampling <- NULL
-
-if (nrow(df_CDS_BioSampling) > 0)
-{
-    df_Events_BioSampling <- df_CDS_BioSampling %>%
-                                  group_by(PatientID) %>%
-                                      arrange(BioSamplingDate, .by_group = TRUE) %>%
-                                      mutate(EventType = "Point",
-                                             EventDate = BioSamplingDate,
-                                             EventDateIsAdjusted = FALSE,
-                                             EventClass = "Diagnostics",
-                                             EventSubclass = "Sample Taking",
-                                             EventRankWithinSubclass = row_number(),
-                                             EventOrderSignificance = case_when(row_number() == 1 ~ "First Sample Taking",
-                                                                                row_number() == n() ~ "Last Sample Taking",
-                                                                                TRUE ~ NA_character_)) %>%
-                                      nest(EventDetails = c(Aliquot,
-                                                            Type,
-                                                            Status,
-                                                            Quantity,
-                                                            Unit,
-                                                            ProjectName)) %>%
-                                  ungroup() %>%
-                                  select(PatientID,
-                                         starts_with("Event"))
-}
-#--- Update PB ---
-try(ProgressBar$tick())
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Loop through CDS tables to generate event data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-
-# Transform Histology data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Histology <- df_CDS_Histology %>%
-                            group_by(PatientID, DiagnosisID) %>%
-                                arrange(HistologyDate, HistologyID, .by_group = TRUE) %>%
-                                mutate(EventType = "Point",
-                                       EventDate = HistologyDate,
-                                       EventDateIsAdjusted = FALSE,
-                                       EventClass = "Diagnostics",
-                                       EventSubclass = "Histology",
-                                       EventRankWithinSubclass = row_number(),
-                                       EventOrderSignificance = case_when(row_number() == 1 ~ "First Histology",
-                                                                          row_number() == n() ~ "Last Histology",
-                                                                          TRUE ~ NA_character_)) %>%
-                                nest(EventDetails = c(ICDOMorphologyCode,
-                                                      ICDOMorphologyVersion,
-                                                      Grading,
-                                                      ICDOMorphologyComment)) %>%
-                            ungroup() %>%
-                            select(PatientID,
-                                   DiagnosisID,
-                                   starts_with("Event"))
-                            #--- Update PB ---
-                            try(ProgressBar$tick())
-
-
-
-# Transform Metastasis data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Metastasis <- df_CDS_Metastasis %>%
-                            group_by(PatientID, DiagnosisID) %>%
-                                arrange(MetastasisDate, MetastasisID, .by_group = TRUE) %>%
-                                mutate(EventType = "Point",
-                                       EventDate = MetastasisDate,
-                                       EventDateIsAdjusted = FALSE,
-                                       EventClass = "Diagnosis",
-                                       EventSubclass = "Metastasis",
-                                       EventRankWithinSubclass = row_number(),
-                                       EventOrderSignificance = case_when(row_number() == 1 ~ "First Metastasis Diagnosis",
-                                                                          row_number() == n() ~ "Last Metastasis Diagnosis",
-                                                                          TRUE ~ NA_character_)) %>%
-                                nest(EventDetails = c(HasMetastasis,
-                                                      Localization)) %>%
-                            ungroup() %>%
-                            select(PatientID,
-                                   DiagnosisID,
-                                   starts_with("Event"))
-                            #--- Update PB ---
-                            try(ProgressBar$tick())
-
-
-
-# Transform MolecularDiagnostics data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_MolecularDiagnostics <- NULL
-
-if (nrow(df_CDS_MolecularDiagnostics) > 0)
-{
-    df_Events_MolecularDiagnostics <- df_CDS_MolecularDiagnostics %>%
-                                          group_by(PatientID, DiagnosisID) %>%
-                                              arrange(MolecularDiagnosticsDate, .by_group = TRUE) %>%
-                                              mutate(EventType = "Point",
-                                                     EventDate = MolecularDiagnosticsDate,
-                                                     EventDateIsAdjusted = FALSE,
-                                                     EventClass = "Diagnostics",
-                                                     EventSubclass = "Molecular Diagnostics",
-                                                     EventRankWithinSubclass = row_number(),
-                                                     EventOrderSignificance = case_when(row_number() == 1 ~ "First Molecular Diagnostics",
-                                                                                        row_number() == n() ~ "Last Molecular Diagnostics",
-                                                                                        TRUE ~ NA_character_)) %>%
-                                              nest(EventDetails = c(MolecularMarker,
-                                                                    MolecularMarkerStatus,
-                                                                    Documentation)) %>%
-                                          ungroup() %>%
-                                          select(PatientID,
-                                                 DiagnosisID,
-                                                 starts_with("Event"))
-}
-#--- Update PB ---
-try(ProgressBar$tick())
-
-
-
-# Transform Progress data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Progress <- df_CDS_Progress %>%
-                          group_by(PatientID, DiagnosisID) %>%
-                              arrange(ProgressDate, .by_group = TRUE) %>%
-                              mutate(EventType = "Point",
-                                     EventDate = ProgressDate,
-                                     EventDateIsAdjusted = FALSE,
-                                     EventClass = "Diagnosis",
-                                     EventSubclass = "Progress",
-                                     EventRankWithinSubclass = row_number(),
-                                     EventOrderSignificance = case_when(row_number() == 1 ~ "First Progress Report",
-                                                                        row_number() == n() ~ "Last Progress Report",
-                                                                        TRUE ~ NA_character_)) %>%
-                              nest(EventDetails = (c(GlobalStatus,
-                                                     PrimarySiteStatus,
-                                                     LymphnodalStatus,
-                                                     MetastasisStatus))) %>%
-                          ungroup() %>%
-                          select(PatientID,
-                                 DiagnosisID,
-                                 starts_with("Event"))
-                          #--- Update PB ---
+EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # Deselect tables 'Patient' and 'Diagnosis' from CDS
+                  imap(function(Table, tablename)
+                       {
                           try(ProgressBar$tick())
 
+                          GroupingFeature <- NULL
+                          DateFeature <- NULL
+                          EndDateFeature <- NULL
+                          Val_EventType <- NA
+                          Val_EventClass <- NA
+                          Val_EventSubclass <- NA
+                          EventDetailsFeatures <- NULL
+
+                          if (tablename == "BioSampling")
+                          {
+                              GroupingFeature <- "PatientID"
+                              DateFeature <- "BioSamplingDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Diagnostics"
+                              Val_EventSubclass <- "Sample Taking"
+                              EventDetailsFeatures <- c("Aliquot",
+                                                        "Type",
+                                                        "Status",
+                                                        "Quantity",
+                                                        "Unit",
+                                                        "ProjectName")
+                          }
+                          if (tablename == "Histology")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "HistologyDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Diagnostics"
+                              Val_EventSubclass <- "Histology"
+                              EventDetailsFeatures = c("ICDOMorphologyCode",
+                                                       "ICDOMorphologyVersion",
+                                                       "Grading",
+                                                       "ICDOMorphologyComment")
+                          }
+                          if (tablename == "Metastasis")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "MetastasisDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Diagnosis"
+                              Val_EventSubclass <- "Metastasis"
+                              EventDetailsFeatures = c("HasMetastasis",
+                                                       "Localization")
+                          }
+                          if (tablename == "MolecularDiagnostics")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "MolecularDiagnosticsDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Diagnostics"
+                              Val_EventSubclass <- "Molecular Diagnostics"
+                              EventDetailsFeatures = c("MolecularMarker",
+                                                       "MolecularMarkerStatus",
+                                                       "Documentation")
+                          }
+                          if (tablename == "Progress")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "ProgressDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Diagnosis"
+                              Val_EventSubclass <- "Progress"
+                              EventDetailsFeatures = c("GlobalStatus",
+                                                       "PrimarySiteStatus",
+                                                       "LymphnodalStatus",
+                                                       "MetastasisStatus")
+                          }
+                          if (tablename == "RadiationTherapy")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "RadiationTherapyStartDate"
+                              EndDateFeature <- "RadiationTherapyEndDate"
+                              Val_EventType <- "Period"
+                              Val_EventClass <- "Therapy"
+                              Val_EventSubclass <- "Radiation Therapy"
+                              EventDetailsFeatures = c("Intention",
+                                                       "RelationToSurgery")
+                          }
+                          if (tablename == "Staging")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "StagingDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Diagnosis"
+                              Val_EventSubclass <- "Staging"
+                              EventDetailsFeatures = c("UICCStage",
+                                                       "TNM_T_Prefix",
+                                                       "TNM_T",
+                                                       "TNM_N_Prefix",
+                                                       "TNM_N",
+                                                       "TNM_M_Prefix",
+                                                       "TNM_M",
+                                                       "TNM_mSymbol",
+                                                       "TNM_rSymbol",
+                                                       "TNM_ySymbol",
+                                                       "TNMVersion",
+                                                       "TNM_L",
+                                                       "TNM_V",
+                                                       "TNM_Pn",
+                                                       "TNM_S")
+                          }
+                          if (tablename == "Surgery")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "SurgeryDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Therapy"
+                              Val_EventSubclass <- "Surgery"
+                              EventDetailsFeatures = c("Intention",
+                                                       "OPSCode",
+                                                       "ResidualAssessmentLocal",
+                                                       "ResidualAssessmentTotal")
+                          }
+                          if (tablename == "SystemicTherapy")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "SystemicTherapyStartDate"
+                              EndDateFeature <- "SystemicTherapyEndDate"
+                              Val_EventType <- "Period"
+                              Val_EventClass <- "Therapy"
+                              Val_EventSubclass <- "SystemicTherapy"
+                              EventDetailsFeatures = c("Intention",
+                                                       "Substances",
+                                                       "RelationToSurgery")
+                          }
 
 
-# Transform RadiationTherapy data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_RadiationTherapy <- df_CDS_RadiationTherapy %>%
-                                  group_by(PatientID, DiagnosisID) %>%
-                                      arrange(RadiationTherapyStartDate, .by_group = TRUE) %>%
-                                      mutate(EventType = "Period",
-                                             EventDate = RadiationTherapyStartDate,
-                                             EventDateEnd = RadiationTherapyEndDate,
-                                             EventDateIsAdjusted = FALSE,
-                                             EventClass = "Therapy",
-                                             EventSubclass = "Radiation Therapy",
-                                             EventRankWithinSubclass = row_number(),
-                                             EventOrderSignificance = case_when(row_number() == 1 ~ "First Radiation Period",
-                                                                                row_number() == n() ~ "Last Radiation Period",
-                                                                                TRUE ~ NA_character_)) %>%
-                                      nest(EventDetails = c(Intention,
-                                                            RelationToSurgery)) %>%
-                                  ungroup() %>%
-                                  select(PatientID,
-                                         DiagnosisID,
-                                         starts_with("Event"))
-                                  #--- Update PB ---
-                                  try(ProgressBar$tick())
 
+                          if (!(is.null(Table) | length(Table) == 0 | nrow(Table) == 0))
+                          {
+                              if (length(GroupingFeature) == 1) { TableEventData <- Table %>% group_by(PatientID) }
+                              else { TableEventData <- Table %>% group_by(PatientID, DiagnosisID) }
 
+                              TableEventData <- TableEventData %>%
+                                                        arrange(!!sym(DateFeature), .by_group = TRUE) %>%
+                                                        mutate(EventType = Val_EventType,
+                                                               EventDate = !!sym(DateFeature),
+                                                               EventDateIsAdjusted = FALSE,      # In case event date is adjusted later for plausibility reasons
+                                                               EventClass = Val_EventClass,
+                                                               EventSubclass = Val_EventSubclass,
+                                                               EventRankWithinSubclass = row_number(),
+                                                               EventOrderSignificance = case_when(row_number() == 1 ~ paste("First", Val_EventSubclass),
+                                                                                                  row_number() == n() ~ paste("Last", Val_EventSubclass),
+                                                                                                  TRUE ~ NA_character_)) %>%
+                                                        { if (!is.null(EndDateFeature))
+                                                          { mutate(., EventDateEnd = !!sym(EndDateFeature), .after = EventDate) }      # For events of type "Period"
+                                                          else {.}
+                                                        } %>%
+                                                        nest(EventDetails = all_of(EventDetailsFeatures)) %>%
+                                                    ungroup() %>%
+                                                    select(all_of(GroupingFeature),
+                                                           starts_with("Event"))
+                              return(TableEventData)
+                          }
+                          else { return(NULL) }
 
-# Transform Staging data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Staging <- df_CDS_Staging %>%
-                          group_by(PatientID, DiagnosisID) %>%
-                              arrange(StagingDate, .by_group = TRUE) %>%
-                              mutate(EventType = "Point",
-                                     EventDate = StagingDate,
-                                     EventDateIsAdjusted = FALSE,
-                                     EventClass = "Diagnosis",
-                                     EventSubclass = "Staging",
-                                     EventRankWithinSubclass = row_number(),
-                                     EventOrderSignificance = case_when(row_number() == 1 ~ "First Staging",
-                                                                        row_number() == n() ~ "Last Staging",
-                                                                        TRUE ~ NA_character_)) %>%
-                              nest(EventDetails = (c(UICCStage,
-                                                     TNM_T_Prefix,
-                                                     TNM_T,
-                                                     TNM_N_Prefix,
-                                                     TNM_N,
-                                                     TNM_M_Prefix,
-                                                     TNM_M,
-                                                     TNM_mSymbol,
-                                                     TNM_rSymbol,
-                                                     TNM_ySymbol,
-                                                     TNMVersion,
-                                                     TNM_L,
-                                                     TNM_V,
-                                                     TNM_Pn,
-                                                     TNM_S))) %>%
-                          ungroup() %>%
-                          select(PatientID,
-                                 DiagnosisID,
-                                 starts_with("Event"))
-                          #--- Update PB ---
-                          try(ProgressBar$tick())
-
-
-
-# Transform Surgery data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_Surgery <- df_CDS_Surgery %>%
-                          group_by(PatientID, DiagnosisID) %>%
-                              arrange(SurgeryDate, SurgeryID, .by_group = TRUE) %>%
-                              mutate(EventType = "Point",
-                                     EventDate = SurgeryDate,
-                                     EventDateIsAdjusted = FALSE,
-                                     EventClass = "Therapy",
-                                     EventSubclass = "Surgery",
-                                     EventRankWithinSubclass = row_number(),
-                                     EventOrderSignificance = case_when(row_number() == 1 ~ "First Surgery",
-                                                                        row_number() == n() ~ "Last Surgery",
-                                                                        TRUE ~ NA_character_)) %>%
-                              nest(EventDetails = (c(Intention,
-                                                     OPSCode,
-                                                     ResidualAssessmentLocal,
-                                                     ResidualAssessmentTotal))) %>%
-                          ungroup() %>%
-                          select(PatientID,
-                                 DiagnosisID,
-                                 starts_with("Event"))
-                          #--- Update PB ---
-                          try(ProgressBar$tick())
-
-
-
-# Transform SystemicTherapy data into Event-oriented data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Events_SystemicTherapy <- df_CDS_SystemicTherapy %>%
-                                  group_by(PatientID, DiagnosisID, SystemicTherapySubclass) %>%
-                                      arrange(SystemicTherapyStartDate, .by_group = TRUE) %>%
-                                      mutate(EventType = "Period",
-                                             EventDate = SystemicTherapyStartDate,
-                                             EventDateEnd = SystemicTherapyEndDate,
-                                             EventDateIsAdjusted = FALSE,
-                                             EventClass = "Therapy",
-                                             EventSubclass = SystemicTherapySubclass,
-                                             EventRankWithinSubclass = row_number(),
-                                             EventOrderSignificance = case_when(row_number() == 1 ~ "First in Systemic Therapy Subclass",
-                                                                                row_number() == n() ~ "Last in Systemic Therapy Subclass",
-                                                                                TRUE ~ NA_character_)) %>%
-                                      nest(EventDetails = c(Intention,
-                                                            Substances,
-                                                            RelationToSurgery)) %>%
-                                  ungroup() %>%
-                                  select(PatientID,
-                                         DiagnosisID,
-                                         starts_with("Event"))
-                                  #--- Update PB ---
-                                  try(ProgressBar$tick())
+                       }) %>%
+                  list_rbind()
 
 
 
 # Consolidate Event-oriented data from CDS tables
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 df_ADS_Events <- df_ADS_Events %>%
-                      bind_rows(df_Events_BioSampling,
-                                df_Events_Histology,
-                                df_Events_Metastasis,
-                                df_Events_MolecularDiagnostics,
-                                df_Events_Progress,
-                                df_Events_RadiationTherapy,
-                                df_Events_Staging,
-                                df_Events_Surgery,
-                                df_Events_SystemicTherapy) %>%
+                      bind_rows(EventData) %>%
                       group_by(PatientID) %>%
                           fill(DateOfBirth,
                                .direction = "downup") %>%
@@ -570,12 +478,10 @@ try(ProgressBar$terminate())
 
 
 #--- Set up progress bar -------------------------------------------------------
-CountProgressItems <- 4
-ProgressBar <- progress_bar$new(format = "Composing diagnosis-specific data [:bar] :percent in :elapsed  :spin",
-                                total = CountProgressItems, clear = FALSE, width = 100)
-try(ProgressBar$tick())
-#-------------------------------------------------------------------------------
-
+# CountProgressItems <- df_ADS_Events %>% pull(DiagnosisID) %>% n_distinct()
+# ProgressBar <- progress_bar$new(format = "Summarizing event data [:bar] :percent in :elapsed  :spin",
+#                                 total = CountProgressItems, clear = FALSE, width= 100)
+# #-------------------------------------------------------------------------------
 
 # Summarize diagnosis-specific event data using dsCCPhos::SummarizeEventData()
 df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
@@ -584,12 +490,12 @@ df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
                                           group_modify(~ SummarizeEventData(EventEntries = .x,
                                                                             ProgressBarObject = NULL)) %>%
                                       ungroup()
-                                      #--- Update PB ---
-                                      try(ProgressBar$tick())
 
 
-df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
-                            left_join(df_CDS_Staging, by = join_by(PatientID, DiagnosisID), relationship = "many-to-many") %>%
+
+
+df_Aux_DiagnosisData <- CDS$Diagnosis %>%
+                            left_join(CDS$Staging, by = join_by(PatientID, DiagnosisID), relationship = "many-to-many") %>%
                             group_by(DiagnosisID) %>%
                                 arrange(DiagnosisDate) %>%
                                 slice_head() %>%
@@ -603,7 +509,7 @@ df_Aux_DiagnosisData <- df_CDS_Diagnosis %>%
                                                                   .default = NA_character_),
                                                        .after = UICCStage)
                             #--- Update PB ---
-                            try(ProgressBar$tick())
+                            # try(ProgressBar$tick())
 
 
 df_ADS_Diagnoses <- df_Aux_DiagnosisData %>%
@@ -611,10 +517,9 @@ df_ADS_Diagnoses <- df_Aux_DiagnosisData %>%
                         #filter(is.na(TimeDiagnosisToDeath) | TimeDiagnosisToDeath >= 0) %>%
                         ungroup()
                         #--- Update PB ---
-                        try(ProgressBar$tick())
+                        # try(ProgressBar$tick())
 
-#--- Terminate PB ---
-try(ProgressBar$terminate())
+
 
 
 
@@ -660,7 +565,7 @@ try(ProgressBar$tick())
 
 
 
-df_Aux_PatientSummary_Diagnosis <- df_CDS_Diagnosis %>%
+df_Aux_PatientSummary_Diagnosis <- CDS$Diagnosis %>%
                                         group_by(PatientID) %>%
                                             summarize(CountDiagnoses = n_distinct(DiagnosisID)) %>%
                                         ungroup()
@@ -670,7 +575,7 @@ df_Aux_PatientSummary_Diagnosis <- df_CDS_Diagnosis %>%
 
 
 # !!! TEMPORARY !!! (For easier testing, slice is performed to filter for only one diagnosis per patient)
-df_ADS_Patients <- df_CDS_Patient %>%
+df_ADS_Patients <- CDS$Patient %>%
                         left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID)) %>%
                         left_join(df_ADS_Diagnoses, by = join_by(PatientID)) %>%      # <--- TEMPORARY: Joining with ADS_Diagnoses
                         group_by(PatientID) %>%
