@@ -70,8 +70,9 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
     if (nrow(Candidates) == 0)      # In case the input data frame consists of one single diagnosis entry the loop below will not be executed, therefore the Output is simply the one diagnosis entry
     {
         Output <- Reference
-    } else
-    {
+
+    } else {
+
         # Loop through all remaining "unassociated" diagnoses, as long as there are still candidates that are likely redundant with reference
         while (nrow(Candidates) > 0)
         {

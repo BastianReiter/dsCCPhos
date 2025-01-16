@@ -26,7 +26,7 @@ ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
 
 
     # For function testing purposes
-    # DiagnosisEntries <- df_Diagnosis %>% filter(PatientID == "Pat_15294")
+    # DiagnosisEntries <- df_Diagnosis %>% filter(PatientID == "Pat_10010")
     # RuleCalls <- RuleCalls_DiagnosisAssociation
     # RulesProfile = "Default"
     # print(DiagnosisEntries$DiagnosisID[1])
