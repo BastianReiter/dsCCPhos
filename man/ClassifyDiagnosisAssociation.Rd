@@ -11,12 +11,14 @@ ClassifyDiagnosisAssociation(
 )
 }
 \arguments{
-\item{DiagnosisEntries}{Data frame (partially curated) that contains multiple diagnosis entries}
+\item{DiagnosisEntries}{\code{data.frame} containing multiple diagnosis entries}
 
-\item{ProgressBarObject}{Optionally pass object of type progress::progress_bar to display progress}
+\item{RuleCalls}{\code{list} - Unevaluated \code{dplyr::case_when}-Statements compiled from rules defined in \code{RuleSet_DiagnosisAssociation}}
+
+\item{ProgressBarObject}{\code{progress::progress_bar} object - Optionally pass progress bar object to display progress}
 }
 \value{
-Data frame enhanced with classified diagnosis associations
+\code{data.frame} enhanced with classified diagnosis associations
 }
 \description{
 Auxiliary function within \code{\link{CurateDataDS}}

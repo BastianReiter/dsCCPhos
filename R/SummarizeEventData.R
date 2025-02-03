@@ -20,9 +20,9 @@ SummarizeEventData <- function(EventEntries,
 
 
     # For function testing purposes
-    # EventEntries <- df_ADS_Events %>%
-    #                     filter(PatientID == "Pat_105431") %>%
-    #                     unnest(cols = c(EventDetails), keep_empty = TRUE)
+    EventEntries <- df_ADS_Events %>%
+                        filter(PatientID == "Pat_2063") %>%
+                        unnest(cols = c(EventDetails), keep_empty = TRUE)
 
 
 
@@ -36,12 +36,14 @@ SummarizeEventData <- function(EventEntries,
                             #---------------------------------------------------
                             TimeDiagnosisToDeath = ifelse("Deceased" %in% EventEntries$EventSubclass,
                                                           EventDaysSinceDiagnosis[EventSubclass == "Deceased"],
-                                                          NA),
+                                                          NA_integer_),
                             TimeFollowUp = case_when(!is.na(TimeDiagnosisToDeath) ~ TimeDiagnosisToDeath,
                                                      !all(is.na(EventDaysSinceDiagnosis)) ~ max(EventDaysSinceDiagnosis, na.rm = TRUE),
-                                                     TRUE ~ NA),
+                                                     TRUE ~ NA_integer_),
                             IsDocumentedDeceased = case_when(!is.na(TimeDiagnosisToDeath) ~ TRUE,
-                                                             .default = FALSE))
+                                                             TRUE ~ FALSE))
+                            #---------------------------------------------------
+                            #IsLikelyCancerProgression = case_when(GlobalStatus %in% c("D", "P") |))
 
 
     return(as.data.frame(Output))

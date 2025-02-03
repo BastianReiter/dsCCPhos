@@ -9,7 +9,6 @@
 #' @return A data base connection object
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 DataModelToDB <- function(DataModel,
                           DBPath = ":memory:")

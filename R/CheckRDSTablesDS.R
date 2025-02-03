@@ -10,7 +10,6 @@
 #' @return A list containing information about existence and completeness of RDS tables
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 CheckRDSTablesDS <- function(RawDataSetName.S = "RawDataSet")
 {

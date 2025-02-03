@@ -4,7 +4,7 @@
 \alias{HarmonizeData}
 \title{HarmonizeData}
 \usage{
-HarmonizeData(DataFrame, TableName, RuleSet, RuleProfile)
+HarmonizeData(DataFrame, TableName, RuleSet, Profile)
 }
 \arguments{
 \item{DataFrame}{data frame containing data to be transformed}
@@ -13,7 +13,7 @@ HarmonizeData(DataFrame, TableName, RuleSet, RuleProfile)
 
 \item{RuleSet}{Data frame | Contains predefined set of harmonization rules}
 
-\item{RuleProfile}{String | Profile name stated in rule set data frame}
+\item{Profile}{String | Profile name stated in rule set data frame}
 }
 \value{
 The input data frame with transformed data values

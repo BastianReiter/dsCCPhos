@@ -15,7 +15,6 @@ Tibble
 \item{FeatureName_Raw}{Feature name in Raw Data Model}
 \item{FeatureName_Curated}{Corresponding feature name in Curated Data Model}
 \item{IsPrimaryKey}{Indicating whether feature serves as primary key for corresponding table}
-\item{IsObligatory}{Indicating whether feature is obligatory for eligibility}
 \item{Type}{Data type}
 \item{Scale}{Scale of measure}
 \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}

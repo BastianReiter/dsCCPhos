@@ -1,4 +1,6 @@
 
+# --- DOCUMENTATION of package data ---
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Meta_CancerGrouping.rda
@@ -28,62 +30,14 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RuleSet_DiagnosisAssociation.rda
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#' Meta data on rule-based identification of associations between diagnosis entries
-#'
-#' A tibble containing rules
-#'
-#' @format ## `RuleSet_DiagnosisAssociation`
-#' Tibble
-#' \describe{
-#'   \item{Profile}{}
-#'   \item{Feature}{}
-#'   \item{Value}{}
-#'   \item{ValueRank}{}
-#'   \item{EvaluationOrder}{}
-#'   \item{BlockConnector}{}
-#' }
-#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
-#' @author Bastian Reiter
-"RuleSet_DiagnosisAssociation"
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RuleSet_DiagnosisRedundancy.rda
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#' Meta data on rule-based identification of redundant diagnosis entries
-#'
-#' A tibble containing rules
-#'
-#' @format ## `RuleSet_DiagnosisRedundancy`
-#' Tibble
-#' \describe{
-#'   \item{Profile}{}
-#'   \item{Feature}{}
-#'   \item{Value}{}
-#'   \item{ValueRank}{}
-#'   \item{EvaluationOrder}{}
-#'   \item{BlockConnector}{}
-#' }
-#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
-#' @author Bastian Reiter
-"RuleSet_DiagnosisRedundancy"
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RuleSet_RawDataHarmonization.rda
+# Meta_DataHarmonization.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #' Meta data on rule-based transformation of raw data
 #'
 #' A tibble containing rules
 #'
-#' @format ## `RuleSet_RawDataHarmonization`
+#' @format ## `Meta_DataHarmonization`
 #' Tibble
 #' \describe{
 #'   \item{Profile}{}
@@ -91,33 +45,61 @@
 #'   \item{Feature}{}
 #'   \item{EvaluationOrder}{}
 #'   \item{Operation}{}
-#'   \item{REP_OriginalValue}{}
-#'   \item{REP_NewValue}{}
+#'   \item{LookupValue}{}
+#'   \item{NewValue}{}
 #'   \item{Comment}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"RuleSet_RawDataHarmonization"
+"Meta_DataHarmonization"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_Tables.rda
+# Meta_DiagnosisAssociation.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' CCP meta data: Tables
+#' Meta data on rule-based identification of associations between diagnosis entries
 #'
-#' A tibble containing meta data about corresponding table names in Raw Data Model (RDM) and Curated Data Model (CDM)
+#' A tibble containing rules
 #'
-#' @format ## `Meta_Tables`
+#' @format ## `Meta_DiagnosisAssociation`
 #' Tibble
 #' \describe{
-#'   \item{TableName_Raw}{Table name in Raw Data Model}
-#'   \item{TableName_Curated}{Corresponding table name in Curated Data Model}
+#'   \item{Profile}{}
+#'   \item{Feature}{}
+#'   \item{Value}{}
+#'   \item{ValueRank}{}
+#'   \item{EvaluationOrder}{}
+#'   \item{Condition}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_Tables"
+"Meta_DiagnosisAssociation"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_DiagnosisRedundancy.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Meta data on rule-based identification of redundant diagnosis entries
+#'
+#' A tibble containing rules
+#'
+#' @format ## `Meta_DiagnosisRedundancy`
+#' Tibble
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{Feature}{}
+#'   \item{Value}{}
+#'   \item{ValueRank}{}
+#'   \item{EvaluationOrder}{}
+#'   \item{Condition}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_DiagnosisRedundancy"
 
 
 
@@ -138,7 +120,6 @@
 #'   \item{FeatureName_Raw}{Feature name in Raw Data Model}
 #'   \item{FeatureName_Curated}{Corresponding feature name in Curated Data Model}
 #'   \item{IsPrimaryKey}{Indicating whether feature serves as primary key for corresponding table}
-#'   \item{IsObligatory}{Indicating whether feature is obligatory for eligibility}
 #'   \item{Type}{Data type}
 #'   \item{Scale}{Scale of measure}
 #'   \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
@@ -146,6 +127,47 @@
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
 "Meta_Features"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_FeatureObligations.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Containing preferences on which features in CDS should be considered obligatory
+#'
+#' A tibble
+#'
+#' @format ## `Meta_FeatureObligations`
+#' Tibble
+#' \describe{
+#'   \item{TableName}{}
+#'   \item{FeatureName}{}
+#'   \item{Default}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_FeatureObligations"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_Tables.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' CCP meta data: Tables
+#'
+#' A tibble containing meta data about corresponding table names in Raw Data Model (RDM) and Curated Data Model (CDM)
+#'
+#' @format ## `Meta_Tables`
+#' Tibble
+#' \describe{
+#'   \item{TableName_Raw}{Table name in Raw Data Model}
+#'   \item{TableName_Curated}{Corresponding table name in Curated Data Model}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_Tables"
 
 
 

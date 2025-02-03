@@ -8,17 +8,16 @@
 #' @param DataFrame data frame containing data to be transformed
 #' @param TableName String | Name of the table (to enable mapping to harmonization rules)
 #' @param RuleSet Data frame | Contains predefined set of harmonization rules
-#' @param RuleProfile String | Profile name stated in rule set data frame
+#' @param Profile String | Profile name stated in rule set data frame
 #'
 #' @return The input data frame with transformed data values
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 HarmonizeData <- function(DataFrame,
                           TableName,
                           RuleSet,
-                          RuleProfile)
+                          Profile)
 {
     require(dplyr)
     require(dsCCPhos)
@@ -32,12 +31,12 @@ HarmonizeData <- function(DataFrame,
     # Compile general harmonization rules with dsCCPhos::CompileHarmonizationRules
     HarmonizationRules <- CompileHarmonizationRules(TableName,
                                                     RuleSet,
-                                                    RuleProfile)
+                                                    Profile)
 
     # Compile hash tables for direct value replacement
     HashTables <- CompileHashTables(TableName,
                                     RuleSet,
-                                    RuleProfile)
+                                    Profile)
 
     if (is.na(HarmonizationRules) & is.null(HashTables))
     {

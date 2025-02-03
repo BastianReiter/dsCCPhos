@@ -11,12 +11,14 @@ ClassifyDiagnosisRedundancy(
 )
 }
 \arguments{
-\item{DiagnosisEntries}{Data frame (partially curated) that (usually) contains multiple diagnosis entries}
+\item{DiagnosisEntries}{\code{data.frame} that (usually) contains multiple diagnosis entries}
 
-\item{ProgressBarObject}{Optionally pass object of type progress::progress_bar to display progress}
+\item{RuleCalls}{\code{list} of unevaluated \code{dplyr::case_when}-Statements compiled from rules defined in \code{RuleSet_DiagnosisRedundancy}}
+
+\item{ProgressBarObject}{\code{progress::progress_bar} object - Optionally pass progress bar object to display progress}
 }
 \value{
-Data frame of consolidated diagnosis entries
+\code{data.frame} of consolidated diagnosis entries
 }
 \description{
 Auxiliary function within \code{\link{CurateDataDS}}

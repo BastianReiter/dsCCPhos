@@ -10,7 +10,6 @@
 #' @return The Curation Output with modified Curated Data Set
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 ExcludeCuratedDataDS <- function(Name_RawDataSet = "RawDataSet")
 {

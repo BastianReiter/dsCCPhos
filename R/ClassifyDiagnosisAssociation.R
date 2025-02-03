@@ -5,14 +5,13 @@
 #'
 #' In patients with multiple diagnosis entries: Identify and classify associations between diagnosis entries.
 #'
-#' @param DiagnosisEntries Data frame (partially curated) that contains multiple diagnosis entries
-#' @param RuleCalls List | List of unevaluated cplyr::case_when-Statements compiled from rules defined in \code{\link{RuleSet_DiagnosisAssociation}
-#' @param ProgressBarObject Optionally pass object of type progress::progress_bar to display progress
+#' @param DiagnosisEntries \code{data.frame} containing multiple diagnosis entries
+#' @param RuleCalls \code{list} - Unevaluated \code{dplyr::case_when}-Statements compiled from rules defined in \code{RuleSet_DiagnosisAssociation}
+#' @param ProgressBarObject \code{progress::progress_bar} object - Optionally pass progress bar object to display progress
 #'
-#' @return Data frame enhanced with classified diagnosis associations
+#' @return \code{data.frame} enhanced with classified diagnosis associations
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
                                          RuleCalls,

@@ -10,7 +10,6 @@
 #' @return Integer number
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 CountDeviations <- function(CandidateEntry,
                             ReferenceEntry,
