@@ -8,7 +8,6 @@
 #' @return A list of data frames describing a data model
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 DataListToDataModel <- function(DataList)
 {

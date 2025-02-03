@@ -6,7 +6,6 @@
 \usage{
 CompileClassificationCall(
   TargetFeature,
-  PredictorFeatures,
   RuleSet,
   RuleProfile,
   ValueIfNoRuleMet = NA
@@ -14,8 +13,6 @@ CompileClassificationCall(
 }
 \arguments{
 \item{TargetFeature}{String | Name of feature that is being engineered}
-
-\item{PredictorFeatures}{Vector | Character vector containing the names of all determining / predictor features}
 
 \item{RuleSet}{Data frame | Contains predefined set of rules}
 
@@ -27,7 +24,7 @@ CompileClassificationCall(
 String containing an unevaluated dplyr::case_when() expression
 }
 \description{
-Auxiliary function within \code{\link{ClassifyDiagnosisAssociation}}
+Auxiliary function to compile calls used in \code{\link{ClassifyDiagnosisRedundancy}} and \code{\link{ClassifyDiagnosisAssociation}}
 }
 \details{
 Based on a predefined rule set data frame, compile a dplyr::case_when() expression and return it as a string

@@ -9,7 +9,6 @@
 #' @return A vector
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 RecodeData <- function(TargetVector,
                        Dictionary)

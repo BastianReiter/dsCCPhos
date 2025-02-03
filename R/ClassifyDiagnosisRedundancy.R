@@ -5,14 +5,13 @@
 #'
 #' In patients with multiple diagnosis entries: Identify, classify and remove redundant diagnosis entries.
 #'
-#' @param DiagnosisEntries Data frame (partially curated) that (usually) contains multiple diagnosis entries
-#' @param RuleCalls List | List of unevaluated cplyr::case_when-Statements compiled from rules defined in \code{\link{RuleSet_DiagnosisRedundancy}
-#' @param ProgressBarObject Optionally pass object of type progress::progress_bar to display progress
+#' @param DiagnosisEntries \code{data.frame} that (usually) contains multiple diagnosis entries
+#' @param RuleCalls \code{list} of unevaluated \code{dplyr::case_when}-Statements compiled from rules defined in \code{RuleSet_DiagnosisRedundancy}
+#' @param ProgressBarObject \code{progress::progress_bar} object - Optionally pass progress bar object to display progress
 #'
-#' @return Data frame of consolidated diagnosis entries
+#' @return \code{data.frame} of consolidated diagnosis entries
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
                                         RuleCalls,

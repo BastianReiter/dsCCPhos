@@ -5,15 +5,18 @@
 #'
 #' Server-side ASSIGN method
 #'
-#' @param RawDataSetName.S \code{character} | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
-#' @param RuleSet_RawDataHarmonization.S \code{data.frame}
-#' @param RuleProfile_RawDataHarmonization.S \code{character} | Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{\link{RuleSet_RawDataHarmonization.S}. | Default: 'Default'
-#' @param PerformDiagnosisRedundancyCheck.S \code{logical}
-#' @param RuleSet_DiagnosisRedundancy.S \code{data.frame}
-#' @param RuleProfile_DiagnosisRedundancy.S \code{character} | Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{\link{RuleSet_DiagnosisRedundancy.S}. | Default: 'Default'
-#' @param PerformDiagnosisAssociationCheck.S \code{logical}
-#' @param RuleSet_DiagnosisAssociation.S \code{data.frame}
-#' @param RuleProfile_DiagnosisAssociation.S \code{character} | Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{\link{RuleSet_DiagnosisAssociation.S}. | Default: 'Default'
+#' @param RawDataSetName.S \code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
+#' @param Settings.S \code{list} - Settings passed to function
+#'                   \itemize{\item DataHarmonization_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
+#'                            \item DataHarmonization_Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{RawDataHarmonization_RuleSet} - Default: 'Default'
+#'                            \item DiagnosisRedundancy_Check \code{logical} - Whether or not to check for redundant diagnosis entries
+#'                            \item DiagnosisRedundancy_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DiagnosisRedundancy}
+#'                            \item DiagnosisRedundancy_Profile \code{character} - Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{DiagnosisRedundancy_RuleSet} - Default: 'Default'
+#'                            \item DiagnosisAssociation_Check \code{logical} - Whether or not to classify associated diagnosis entries
+#'                            \item DiagnosisAssociation_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DiagnosisAssociation}
+#'                            \item DiagnosisAssociation_Profile \code{character} - Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{DiagnosisAssociation_RuleSet} - Default: 'Default'
+#'                            \item FeatureObligations_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
+#'                            \item FeatureObligations_Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations_RuleSet} - Default: 'Default'}
 #'
 #' @return A list containing the following objects:
 #'         \itemize{\item CuratedDataSet (list)
@@ -42,14 +45,16 @@
 #' @export
 #' @author Bastian Reiter
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
-                         RuleSet_RawDataHarmonization.S = dsCCPhos::RuleSet_RawDataHarmonization,
-                         RuleProfile_RawDataHarmonization.S = "Default",
-                         PerformDiagnosisRedundancyCheck.S = TRUE,
-                         RuleSet_DiagnosisRedundancy.S = dsCCPhos::RuleSet_DiagnosisRedundancy,
-                         RuleProfile_DiagnosisRedundancy.S = "Default",
-                         PerformDiagnosisAssociationCheck.S = TRUE,
-                         RuleSet_DiagnosisAssociation.S = dsCCPhos::RuleSet_DiagnosisAssociation,
-                         RuleProfile_DiagnosisAssociation.S = "Default")
+                         Settings.S = list(DataHarmonization_RuleSet = dsCCPhos::Meta_DataHarmonization,
+                                           DataHarmonization_Profile = "Default",
+                                           DiagnosisRedundancy_Check = TRUE,
+                                           DiagnosisRedundancy_RuleSet = dsCCPhos::Meta_DiagnosisRedundancy,
+                                           DiagnosisRedundancy_Profile = "Default",
+                                           DiagnosisAssociation_Check = TRUE,
+                                           DiagnosisAssociation_RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
+                                           DiagnosisAssociation_Profile = "Default",
+                                           FeatureObligations_RuleSet = dsCCPhos::Meta_FeatureObligations,
+                                           FeatureObligations_Profile = "Default"))
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # OVERVIEW
@@ -59,33 +64,88 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #     - Evaluation and parsing of input
 #     - Loading of required package namespaces
 #
-#   MODULE 1)  Harmonization of Raw Data Set meta data and structure
-#     - Transform table names
-#     - Add empty tables in data set if they are missing in raw data
-#     - Rename features
-#     - In tables with missing features, add empty features accordingly
+#   MODULE A)  Harmonization of Raw Data Set meta data and structure
+#     1) Transform table names
+#     2) Add empty tables in data set if they are missing in raw data
+#     3) Rename features
+#     4) In tables with missing features, add empty features accordingly
 #
-#   MODULE 2)  Primary table cleaning
-#     - Remove entries that are not linked to related tables
-#     - Remove duplicate entries
-#     - Remove entries missing obligatory features (defined in meta data)
+#   MODULE B)  Primary entry exclusion
+#     1) Remove entries that are not linked to related tables
+#     2) Remove duplicate entries
+#     3) Remove entries in RDS missing obligatory features (defined in meta data or passed as optional argument)
 #
-#   MODULE 3)  Data Harmonization / Transformation
-#     - Transform feature names
-#     - Definition of features to monitor during value transformation
-#     - Value transforming operations
-#     - Compilation of curation report
+#   MODULE C)  Data Harmonization / Transformation
+#     1) Transform feature names
+#     2) Definition of features to monitor during value transformation
+#     3) Value transforming operations
+#     4) Compilation of curation report
 #
-#   MODULE 4)  Processing of diagnosis data
-#     - Joining of df_Diagnosis and df_Histology
-#     - Classification and removal of redundant diagnosis entries
-#     - Classification and bundling of associated diagnosis entries
-#     - Update DiagnosisIDs in other tables
+#   MODULE D)  Processing of diagnosis data
+#     1) Joining of Tables 'Diagnosis' and 'Histology'
+#     2) Classification and removal of redundant diagnosis entries
+#     3) Classification and bundling of associated diagnosis entries
+#     4) Update DiagnosisIDs in other tables
+#
+#   MODULE E)  Secondary entry exclusion
+#     1) Remove entries in CDS missing obligatory features (defined in meta data or passed as optional argument)
 #
 #   Return list containing
 #     - Curated Data Set (list)
 #     - Curation Report (list)
 #     - Curation Messages (list)
+
+
+
+### For testing purposes
+# Settings.S <- list(DataHarmonization_RuleSet = dsCCPhos::Meta_DataHarmonization,
+#                    DataHarmonization_Profile = "Default",
+#                    DiagnosisRedundancy_Check = TRUE,
+#                    DiagnosisRedundancy_RuleSet = dsCCPhos::Meta_DiagnosisRedundancy,
+#                    DiagnosisRedundancy_Profile = "Default",
+#                    DiagnosisAssociation_Check = TRUE,
+#                    DiagnosisAssociation_RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
+#                    DiagnosisAssociation_Profile = "Default",
+#                    FeatureObligations_RuleSet = dsCCPhos::Meta_FeatureObligations,
+#                    FeatureObligations_Profile = "Default")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Package requirements
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Use require() to load package namespaces
+require(dplyr)
+require(dsCCPhos)
+require(lubridate)
+require(progress)
+require(purrr)
+require(rlang)
+require(stats)
+require(stringr)
+require(tidyr)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Equip 'Settings.S' with default values in case of missing arguments
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Rename 'Settings.S' argument for better code readability
+Settings <- Settings.S
+
+# If list of 'Settings' passed to function is incomplete, complete it with default values
+if (is.null(Settings$DataHarmonization_RuleSet)) { Settings$DataHarmonization_RuleSet <- dsCCPhos::Meta_DataHarmonization }
+if (is.null(Settings$DataHarmonization_Profile)) { Settings$DataHarmonization_Profile <- "Default" }
+if (is.null(Settings$DiagnosisRedundancy_Check)) { Settings$DiagnosisRedundancy_Check <- TRUE }
+if (is.null(Settings$DiagnosisRedundancy_RuleSet)) { Settings$DiagnosisRedundancy_RuleSet <- dsCCPhos::Meta_DiagnosisRedundancy }
+if (is.null(Settings$DiagnosisRedundancy_Profile)) { Settings$DiagnosisRedundancy_Profile <- "Default" }
+if (is.null(Settings$DiagnosisAssociation_Check)) { Settings$DiagnosisAssociation_Check <- TRUE }
+if (is.null(Settings$DiagnosisAssociation_RuleSet)) { Settings$DiagnosisAssociation_RuleSet <- dsCCPhos::Meta_DiagnosisAssociation }
+if (is.null(Settings$DiagnosisAssociation_Profile)) { Settings$DiagnosisAssociation_Profile <- "Default" }
+if (is.null(Settings$FeatureObligations_RuleSet)) { Settings$FeatureObligations_RuleSet <- dsCCPhos::Meta_FeatureObligations }
+if (is.null(Settings$FeatureObligations_Profile)) { Settings$FeatureObligations_Profile <- "Default" }
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,27 +155,24 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 if (is.character(RawDataSetName.S))
 {
     RawDataSet <- eval(parse(text = RawDataSetName.S), envir = parent.frame())
-}
-else
-{
-    ClientMessage <- "ERROR: 'RawDataSetName.S' must be specified as a character string"
+
+} else {
+
+    ClientMessage <- "ERROR: 'RawDataSetName.S' must be specified as a character string."
     stop(ClientMessage, call. = FALSE)
 }
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Package requirements and global settings
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+if (Settings$FeatureObligations_Profile %in% names(Settings$FeatureObligations_RuleSet) == FALSE)
+{
+    ClientMessage <- "ERROR: Value of settings argument 'FeatureObligations_Profile' must be column name of data.frame passed in settings argument 'FeatureObligations_RuleSet'."
+    stop(ClientMessage, call. = FALSE)
+}
 
-# Use require() to load package namespaces
-require(dplyr)
-require(dsCCPhos)
-require(lubridate)
-require(progress)
-require(purrr)
-require(stats)
-require(stringr)
-require(tidyr)
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Initial statements
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Suppress summarize info messages
 options(dplyr.summarise.inform = FALSE)
@@ -133,15 +190,8 @@ Messages$CheckCurationCompletion <- "red"
 Messages$FinalMessage <- "Curation not completed"
 
 
-# For testing purposes
-# RuleSet_RawDataHarmonization.S <- dsCCPhos::RuleSet_RawDataHarmonization
-# RuleProfile_RawDataHarmonization.S <- "Default"
-# PerformDiagnosisRedundancyCheck.S <- TRUE
-# RuleSet_DiagnosisRedundancy.S <- dsCCPhos::RuleSet_DiagnosisRedundancy
-# RuleProfile_DiagnosisRedundancy.S <- "Default"
-# PerformDiagnosisAssociationCheck.S <- TRUE
-# RuleSet_DiagnosisAssociation.S <- dsCCPhos::RuleSet_DiagnosisAssociation
-# RuleProfile_DiagnosisAssociation.S <- "Default"
+# Set up 'DataSet' as object that holds all data throughout the function. It will be un- and repacked a couple of times during processing.
+DataSet <- RawDataSet
 
 
 # Use tryCatch to catch warnings and errors
@@ -150,16 +200,13 @@ Messages$FinalMessage <- "Curation not completed"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE 1)  Harmonization of Raw Data Set meta data and structure
+# MODULE A)  Harmonization of Raw Data Set meta data and structure
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Transform table names
 #   - Add empty tables in data set if they are missing in raw data
 #   - Rename features
 #   - In tables with missing features, add empty features accordingly
 #-------------------------------------------------------------------------------
-
-# Setting up 'DataSet' as object that holds all data throughout the function. It will be un- and repacked a couple of times during processing.
-DataSet <- RawDataSet
 
 
 # Rename tables (Remove the 'RDS_'-prefix)
@@ -193,16 +240,16 @@ DataSet <- DataSet[AllTableNames]
 
 # Looping through tables to rename features
 DataSet <- DataSet %>%
-                imap(function(dataframe, name)
+                imap(function(Table, tablename)
                      {
                         # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
-                        vc_Lookup <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Raw
-                        names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Curated
+                        vc_Lookup <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Raw
+                        names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Curated
 
-                        if (!is_empty(dataframe))
+                        if (!is_empty(Table))
                         {
                             # Rename feature names according to look-up vector
-                            dplyr::rename(dataframe, any_of(vc_Lookup))      # Returns a tibble
+                            dplyr::rename(Table, any_of(vc_Lookup))      # Returns a tibble
                         }
                         else
                         {
@@ -221,73 +268,74 @@ DataSet <- DataSet %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DataSet <- DataSet %>%
-                imap(function(dataframe, name)
+                imap(function(Table, tablename)
                      {
                         # Determine missing features
-                        RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == name)$FeatureName_Curated
-                        PresentFeatureNames <- names(dataframe)
+                        RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Curated
+                        PresentFeatureNames <- names(Table)
                         MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
 
                         # If a table misses features, add empty columns accordingly
                         if (length(MissingFeatures) > 0)
                         {
-                            ComplementedDataFrame <- dataframe %>%
+                            ComplementedDataFrame <- Table %>%
                                                         mutate(!!!set_names(rep(list(NA_character_), length(MissingFeatures)), MissingFeatures))
 
                             return(ComplementedDataFrame)
+
+                        } else {
+
+                          return(Table)
                         }
-                        else
-                        { return(dataframe) }
                      })
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE 2)  Primary table cleaning
+# MODULE B)  Primary entry exclusion
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Remove entries that are not linked to related tables
-#   - Remove duplicate entries
-#   - Remove entries missing obligatory features (defined in meta data)
+#   1) Remove entries that are not linked to related tables
+#   2) Remove entries in RDS with missing strictly obligatory features (defined in meta data / passed through Settings)
+#   3) Remove duplicate entries
+#   4) Remove entries that are not consistent with special trans-feature obligation rules (defined in meta data / passed through Settings)
 #-------------------------------------------------------------------------------
 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MONITORING: Count ineligible entries (Part 1)
+# MONITORING: Count ineligible entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Count entries in data frames before cleaning
-CountEntriesBeforeCleaning <- DataSet %>%
-                                  map_int(\(dataframe) ifelse (!is.null(nrow(dataframe)), nrow(dataframe), 0))
+# Count entries in data frames before exclusion
+CountEntriesBeforeExclusion <- DataSet %>%
+                                  map_int(\(Table) ifelse (!is.null(nrow(Table)), nrow(Table), 0))
 
 
 # Set up progress bar
 #-------------------------------------------------------------------------------
 CountProgressItems <- 15
-ProgressBar <- progress_bar$new(format = "Cleaning table entries [:bar] :percent in :elapsed  :spin",
+ProgressBar <- progress_bar$new(format = "Primary exclusion: Excluding ineligible table entries [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width = 100)
 try(ProgressBar$tick())
 #-------------------------------------------------------------------------------
 
 
-# Get obligatory features of tables 'Patient' and 'Diagnosis' from meta data
-ObligatoryFeatures <- dsCCPhos::Meta_Features %>%
-                          filter(TableName_Curated %in% c("Diagnosis", "Patient"), IsObligatory == TRUE) %>%
-                          pull(FeatureName_Curated)
-
-
 # By merging 'Patient' and 'Diagnosis', create auxiliary data frame containing all eligible combinations of PatientIDs and DiagnosisIDs
 # Do NOT simply delete (pseudo-)duplicate entries (because different DiagnosisIDs of same patient and diagnosis can e.g. be related to different Histologies).
+# Filter out any entry that has missings in features marked as obligatory in meta data (thereby also removing 'rogue'/unlinked patient or diagnosis entries because this way every patient needs to have at least one related diagnosis and vice versa)
 DataSetRoot <- DataSet$Patient %>%
                     left_join(DataSet$Diagnosis, by = join_by(PatientID)) %>%
-                    filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%       # Filter out any entry that has missings in features marked as obligatory in meta data (thereby also removing 'rogue'/unlinked patient or diagnosis entries because this way every patient needs to have at least one related diagnosis and vice versa)
+                    CleanTable(TableNameLookup = c("Diagnosis", "Patient"),
+                               RemoveRedundantEntries = FALSE,
+                               FeatureObligations_RuleSet = Settings$FeatureObligations_RuleSet,
+                               FeatureObligations_Profile = Settings$FeatureObligations_Profile) %>%
                     select(PatientID, DiagnosisID) %>%
                     distinct()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # - Loop through whole DataSet to only keep entries that belong to eligible 'root'
-# - Remove entries that have missing values in obligatory features (defined in meta data)
+# - Remove entries that have missing values in strictly obligatory features (defined in meta data / passed as an argument)
 # - Remove duplicate entries
+# - Remove entries that are not consistent with special trans-feature obligation rules (defined in meta data / passed as an argument)
 #-------------------------------------------------------------------------------
 DataSet <- DataSet %>%
                 imap(function(Table, tablename)
@@ -296,37 +344,29 @@ DataSet <- DataSet %>%
 
                         if (!(is.null(Table) | length(Table) == 0 | nrow(Table) == 0))
                         {
-                            # Get current table's set of obligatory features (if defined) from meta data
-                            ObligatoryFeatures <- dsCCPhos::Meta_Features %>%
-                                                      filter(TableName_Curated == tablename, IsObligatory == TRUE) %>%
-                                                      pull(FeatureName_Curated)
-
-                            # Get each tables primary key feature (ID column), necessary for identification of duplicate entries
-                            IDFeature <- dsCCPhos::Meta_Features %>%
-                                              filter(TableName_Curated == tablename, IsPrimaryKey == TRUE) %>%
-                                              pull(FeatureName_Curated)
-
+                            # Join current table with preselection of 'DataSetRoot'
                             if (tablename %in% c("BioSampling", "GeneralCondition", "Patient", "TherapyRecommendation"))
                             {
-                                CleanTable <- DataSetRoot %>%
-                                                  select(PatientID) %>%
-                                                  distinct() %>%
-                                                  left_join(Table, by = join_by(PatientID)) %>%
-                                                  filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%
-                                                  distinct(across(-all_of(IDFeature)), .keep_all = TRUE)
-                            }
-                            else
-                            {
-                                CleanTable <- DataSetRoot %>%
-                                                  left_join(Table, by = join_by(PatientID, DiagnosisID)) %>%
-                                                  filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.))) %>%
-                                                  distinct(across(-all_of(IDFeature)), .keep_all = TRUE)
+                                Table <- DataSetRoot %>%
+                                            select(PatientID) %>%
+                                            distinct() %>%
+                                            left_join(Table, by = join_by(PatientID))
+                            } else {
+
+                                Table <- DataSetRoot %>%
+                                              left_join(Table, by = join_by(PatientID, DiagnosisID))
                             }
 
-                            return(CleanTable)
-                        }
-                        else
-                        {
+                            # Clean current table using auxiliary function dsCCPhos::CleanTable()
+                            CleanedTable <- Table %>%
+                                                CleanTable(TableNameLookup = tablename,
+                                                           RemoveRedundantEntries = TRUE,
+                                                           FeatureObligations_RuleSet = Settings$FeatureObligations_RuleSet,
+                                                           FeatureObligations_Profile = Settings$FeatureObligations_Profile)
+                            return(CleanedTable)
+
+                        } else {
+
                             return(Table)
                         }
                      })
@@ -334,59 +374,62 @@ DataSet <- DataSet %>%
 try(ProgressBar$terminate())
 
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MONITORING: Count ineligible entries (Part 2)
+# MONITORING: Count ineligible entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Count entries in data frames after cleaning
-CountEntriesAfterCleaning <- DataSet %>%
-                                  map_int(\(dataframe) ifelse (!is.null(nrow(dataframe)), nrow(dataframe), 0))
+# Count entries in data frames after primary exclusion
+CountEntriesAfterPrimaryExclusion <- DataSet %>%
+                                        map_int(\(Table) ifelse (!is.null(nrow(Table)), nrow(Table), 0))
 
 # Count ineligible entries
-CountIneligibleEntries <- CountEntriesBeforeCleaning - CountEntriesAfterCleaning
+CountIneligibleEntries_Primary <- CountEntriesBeforeExclusion - CountEntriesAfterPrimaryExclusion
 
 
 # Print messages for live monitoring in local tests
 cat("\n")
-for (i in 1:length(CountIneligibleEntries))
+for (i in 1:length(CountIneligibleEntries_Primary))
 {
-    Message <- paste0("Removed ", CountIneligibleEntries[i], " ineligible entries from '", names(CountIneligibleEntries)[i], "' table.")
+    Message <- paste0("Primary exclusion: Removed ", CountIneligibleEntries_Primary[i], " ineligible entries from '", names(CountIneligibleEntries_Primary)[i], "' table.")
     cli::cat_bullet(Message, bullet = "info")
 
     # Save messages in output object
-    Messages$IneligibleEntries <- c(Messages$IneligibleEntries,
-                                  info = Message)
+    Messages$IneligibleEntries_Primary <- c(Messages$IneligibleEntries,
+                                            info = Message)
 }
 
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE 3)  Data Harmonization / Transformation
+# MODULE C)  Data Harmonization / Transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   A) Definition of features to monitor during Transformation
-#   B) Tracking of raw feature values
-#   C) Data harmonization (correctional transformation)
-#   D) Tracking of harmonized feature values
-#   E) Data recoding and formatting
-#   F) Tracking of recoded / formatted feature values
-#   G) Finalize transformation of data
+#   1) Definition of features to monitor during Transformation
+#   2) Tracking of raw feature values
+#   3) Data harmonization (correctional transformation)
+#   4) Tracking of harmonized feature values
+#   5) Data recoding and formatting
+#   6) Tracking of recoded / formatted feature values
+#   7) Finalize transformation of data
 #        - Removing of ineligible values
 #        - Optional conversion to factor
-#   H) Tracking of finalized feature values
-#   I) Compilation of monitor objects for reporting
+#   8) Tracking of finalized feature values
+#   9) Compilation of monitor objects for reporting
 #-------------------------------------------------------------------------------
 
 
 # Set up progress bar
+#-------------------------------------------------------------------------------
 CountProgressItems <- 35
 ProgressBar <- progress_bar$new(format = "Harmonizing data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
 try(ProgressBar$tick())
+#-------------------------------------------------------------------------------
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 A)  Definition of tracked features and their sets of eligible values
+# Module C 1)  Definition of tracked features and their sets of eligible values
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #     - Create a list of meta data objects to make them passable to functions (alphabetic order)
 #     - Names must be in same order as in DataSet
@@ -486,7 +529,7 @@ try(ProgressBar$tick())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 B)  Track feature values of raw data
+# Module C 2)  Track feature values of raw data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Get unique raw values and their frequencies for monitoring
 #   - Copy values of monitored features and mark them with TrackID that has correspondent in actually processed data frames
@@ -534,26 +577,25 @@ try(ProgressBar$tick())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 C)  Data harmonization (correctional transformation)
+# Module C 3)  Data harmonization (correctional transformation)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - General rules using regular expressions and functions defined in rule set
 #   - Direct value replacement using hash tables defined in rule set
 #-------------------------------------------------------------------------------
 
-DataSet <- purrr::map2(.x = DataSet,
-                          .y = names(DataSet),
-                          .f = function(DataFrame, TableName)
-                               {
-                                   DataFrame %>%
-                                        mutate(TrackID = row_number()) %>%      # Enables tracking of transformation (see above)
-                                        dsCCPhos::HarmonizeData(TableName = TableName,
-                                                                RuleSet = RuleSet_RawDataHarmonization.S,
-                                                                RuleProfile = RuleProfile_RawDataHarmonization.S)
-                               })
+DataSet <- DataSet %>%
+                imap(function(Table, tablename)
+                     {
+                         Table %>%
+                              mutate(TrackID = row_number()) %>%      # Enables tracking of transformation (see above)
+                              HarmonizeData(TableName = tablename,
+                                            RuleSet = Settings$DataHarmonization_RuleSet,
+                                            Profile = Settings$DataHarmonization_Profile)
+                     })
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 D)  Track feature values after Harmonization
+# Module C 4)  Track feature values after Harmonization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Map raw values to their harmonized state to get transformation tracks
@@ -614,247 +656,209 @@ try(ProgressBar$tick())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 E)  Data recoding and formatting
+# Module C 5)  Data recoding and formatting
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Recoding data using dsCCPhos::RecodeData()
 #   - dsCCPhos::RecodeData() uses a dictionary in the form of a named vector to perform recoding on a target vector
 #   - Data formatting instructions
 #-------------------------------------------------------------------------------
 
+DataSet <- DataSet %>%
+                imap(function(Table, tablename)
+                     {
+                        try(ProgressBar$tick())
 
-# Recoding df_BioSampling
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_BioSampling <- DataSet$BioSampling %>%
-                      #--- Recoding --------------------------------------------
-                      mutate(Aliquot = dsCCPhos::RecodeData(Aliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Aliquot"),
-                                                                          set_names(Value_Curated, Value_Raw))),
-                             Status = dsCCPhos::RecodeData(Status, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Status"),
-                                                                        set_names(Value_Curated, Value_Raw))),
-                             Type = dsCCPhos::RecodeData(Type, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Type"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
-                                                                    set_names(Value_Curated, Value_Raw))),      # This returns a vector of the form c("Value_Raw1" = "Value1", ...), thereby inducing replacement of original values with new ones as defined in Meta Data
-                             TypeCXX = dsCCPhos::RecodeData(TypeCXX, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "TypeCXX"),
-                                                                          set_names(Value_Curated, Value_Raw)))) %>%
-                      #--- Formatting ------------------------------------------
-                      mutate(BioSamplingDate = format(as_datetime(BioSamplingDate), format = "%Y-%m-%d"))
-                      #--- Update PB ---
-                      try(ProgressBar$tick())
-
-
-# Recoding df_Diagnosis
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Diagnosis <- DataSet$Diagnosis %>%
-                    #--- Recoding ------------------------------------------
-                    mutate(LocalizationSide = dsCCPhos::RecodeData(LocalizationSide, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "LocalizationSide"),
-                                                                                          set_names(Value_Curated, Value_Raw))),
-                           DiagnosisConfirmation = dsCCPhos::RecodeData(DiagnosisConfirmation, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "DiagnosisConfirmation"),
-                                                                                                    set_names(Value_Curated, Value_Raw)))) %>%
-                    #--- Formatting ----------------------------------------
-                    mutate(DiagnosisDate = format(as_datetime(DiagnosisDate), format = "%Y-%m-%d"),
-                           ICD10Version = as.integer(str_extract(ICD10Version, "\\d+")))      # Extract ICD-10 catalogue version year from string
-                    #--- Update PB ---
-                    try(ProgressBar$tick())
-
-
-# Recoding df_GeneralCondition
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_GeneralCondition <- DataSet$GeneralCondition %>%
-                            #--- Recoding ------------------------------------------
-                            mutate(ECOG = dsCCPhos::RecodeData(ECOG, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "GeneralCondition" & Feature == "ECOG"),
-                                                                          set_names(Value_Curated, Value_Raw)))) %>%
-                            #--- Formatting ----------------------------------------
-                            mutate(GeneralConditionDate = format(as_datetime(GeneralConditionDate), format = "%Y-%m-%d"))
-                            #--- Update PB ---
-                            try(ProgressBar$tick())
-
-
-# Recoding df_Histology
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Histology <- DataSet$Histology %>%
-                    #--- Recoding ------------------------------------------
-                    mutate(Grading = dsCCPhos::RecodeData(Grading, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Histology" & Feature == "Grading"),
-                                                                        set_names(Value_Curated, Value_Raw)))) %>%
-                    #--- Formatting ----------------------------------------
-                    mutate(HistologyDate = format(as_datetime(HistologyDate), format = "%Y-%m-%d"))
-                    #--- Update PB ---
-                    try(ProgressBar$tick())
-
-
-# Recoding df_Metastasis
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Metastasis <- DataSet$Metastasis %>%
-                      #--- Recoding ------------------------------------------
-                      mutate(Localization = dsCCPhos::RecodeData(Localization, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Metastasis" & Feature == "Localization"),
-                                                                                    set_names(Value_Curated, Value_Raw)))) %>%
-                      #--- Formatting --------------------------------------
-                      mutate(MetastasisDate = format(as_datetime(MetastasisDate), format = "%Y-%m-%d"),
-                             HasMetastasis = as.logical(HasMetastasis))
-                      #--- Update PB ---
-                      try(ProgressBar$tick())
-
-
-# Recoding df_MolecularDiagnostics
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_MolecularDiagnostics <- DataSet$MolecularDiagnostics %>%
-                                #--- Formatting ----------------------------
-                                mutate(MolecularDiagnosticsDate = format(as_datetime(MolecularDiagnosticsDate), format = "%Y-%m-%d"))
-                                #--- Update PB ---
-                                try(ProgressBar$tick())
-
-
-# Recoding df_OtherClassfication
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_OtherClassification <- DataSet$OtherClassification %>%
-                              #--- Formatting ----------------------------
-                              mutate(OtherClassificationDate = format(as_datetime(OtherClassificationDate), format = "%Y-%m-%d"))
-                              #--- Update PB ---
-                              try(ProgressBar$tick())
-
-
-# Recoding df_Patient
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Patient <- DataSet$Patient %>%
-                  #--- Recoding ------------------------------------------
-                  mutate(Gender = dsCCPhos::RecodeData(Gender, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "Gender"),
-                                                                    set_names(Value_Curated, Value_Raw))),
-                         LastVitalStatus = dsCCPhos::RecodeData(LastVitalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "LastVitalStatus"),
-                                                                                      set_names(Value_Curated, Value_Raw)))) %>%
-                  #--- Formatting ----------------------------------------
-                  mutate(LastVitalStatusDate = format(as_datetime(LastVitalStatusDate), format = "%Y-%m-%d"))
-                  #--- Update PB ---
-                  try(ProgressBar$tick())
-
-
-# Recoding df_Progress
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Progress <- DataSet$Progress %>%
-                    #--- Recoding ------------------------------------------
-                    mutate(GlobalStatus = dsCCPhos::RecodeData(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus"),
-                                                                                  set_names(Value_Curated, Value_Raw))),
-                           PrimarySiteStatus = dsCCPhos::RecodeData(PrimarySiteStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "PrimarySiteStatus"),
-                                                                                            set_names(Value_Curated, Value_Raw))),
-                           LymphnodalStatus = dsCCPhos::RecodeData(LymphnodalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "LymphnodalStatus"),
-                                                                                          set_names(Value_Curated, Value_Raw))),
-                           MetastasisStatus = dsCCPhos::RecodeData(MetastasisStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "MetastasisStatus"),
-                                                                                          set_names(Value_Curated, Value_Raw)))) %>%
-                    #--- Formatting ----------------------------------------
-                    mutate(ProgressDate = format(as_datetime(ProgressDate), format = "%Y-%m-%d"))
-                           #LocalRelapseDate = format(as_datetime(LocalRelapseDate), format = "%Y-%m-%d"))
-                    #--- Update PB ---
-                    try(ProgressBar$tick())
-
-
-# Recoding df_RadiationTherapy
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_RadiationTherapy <- DataSet$RadiationTherapy %>%
-                            #--- Recoding ----------------------------------
-                            mutate(RelationToSurgery = dsCCPhos::RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RelationToSurgery"),
-                                                                                                    set_names(Value_Curated, Value_Raw))),
-                                   Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "Intention"),
-                                                                                    set_names(Value_Curated, Value_Raw))),
-                                   ApplicationType = dsCCPhos::RecodeData(ApplicationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "ApplicationType"),
+                        if (!(nrow(Table) == 0))
+                        {
+                            if (tablename == "BioSampling")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding --------------------------------------------
+                                            mutate(Aliquot = dsCCPhos::RecodeData(Aliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Aliquot"),
                                                                                                 set_names(Value_Curated, Value_Raw))),
-                                   RadiationType = dsCCPhos::RecodeData(RadiationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationType"),
-                                                                                            set_names(Value_Curated, Value_Raw)))) %>%
-                            #--- Formatting --------------------------------
-                            mutate(RadiationTherapyStartDate = format(as_datetime(RadiationTherapyStartDate), format = "%Y-%m-%d"),
-                                   RadiationTherapyEndDate = format(as_datetime(RadiationTherapyEndDate), format = "%Y-%m-%d"))
-                            #--- Update PB ---
-                            try(ProgressBar$tick())
+                                                   Status = dsCCPhos::RecodeData(Status, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Status"),
+                                                                                              set_names(Value_Curated, Value_Raw))),
+                                                   Type = dsCCPhos::RecodeData(Type, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Type"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
+                                                                                          set_names(Value_Curated, Value_Raw))),      # This returns a vector of the form c("Value_Raw1" = "Value1", ...), thereby inducing replacement of original values with new ones as defined in Meta Data
+                                                   TypeCXX = dsCCPhos::RecodeData(TypeCXX, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "TypeCXX"),
+                                                                                                set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting ------------------------------------------
+                                            mutate(BioSamplingDate = format(as_datetime(BioSamplingDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "Diagnosis")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding ------------------------------------------
+                                            mutate(LocalizationSide = dsCCPhos::RecodeData(LocalizationSide, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "LocalizationSide"),
+                                                                                                                  set_names(Value_Curated, Value_Raw))),
+                                                   DiagnosisConfirmation = dsCCPhos::RecodeData(DiagnosisConfirmation, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "DiagnosisConfirmation"),
+                                                                                                                            set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting ----------------------------------------
+                                            mutate(DiagnosisDate = format(as_datetime(DiagnosisDate), format = "%Y-%m-%d"),
+                                                   ICD10Version = as.integer(str_extract(ICD10Version, "\\d+")))      # Extract ICD-10 catalogue version year from string
+                            }
+
+                            if (tablename == "GeneralCondition")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding ------------------------------------------
+                                            mutate(ECOG = dsCCPhos::RecodeData(ECOG, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "GeneralCondition" & Feature == "ECOG"),
+                                                                                          set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting ----------------------------------------
+                                            mutate(GeneralConditionDate = format(as_datetime(GeneralConditionDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "Histology")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding ------------------------------------------
+                                            mutate(Grading = dsCCPhos::RecodeData(Grading, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Histology" & Feature == "Grading"),
+                                                                                                set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting ----------------------------------------
+                                            mutate(HistologyDate = format(as_datetime(HistologyDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "Metastasis")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding ------------------------------------------
+                                            mutate(Localization = dsCCPhos::RecodeData(Localization, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Metastasis" & Feature == "Localization"),
+                                                                                                          set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting --------------------------------------
+                                            mutate(MetastasisDate = format(as_datetime(MetastasisDate), format = "%Y-%m-%d"),
+                                                   HasMetastasis = as.logical(HasMetastasis))
+                            }
+
+                            if (tablename == "MolecularDiagnostics")
+                            {
+                                Table <- Table %>%
+                                            #--- Formatting ----------------------------
+                                            mutate(MolecularDiagnosticsDate = format(as_datetime(MolecularDiagnosticsDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "OtherClassification")
+                            {
+                                Table <- Table %>%
+                                            #--- Formatting ----------------------------
+                                            mutate(OtherClassificationDate = format(as_datetime(OtherClassificationDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "Patient")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding ------------------------------------------
+                                            mutate(Gender = dsCCPhos::RecodeData(Gender, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "Gender"),
+                                                                                              set_names(Value_Curated, Value_Raw))),
+                                                   LastVitalStatus = dsCCPhos::RecodeData(LastVitalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "LastVitalStatus"),
+                                                                                                                set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting ----------------------------------------
+                                            mutate(LastVitalStatusDate = format(as_datetime(LastVitalStatusDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "Progress")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding ------------------------------------------
+                                            mutate(GlobalStatus = dsCCPhos::RecodeData(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   PrimarySiteStatus = dsCCPhos::RecodeData(PrimarySiteStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "PrimarySiteStatus"),
+                                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   LymphnodalStatus = dsCCPhos::RecodeData(LymphnodalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "LymphnodalStatus"),
+                                                                                                                  set_names(Value_Curated, Value_Raw))),
+                                                   MetastasisStatus = dsCCPhos::RecodeData(MetastasisStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "MetastasisStatus"),
+                                                                                                          set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting ----------------------------------------
+                                            mutate(ProgressDate = format(as_datetime(ProgressDate), format = "%Y-%m-%d"))
+                                                   #LocalRelapseDate = format(as_datetime(LocalRelapseDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "RadiationTherapy")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding ----------------------------------
+                                            mutate(RelationToSurgery = dsCCPhos::RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RelationToSurgery"),
+                                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "Intention"),
+                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   ApplicationType = dsCCPhos::RecodeData(ApplicationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "ApplicationType"),
+                                                                                                                set_names(Value_Curated, Value_Raw))),
+                                                   RadiationType = dsCCPhos::RecodeData(RadiationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationType"),
+                                                                                                            set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting --------------------------------
+                                            mutate(RadiationTherapyStartDate = format(as_datetime(RadiationTherapyStartDate), format = "%Y-%m-%d"),
+                                                   RadiationTherapyEndDate = format(as_datetime(RadiationTherapyEndDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "Staging")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding --------------------------------------------
+                                            mutate(UICCStage = dsCCPhos::RecodeData(UICCStage, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "UICCStage"),
+                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   TNM_T = dsCCPhos::RecodeData(TNM_T, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_T"),
+                                                                                            set_names(Value_Curated, Value_Raw))),
+                                                   TNM_N = dsCCPhos::RecodeData(TNM_N, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_N"),
+                                                                                            set_names(Value_Curated, Value_Raw))),
+                                                   TNM_M = dsCCPhos::RecodeData(TNM_M, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M"),
+                                                                                            set_names(Value_Curated, Value_Raw))),
+                                                   TNM_T_Prefix = dsCCPhos::RecodeData(TNM_T_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_T_Prefix"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNM_N_Prefix = dsCCPhos::RecodeData(TNM_N_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_N_Prefix"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNM_M_Prefix = dsCCPhos::RecodeData(TNM_M_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M_Prefix"),
+                                                                                                          set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting ------------------------------------------
+                                            mutate(StagingDate = format(as_datetime(StagingDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "Surgery")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding --------------------------------------------
+                                            mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "Intention"),
+                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   ResidualAssessmentLocal = dsCCPhos::RecodeData(ResidualAssessmentLocal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentLocal"),
+                                                                                                                                set_names(Value_Curated, Value_Raw))),
+                                                   ResidualAssessmentTotal = dsCCPhos::RecodeData(ResidualAssessmentTotal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentTotal"),
+                                                                                                                                set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting ------------------------------------------
+                                            mutate(SurgeryDate = format(as_datetime(SurgeryDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "SystemicTherapy")
+                            {
+                                Table <- Table %>%
+                                            #--- Recoding ------------------------------------
+                                            mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "Intention"),
+                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   RelationToSurgery = dsCCPhos::RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "RelationToSurgery"),
+                                                                                                                    set_names(Value_Curated, Value_Raw)))) %>%
+                                            #--- Formatting ----------------------------------
+                                            mutate(IsChemotherapy = as.logical(IsChemotherapy),
+                                                   IsImmunotherapy = as.logical(IsImmunotherapy),
+                                                   IsHormoneTherapy = as.logical(IsHormoneTherapy),
+                                                   IsBoneMarrowTransplant = as.logical(IsBoneMarrowTransplant),
+                                                   SystemicTherapyStartDate = format(as_datetime(SystemicTherapyStartDate), format = "%Y-%m-%d"),
+                                                   SystemicTherapyEndDate = format(as_datetime(SystemicTherapyEndDate), format = "%Y-%m-%d"))
+                            }
+
+                            if (tablename == "TherapyRecommendation")
+                            {
+                                Table <- Table %>%
+                                            #--- Formatting ----------------------------
+                                            mutate(TherapyRecommendationDate = format(as_datetime(TherapyRecommendationDate), format = "%Y-%m-%d"))
+                            }
+                        }
+
+                        return(Table)
+                     })
 
 
-# Recoding df_Staging
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Staging <- DataSet$Staging %>%
-                  #--- Recoding --------------------------------------------
-                  mutate(UICCStage = dsCCPhos::RecodeData(UICCStage, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "UICCStage"),
-                                                                          set_names(Value_Curated, Value_Raw))),
-                         TNM_T = dsCCPhos::RecodeData(TNM_T, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_T"),
-                                                                  set_names(Value_Curated, Value_Raw))),
-                         TNM_N = dsCCPhos::RecodeData(TNM_N, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_N"),
-                                                                  set_names(Value_Curated, Value_Raw))),
-                         TNM_M = dsCCPhos::RecodeData(TNM_M, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M"),
-                                                                  set_names(Value_Curated, Value_Raw))),
-                         TNM_T_Prefix = dsCCPhos::RecodeData(TNM_T_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_T_Prefix"),
-                                                                                set_names(Value_Curated, Value_Raw))),
-                         TNM_N_Prefix = dsCCPhos::RecodeData(TNM_N_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_N_Prefix"),
-                                                                                set_names(Value_Curated, Value_Raw))),
-                         TNM_M_Prefix = dsCCPhos::RecodeData(TNM_M_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M_Prefix"),
-                                                                                set_names(Value_Curated, Value_Raw)))) %>%
-                  #--- Formatting ------------------------------------------
-                  mutate(StagingDate = format(as_datetime(StagingDate), format = "%Y-%m-%d"))
-                  #--- Update PB ---
-                  try(ProgressBar$tick())
-
-
-# Recoding df_Surgery
+# Module C 6)  Track feature values after Recoding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Surgery <- DataSet$Surgery %>%
-                  #--- Recoding --------------------------------------------
-                  mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "Intention"),
-                                                                          set_names(Value_Curated, Value_Raw))),
-                         ResidualAssessmentLocal = dsCCPhos::RecodeData(ResidualAssessmentLocal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentLocal"),
-                                                                                                      set_names(Value_Curated, Value_Raw))),
-                         ResidualAssessmentTotal = dsCCPhos::RecodeData(ResidualAssessmentTotal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentTotal"),
-                                                                                                      set_names(Value_Curated, Value_Raw)))) %>%
-                  #--- Formatting ------------------------------------------
-                  mutate(SurgeryDate = format(as_datetime(SurgeryDate), format = "%Y-%m-%d"))
-                  #--- Update PB ---
-                  try(ProgressBar$tick())
-
-
-# Recoding df_SystemicTherapy
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_SystemicTherapy <- DataSet$SystemicTherapy %>%
-                          #--- Recoding ------------------------------------
-                          mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "Intention"),
-                                                                                  set_names(Value_Curated, Value_Raw))),
-                                 RelationToSurgery = dsCCPhos::RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "RelationToSurgery"),
-                                                                                                  set_names(Value_Curated, Value_Raw)))) %>%
-                          #--- Formatting ----------------------------------
-                          mutate(IsChemotherapy = as.logical(IsChemotherapy),
-                                 IsImmunotherapy = as.logical(IsImmunotherapy),
-                                 IsHormoneTherapy = as.logical(IsHormoneTherapy),
-                                 IsBoneMarrowTransplant = as.logical(IsBoneMarrowTransplant),
-                                 SystemicTherapyStartDate = format(as_datetime(SystemicTherapyStartDate), format = "%Y-%m-%d"),
-                                 SystemicTherapyEndDate = format(as_datetime(SystemicTherapyEndDate), format = "%Y-%m-%d"))
-                          #--- Update PB ---
-                          try(ProgressBar$tick())
-
-
-# Recoding df_TherapyRecommendation
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_TherapyRecommendation <- DataSet$TherapyRecommendation %>%
-                                #--- Formatting ----------------------------
-                                mutate(TherapyRecommendationDate = format(as_datetime(TherapyRecommendationDate), format = "%Y-%m-%d"))
-                                #--- Update PB ---
-                                try(ProgressBar$tick())
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 F)  Track feature values after Recoding
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Re-pack data frames into list in order to pass them to map-function
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
-#-------------------------------------------------------------------------------
-DataSet <- list(BioSampling = df_BioSampling,
-                   Diagnosis = df_Diagnosis,
-                   GeneralCondition = df_GeneralCondition,
-                   Histology = df_Histology,
-                   Metastasis = df_Metastasis,
-                   MolecularDiagnostics = df_MolecularDiagnostics,
-                   OtherClassification = df_OtherClassification,
-                   Patient = df_Patient,
-                   Progress = df_Progress,
-                   RadiationTherapy = df_RadiationTherapy,
-                   Staging = df_Staging,
-                   Surgery = df_Surgery,
-                   SystemicTherapy = df_SystemicTherapy,
-                   TherapyRecommendation = df_TherapyRecommendation)
-                   #--- Update PB ---
-                   try(ProgressBar$tick())
 
 
 # Map raw values to their recoded state to get transformation tracks
@@ -916,7 +920,7 @@ try(ProgressBar$tick())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 G)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
+# Module C 7)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - (Optional / Default) Exclusion of ineligible data (including data that could not be transformed)
 #   - (Optional) Conversion to ordered factor
@@ -924,146 +928,123 @@ try(ProgressBar$tick())
 #   - All predefined information stored in dsCCPhos::Meta_ValueSets
 #-------------------------------------------------------------------------------
 
-# Finalize df_BioSampling
+DataSet <- DataSet %>%
+                imap(function(Table, tablename)
+                     {
+                        try(ProgressBar$tick())
+
+                        if (!(nrow(Table) == 0))
+                        {
+                            if (tablename == "BioSampling")
+                            {
+                                Table <- Table %>%
+                                            mutate(Type = dsCCPhos::FinalizeDataTransformation(Type, TableName = "BioSampling", FeatureName = "Type"),
+                                                   TypeCXX = dsCCPhos::FinalizeDataTransformation(TypeCXX, TableName = "BioSampling", FeatureName = "TypeCXX"),
+                                                   Aliquot = dsCCPhos::FinalizeDataTransformation(Aliquot, TableName = "BioSampling", FeatureName = "Aliquot"))
+                            }
+
+                            if (tablename == "Diagnosis")
+                            {
+                                Table <- Table %>%
+                                            mutate(LocalizationSide = dsCCPhos::FinalizeDataTransformation(LocalizationSide, TableName = "Diagnosis", FeatureName = "LocalizationSide"))   # Assign factor labels?
+                            }
+
+                            if (tablename == "GeneralCondition")
+                            {
+                                Table <- Table %>%
+                                            mutate(ECOG = dsCCPhos::FinalizeDataTransformation(ECOG, TableName = "GeneralCondition", FeatureName = "ECOG"))   # Assign factor labels?
+                            }
+
+                            if (tablename == "Histology")
+                            {
+                                Table <- Table %>%
+                                            mutate(Grading = dsCCPhos::FinalizeDataTransformation(Grading, TableName = "Histology", FeatureName = "Grading"))   # Assign factor labels?
+                            }
+
+                            if (tablename == "Metastasis")
+                            {
+                                #/
+                            }
+
+                            if (tablename == "MolecularDiagnostics")
+                            {
+                                #/
+                            }
+
+                            if (tablename == "OtherClassification")
+                            {
+                                Table <- Table %>%
+                                            mutate(Classification = dsCCPhos::FinalizeDataTransformation(Classification, TableName = "OtherClassification", FeatureName = "Classification"))
+                            }
+
+                            if (tablename == "Patient")
+                            {
+                                Table <- Table %>%
+                                            mutate(Gender = dsCCPhos::FinalizeDataTransformation(Gender, TableName = "Patient", FeatureName = "Gender"),   # Assign factor labels?
+                                                   LastVitalStatus = dsCCPhos::FinalizeDataTransformation(LastVitalStatus, TableName = "Patient", FeatureName = "LastVitalStatus"))
+                            }
+
+                            if (tablename == "Progress")
+                            {
+                                Table <- Table %>%
+                                            mutate(GlobalStatus = dsCCPhos::FinalizeDataTransformation(GlobalStatus, TableName = "Progress", FeatureName = "GlobalStatus"),   # Assign factor labels?
+                                                   PrimarySiteStatus = dsCCPhos::FinalizeDataTransformation(PrimarySiteStatus, TableName = "Progress", FeatureName = "PrimarySiteStatus"),   # Assign factor labels?
+                                                   LymphnodalStatus = dsCCPhos::FinalizeDataTransformation(LymphnodalStatus, TableName = "Progress", FeatureName = "LymphnodalStatus"),   # Assign factor labels?
+                                                   MetastasisStatus = dsCCPhos::FinalizeDataTransformation(MetastasisStatus, TableName = "Progress", FeatureName = "MetastasisStatus"))   # Assign factor labels?
+                            }
+
+                            if (tablename == "RadiationTherapy")
+                            {
+                                Table <- Table %>%
+                                            mutate(RelationToSurgery = dsCCPhos::FinalizeDataTransformation(RelationToSurgery, TableName = "RadiationTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
+                                                   Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "RadiationTherapy", FeatureName = "Intention"))   # Assign factor labels?
+                            }
+
+                            if (tablename == "Staging")
+                            {
+                                Table <- Table %>%
+                                            mutate(UICCStage = dsCCPhos::FinalizeDataTransformation(UICCStage, TableName = "Staging", FeatureName = "UICCStage"),
+                                                   TNM_T = dsCCPhos::FinalizeDataTransformation(TNM_T, TableName = "Staging", FeatureName = "TNM_T"),
+                                                   TNM_N = dsCCPhos::FinalizeDataTransformation(TNM_N, TableName = "Staging", FeatureName = "TNM_N"),
+                                                   TNM_M = dsCCPhos::FinalizeDataTransformation(TNM_M, TableName = "Staging", FeatureName = "TNM_M"),
+                                                   TNM_T_Prefix = dsCCPhos::FinalizeDataTransformation(TNM_T_Prefix, TableName = "Staging", FeatureName = "TNM_T_Prefix"),
+                                                   TNM_N_Prefix = dsCCPhos::FinalizeDataTransformation(TNM_N_Prefix, TableName = "Staging", FeatureName = "TNM_N_Prefix"),
+                                                   TNM_M_Prefix = dsCCPhos::FinalizeDataTransformation(TNM_M_Prefix, TableName = "Staging", FeatureName = "TNM_M_Prefix"),
+                                                   TNM_ySymbol = dsCCPhos::FinalizeDataTransformation(TNM_ySymbol, TableName = "Staging", FeatureName = "TNM_ySymbol"),
+                                                   TNM_rSymbol = dsCCPhos::FinalizeDataTransformation(TNM_rSymbol, TableName = "Staging", FeatureName = "TNM_rSymbol"))
+                            }
+
+                            if (tablename == "Surgery")
+                            {
+                                Table <- Table %>%
+                                            mutate(Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "Surgery", FeatureName = "Intention"),   # Assign factor labels?
+                                                   ResidualAssessmentLocal = dsCCPhos::FinalizeDataTransformation(ResidualAssessmentLocal, TableName = "Surgery", FeatureName = "ResidualAssessmentLocal"),
+                                                   ResidualAssessmentTotal = dsCCPhos::FinalizeDataTransformation(ResidualAssessmentTotal, TableName = "Surgery", FeatureName = "ResidualAssessmentTotal"))
+                            }
+
+                            if (tablename == "SystemicTherapy")
+                            {
+                                Table <- Table %>%
+                                            mutate(RelationToSurgery = dsCCPhos::FinalizeDataTransformation(RelationToSurgery, TableName = "SystemicTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
+                                                   Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "SystemicTherapy", FeatureName = "Intention"))   # Assign factor labels?
+                            }
+
+                            if (tablename == "TherapyRecommendation")
+                            {
+                                Table <- Table %>%
+                                            mutate(Type = dsCCPhos::FinalizeDataTransformation(Type, TableName = "TherapyRecommendation", FeatureName = "Type"))
+                            }
+                        }
+
+                        return(Table)
+                     })
+
+
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_BioSampling <- df_BioSampling %>%
-                      mutate(Type = dsCCPhos::FinalizeDataTransformation(Type, TableName = "BioSampling", FeatureName = "Type"),
-                             TypeCXX = dsCCPhos::FinalizeDataTransformation(TypeCXX, TableName = "BioSampling", FeatureName = "TypeCXX"),
-                             Aliquot = dsCCPhos::FinalizeDataTransformation(Aliquot, TableName = "BioSampling", FeatureName = "Aliquot"))
-                      #--- Update PB ---
-                      try(ProgressBar$tick())
-
-
-# Finalize df_Diagnosis
+# Module C 8)  Track Feature Values after Finalized Transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Diagnosis <- df_Diagnosis %>%
-                    mutate(LocalizationSide = dsCCPhos::FinalizeDataTransformation(LocalizationSide, TableName = "Diagnosis", FeatureName = "LocalizationSide"))   # Assign factor labels?
-                    #--- Update PB ---
-                    try(ProgressBar$tick())
-
-
-# Finalize df_GeneralCondition
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_GeneralCondition <- df_GeneralCondition %>%
-                            mutate(ECOG = dsCCPhos::FinalizeDataTransformation(ECOG, TableName = "GeneralCondition", FeatureName = "ECOG"))   # Assign factor labels?
-                            #--- Update PB ---
-                            try(ProgressBar$tick())
-
-
-# Finalize df_Histology
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Histology <- df_Histology %>%
-                    mutate(Grading = dsCCPhos::FinalizeDataTransformation(Grading, TableName = "Histology", FeatureName = "Grading"))   # Assign factor labels?
-                    #--- Update PB ---
-                    try(ProgressBar$tick())
-
-
-# Finalize df_OtherClassification
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_OtherClassification <- df_OtherClassification %>%
-                              mutate(Classification = dsCCPhos::FinalizeDataTransformation(Classification, TableName = "OtherClassification", FeatureName = "Classification"))
-                              #--- Update PB ---
-                              try(ProgressBar$tick())
-
-
-# Finalize df_Patient
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Patient <- df_Patient %>%
-                  mutate(Gender = dsCCPhos::FinalizeDataTransformation(Gender, TableName = "Patient", FeatureName = "Gender"),   # Assign factor labels?
-                         LastVitalStatus = dsCCPhos::FinalizeDataTransformation(LastVitalStatus, TableName = "Patient", FeatureName = "LastVitalStatus"))
-                  #--- Update PB ---
-                  try(ProgressBar$tick())
-
-
-# Finalize df_Progress
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Progress <- df_Progress %>%
-                    mutate(GlobalStatus = dsCCPhos::FinalizeDataTransformation(GlobalStatus, TableName = "Progress", FeatureName = "GlobalStatus"),   # Assign factor labels?
-                           PrimarySiteStatus = dsCCPhos::FinalizeDataTransformation(PrimarySiteStatus, TableName = "Progress", FeatureName = "PrimarySiteStatus"),   # Assign factor labels?
-                           LymphnodalStatus = dsCCPhos::FinalizeDataTransformation(LymphnodalStatus, TableName = "Progress", FeatureName = "LymphnodalStatus"),   # Assign factor labels?
-                           MetastasisStatus = dsCCPhos::FinalizeDataTransformation(MetastasisStatus, TableName = "Progress", FeatureName = "MetastasisStatus"))   # Assign factor labels?
-                    #--- Update PB ---
-                    try(ProgressBar$tick())
-
-
-# Finalize df_RadiationTherapy
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_RadiationTherapy <- df_RadiationTherapy %>%
-                            mutate(RelationToSurgery = dsCCPhos::FinalizeDataTransformation(RelationToSurgery, TableName = "RadiationTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
-                                   Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "RadiationTherapy", FeatureName = "Intention"))   # Assign factor labels?
-                            #--- Update PB ---
-                            try(ProgressBar$tick())
-
-
-# Finalize df_Staging
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Staging <- df_Staging %>%
-                  mutate(UICCStage = dsCCPhos::FinalizeDataTransformation(UICCStage, TableName = "Staging", FeatureName = "UICCStage"),
-                         TNM_T = dsCCPhos::FinalizeDataTransformation(TNM_T, TableName = "Staging", FeatureName = "TNM_T"),
-                         TNM_N = dsCCPhos::FinalizeDataTransformation(TNM_N, TableName = "Staging", FeatureName = "TNM_N"),
-                         TNM_M = dsCCPhos::FinalizeDataTransformation(TNM_M, TableName = "Staging", FeatureName = "TNM_M"),
-                         TNM_T_Prefix = dsCCPhos::FinalizeDataTransformation(TNM_T_Prefix, TableName = "Staging", FeatureName = "TNM_T_Prefix"),
-                         TNM_N_Prefix = dsCCPhos::FinalizeDataTransformation(TNM_N_Prefix, TableName = "Staging", FeatureName = "TNM_N_Prefix"),
-                         TNM_M_Prefix = dsCCPhos::FinalizeDataTransformation(TNM_M_Prefix, TableName = "Staging", FeatureName = "TNM_M_Prefix"),
-                         TNM_ySymbol = dsCCPhos::FinalizeDataTransformation(TNM_ySymbol, TableName = "Staging", FeatureName = "TNM_ySymbol"),
-                         TNM_rSymbol = dsCCPhos::FinalizeDataTransformation(TNM_rSymbol, TableName = "Staging", FeatureName = "TNM_rSymbol"))
-                  #--- Update PB ---
-                  try(ProgressBar$tick())
-
-
-# Finalize df_Surgery
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_Surgery <- df_Surgery %>%
-                  mutate(Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "Surgery", FeatureName = "Intention"),   # Assign factor labels?
-                         ResidualAssessmentLocal = dsCCPhos::FinalizeDataTransformation(ResidualAssessmentLocal, TableName = "Surgery", FeatureName = "ResidualAssessmentLocal"),
-                         ResidualAssessmentTotal = dsCCPhos::FinalizeDataTransformation(ResidualAssessmentTotal, TableName = "Surgery", FeatureName = "ResidualAssessmentTotal"))
-                  #--- Update PB ---
-                  try(ProgressBar$tick())
-
-
-# Finalize df_SystemicTherapy
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_SystemicTherapy <- df_SystemicTherapy %>%
-                          mutate(RelationToSurgery = dsCCPhos::FinalizeDataTransformation(RelationToSurgery, TableName = "SystemicTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
-                                 Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "SystemicTherapy", FeatureName = "Intention"))   # Assign factor labels?
-                          #--- Update PB ---
-                          try(ProgressBar$tick())
-
-
-# Finalize df_TherapyRecommendation
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_TherapyRecommendation <- df_TherapyRecommendation %>%
-                                mutate(Type = dsCCPhos::FinalizeDataTransformation(Type, TableName = "TherapyRecommendation", FeatureName = "Type"))
-                                #--- Update PB ---
-                                try(ProgressBar$tick())
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 H)  Track Feature Values after Finalized Transformation
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Re-pack data frames into list in order to pass them to map-function
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Names have to be exactly the same (and the same order) as in ls_MonitorMetaData_all
-#-------------------------------------------------------------------------------
-DataSet <- list(BioSampling = df_BioSampling,
-                Diagnosis = df_Diagnosis,
-                GeneralCondition = df_GeneralCondition,
-                Histology = df_Histology,
-                Metastasis = df_Metastasis,
-                MolecularDiagnostics = df_MolecularDiagnostics,
-                OtherClassification = df_OtherClassification,
-                Patient = df_Patient,
-                Progress = df_Progress,
-                RadiationTherapy = df_RadiationTherapy,
-                Staging = df_Staging,
-                Surgery = df_Surgery,
-                SystemicTherapy = df_SystemicTherapy,
-                TherapyRecommendation = df_TherapyRecommendation)
-                #--- Update PB ---
-                try(ProgressBar$tick())
-
 
 # Map raw values to their finalized state to get transformation tracks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1124,7 +1105,7 @@ try(ProgressBar$tick())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module 3 I)  Merge monitor objects into coherent summaries
+# Module C 9)  Merge monitor objects into coherent summaries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -1353,20 +1334,12 @@ ls_ValueSetOverviews <- purrr::map(.x = ls_TransformationMonitors,
 
 # Delete artificial "TrackID"-column from data frames (not needed anymore)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-try(df_BioSampling <- df_BioSampling %>% select(-TrackID))
-try(df_Diagnosis <- df_Diagnosis %>% select(-TrackID))
-try(df_GeneralCondition <- df_GeneralCondition %>% select(-TrackID))
-try(df_Histology <- df_Histology %>% select(-TrackID))
-try(df_Metastasis <- df_Metastasis %>% select(-TrackID))
-try(df_MolecularDiagnostics <- df_MolecularDiagnostics %>% select(-TrackID))
-try(df_OtherClassification <- df_OtherClassification %>% select(-TrackID))
-try(df_Patient <- df_Patient %>% select(-TrackID))
-try(df_Progress <- df_Progress %>% select(-TrackID))
-try(df_RadiationTherapy <- df_RadiationTherapy %>% select(-TrackID))
-try(df_Staging <- df_Staging %>% select(-TrackID))
-try(df_Surgery <- df_Surgery %>% select(-TrackID))
-try(df_SystemicTherapy <- df_SystemicTherapy %>% select(-TrackID))
-try(df_TherapyRecommendation <- df_TherapyRecommendation %>% select(-TrackID))
+
+DataSet <- DataSet %>%
+                map(function(Table)
+                    {
+                        try(Table %>% select(-TrackID))
+                    })
 
 
 try(ProgressBar$tick())
@@ -1378,35 +1351,35 @@ cli::cat_bullet("Data transformation monitors are stored in 'CurationReport$Tran
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE 4)  Process diagnosis data
+# MODULE D)  Process diagnosis data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   A) Joining of df_Diagnosis and df_Histology to get coherent diagnosis data
-#   B) Classification and removal of redundant diagnosis entries
+#   1) Joining of tables 'Diagnosis' and 'Histology' to get coherent diagnosis data
+#   2) Classification and removal of redundant diagnosis entries
 #        - Afterwards update Diagnosis IDs in related tables
-#   C) Classification and bundling of associated diagnosis entries
+#   3) Classification and bundling of associated diagnosis entries
 #        - Afterwards update Diagnosis IDs in related tables
-#   D) Reconstruct df_Histology from df_Diagnosis
+#   4) Reconstruct 'Histology' from 'Diagnosis'
 #-------------------------------------------------------------------------------
 
 
-# Module 4 A) Join df_Diagnosis and df_Histology
+# Module D 1) Join tables 'Diagnosis' and 'Histology'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Create composed ID ('DiagnosisID / HistologyID')
 #   - Add auxiliary features for filtering purposes
 #-------------------------------------------------------------------------------
 
-df_Diagnosis <- df_Diagnosis %>%
-                    left_join(df_Histology, by = join_by(PatientID, DiagnosisID)) %>%
-                    mutate(OriginalDiagnosisID = DiagnosisID,
-                           DiagnosisID = paste0(DiagnosisID, "/", HistologyID)) %>%
-                    relocate(DiagnosisID, .after = PatientID) %>%
-                    group_by(PatientID) %>%
-                        mutate(PatientCountInitialEntries = n()) %>%
-                    ungroup()
+DataSet$Diagnosis <- DataSet$Diagnosis %>%
+                          left_join(DataSet$Histology, by = join_by(PatientID, DiagnosisID)) %>%
+                          mutate(OriginalDiagnosisID = DiagnosisID,
+                                 DiagnosisID = paste0(DiagnosisID, "/", HistologyID)) %>%
+                          relocate(DiagnosisID, .after = PatientID) %>%
+                          group_by(PatientID) %>%
+                              mutate(PatientCountInitialEntries = n()) %>%
+                          ungroup()
 
 
 
-# Module 4 B) Classification and removal of redundant diagnosis entries
+# Module D 2) Classification and removal of redundant diagnosis entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - In patients with multiple diagnosis entries:
 #     Use dsCCPhos-function ClassifyDiagnosisRedundancy() to identify and consolidate redundant diagnosis entries
@@ -1414,16 +1387,16 @@ df_Diagnosis <- df_Diagnosis %>%
 #   - Replace redundant DiagnosisIDs in all related tables
 #-------------------------------------------------------------------------------
 
-if (PerformDiagnosisRedundancyCheck.S == TRUE)
+if (Settings$DiagnosisRedundancy_Check == TRUE)
 {
 
-# Compile rule calls from data in RuleSet_DiagnosisRedundancy.S using dsCCPhos::CompileClassificationCall
+# Compile rule calls from data in Settings$DiagnosisRedundancy_RuleSet using dsCCPhos::CompileClassificationCall
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Pass required information to dsCCPhos::CompileClassificationCall to compile rule calls (dplyr::case_when-Statements)
 Call_IsLikelyRedundant <- CompileClassificationCall(TargetFeature = "IsLikelyRedundant",
-                                                    RuleSet = RuleSet_DiagnosisRedundancy.S,
-                                                    RuleProfile = RuleProfile_DiagnosisRedundancy.S,
+                                                    RuleSet = Settings$DiagnosisRedundancy_RuleSet,
+                                                    RuleProfile = Settings$DiagnosisRedundancy_Profile,
                                                     ValueIfNoRuleMet = FALSE)
 
 # Make list of rule calls to pass them to function
@@ -1432,14 +1405,14 @@ RuleCalls_DiagnosisRedundancy <- list(IsLikelyRedundant = Call_IsLikelyRedundant
 
 # Set up progress bar
 #-------------------------------------------------------------------------------
-CountProgressItems <- df_Diagnosis %>% filter(PatientCountInitialEntries > 1) %>% pull(PatientID) %>% n_distinct()
+CountProgressItems <- DataSet$Diagnosis %>% filter(PatientCountInitialEntries > 1) %>% pull(PatientID) %>% n_distinct()
 ProgressBar <- progress_bar$new(format = "Classifying redundant diagnosis entries [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
 #-------------------------------------------------------------------------------
 
 
 # Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosisRedundancy()
-df_Aux_Diagnosis_ClassifiedRedundancies <- df_Diagnosis %>%
+df_Aux_Diagnosis_ClassifiedRedundancies <- DataSet$Diagnosis %>%
                                                 filter(PatientCountInitialEntries > 1) %>%
                                                 group_by(PatientID) %>%
                                                     group_modify(~ ClassifyDiagnosisRedundancy(DiagnosisEntries = .x,
@@ -1447,14 +1420,14 @@ df_Aux_Diagnosis_ClassifiedRedundancies <- df_Diagnosis %>%
                                                                                                ProgressBarObject = ProgressBar)) %>%
                                                 ungroup()
 
-# Reassemble df_Diagnosis after processing of redundant diagnosis entries
-df_Diagnosis <- df_Diagnosis %>%
-                    filter(PatientCountInitialEntries == 1) %>%
-                    bind_rows(df_Aux_Diagnosis_ClassifiedRedundancies) %>%
-                    arrange(PatientID) %>%
-                    group_by(PatientID) %>%
-                        mutate(PatientCountDistinctEntries = n()) %>%
-                    ungroup()
+# Reassemble DataSet$Diagnosis after processing of redundant diagnosis entries
+DataSet$Diagnosis <- DataSet$Diagnosis %>%
+                          filter(PatientCountInitialEntries == 1) %>%
+                          bind_rows(df_Aux_Diagnosis_ClassifiedRedundancies) %>%
+                          arrange(PatientID) %>%
+                          group_by(PatientID) %>%
+                              mutate(PatientCountDistinctEntries = n()) %>%
+                          ungroup()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1462,8 +1435,8 @@ df_Diagnosis <- df_Diagnosis %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # a) Number of redundant diagnosis entries and
 # b) Number of patients that had redundant diagnosis entries
-CountDiagnosisRedundancies <- sum(df_Diagnosis$CountRedundancies, na.rm = TRUE)
-CountPatientsWithDiagnosisRedundancies <- df_Diagnosis %>%
+CountDiagnosisRedundancies <- sum(DataSet$Diagnosis$CountRedundancies, na.rm = TRUE)
+CountPatientsWithDiagnosisRedundancies <- DataSet$Diagnosis %>%
                                               filter(CountRedundancies > 0) %>%
                                               pull(PatientID) %>%
                                               n_distinct()
@@ -1480,7 +1453,7 @@ Messages$DiagnosisRedundancies <- Message
 
 # Replace IDs (Original DiagnosisID and not newly composed one) of redundant diagnosis entries in related tables
 # Get table of affected DiagnosisIDs
-df_Aux_Diagnosis_IDMappingRedundancies <- df_Diagnosis %>%
+df_Aux_Diagnosis_IDMappingRedundancies <- DataSet$Diagnosis %>%
                                               ungroup() %>%
                                               filter(CountRedundancies > 0) %>%
                                               select(PatientID, RedundantOriginalIDs, OriginalDiagnosisID) %>%
@@ -1490,28 +1463,31 @@ df_Aux_Diagnosis_IDMappingRedundancies <- df_Diagnosis %>%
                                               filter(OldDiagnosisID != NewDiagnosisID) %>%
                                               distinct()
 
-# Replace IDs of redundant diagnosis entries in related tables
-df_GeneralCondition <- df_GeneralCondition %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
-df_Metastasis <- df_Metastasis %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
-df_MolecularDiagnostics <- df_MolecularDiagnostics %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
-df_OtherClassification <- df_OtherClassification %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
-df_Progress <- df_Progress %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
-df_RadiationTherapy <- df_RadiationTherapy %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
-df_Staging <- df_Staging %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
-df_Surgery <- df_Surgery %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
-df_SystemicTherapy <- df_SystemicTherapy %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
-df_TherapyRecommendation <- df_TherapyRecommendation %>% ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
+
+# After classification of redundant diagnosis entries, replace DiagnosisIDs in related tables
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DataSet <- DataSet %>%
+                imap(function(Table, tablename)
+                     {
+                        if (nrow(Table) > 0 & tablename %in% c("BioSampling", "Diagnosis", "Histology", "Patient", "TherapyRecommendation") == FALSE)
+                        {
+                            Table %>%
+                                ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
+
+                        } else { return(Table) }
+                     })
 
 # Remove columns of redundant IDs (not needed anymore)
-df_Diagnosis <-  df_Diagnosis %>%
-                      select(-c(RedundantIDs,
-                                RedundantOriginalIDs,
-                                CountRedundancies))
+DataSet$Diagnosis <- DataSet$Diagnosis %>%
+                          select(-c(RedundantIDs,
+                                    RedundantOriginalIDs,
+                                    CountRedundancies))
 
 } else {   # In case no diagnosis redundancy check was performed
 
-    df_Diagnosis <- df_Diagnosis %>%
-                        mutate(PatientCountDistinctEntries = PatientCountInitialEntries)
+    DataSet$Diagnosis <- DataSet$Diagnosis %>%
+                              mutate(PatientCountDistinctEntries = PatientCountInitialEntries)
 
     CountDiagnosisRedundancies <- NA
     CountPatientsWithDiagnosisRedundancies <- NA
@@ -1526,7 +1502,7 @@ df_Diagnosis <-  df_Diagnosis %>%
 
 
 
-# Module 4 C) Classify associations between diagnosis entries
+# Module D 3) Classify associations between diagnosis entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - In patients with multiple distinct diagnosis entries:
 #     Use dsCCPhos-function ClassifyDiagnosisAssociations() to plausibly distinguish pseudo-different from actually different diagnoses
@@ -1534,60 +1510,60 @@ df_Diagnosis <-  df_Diagnosis %>%
 #   - Replace DiagnosisIDs in all related tables with ReferenceDiagnosisID
 #-------------------------------------------------------------------------------
 
-if (PerformDiagnosisAssociationCheck.S == TRUE)
+if (Settings$DiagnosisAssociation_Check == TRUE)
 {
 
 
 # Compile rule calls (unevaluated dplyr::case_when-Statements) with dsCCPhos::CompileClassificationCall
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Call_IsLikelyAssociated <- CompileClassificationCall(TargetFeature = "IsLikelyAssociated",
-                                                     RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                     RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                     RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                     RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                      ValueIfNoRuleMet = FALSE)
 
 Call_InconsistencyCheck <- CompileClassificationCall(TargetFeature = "InconsistencyCheck",
-                                                     RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                     RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                     RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                     RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                      ValueIfNoRuleMet = "No apparent inconsistency")
 
 Call_ImplausibilityCheck <- CompileClassificationCall(TargetFeature = "ImplausibilityCheck",
-                                                      RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                      RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                      RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                      RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                       ValueIfNoRuleMet = "No apparent implausibility")
 
 Call_Relation_ICD10 <- CompileClassificationCall(TargetFeature = "Relation_ICD10",
-                                                 RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                 RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                 RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                 RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                  ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_ICDOTopography <- CompileClassificationCall(TargetFeature = "Relation_ICDOTopography",
-                                                          RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                          RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                          RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                          RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                           ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_LocalizationSide <- CompileClassificationCall(TargetFeature = "Relation_LocalizationSide",
-                                                            RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                            RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                            RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                            RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                             ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_ICDOMorphology <- CompileClassificationCall(TargetFeature = "Relation_ICDOMorphology",
-                                                            RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                            RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                            RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                            RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                             ValueIfNoRuleMet = NA_character_)
 
 Call_Relation_Grading <- CompileClassificationCall(TargetFeature = "Relation_Grading",
-                                                   RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                   RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                   RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                   RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                    ValueIfNoRuleMet = NA_character_)
 
 Call_IsLikelyProgression <- CompileClassificationCall(TargetFeature = "IsLikelyProgression",
-                                                      RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                      RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                      RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                      RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                       ValueIfNoRuleMet = NA)
 
 Call_IsLikelyRecoding <- CompileClassificationCall(TargetFeature = "IsLikelyRecoding",
-                                                   RuleSet = RuleSet_DiagnosisAssociation.S,
-                                                   RuleProfile = RuleProfile_DiagnosisAssociation.S,
+                                                   RuleSet = Settings$DiagnosisAssociation_RuleSet,
+                                                   RuleProfile = Settings$DiagnosisAssociation_Profile,
                                                    ValueIfNoRuleMet = NA)
 
 
@@ -1606,13 +1582,13 @@ RuleCalls_DiagnosisAssociation <- list(IsLikelyAssociated = Call_IsLikelyAssocia
 
 # Set up progress bar
 #-------------------------------------------------------------------------------
-CountProgressItems <- df_Diagnosis %>% filter(PatientCountDistinctEntries > 1) %>% pull(PatientID) %>% n_distinct()
+CountProgressItems <- DataSet$Diagnosis %>% filter(PatientCountDistinctEntries > 1) %>% pull(PatientID) %>% n_distinct()
 ProgressBar <- progress_bar$new(format = "Classifying associated diagnosis entries [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
 #-------------------------------------------------------------------------------
 
 # Filter patients with multiple distinct diagnosis entries and apply dsCCPhos::ClassifyDiagnosisAssociations()
-df_Aux_Diagnosis_ClassifiedAssociations <- df_Diagnosis %>%
+df_Aux_Diagnosis_ClassifiedAssociations <- DataSet$Diagnosis %>%
                                                 filter(PatientCountDistinctEntries > 1) %>%
                                                 group_by(PatientID) %>%
                                                     group_modify(~ ClassifyDiagnosisAssociation(DiagnosisEntries = .x,
@@ -1620,18 +1596,18 @@ df_Aux_Diagnosis_ClassifiedAssociations <- df_Diagnosis %>%
                                                                                                 ProgressBarObject = ProgressBar)) %>%
                                                 ungroup()
 
-# Reassemble df_Diagnosis after processing of associated diagnosis entries
-df_Diagnosis <- df_Diagnosis %>%
-                    filter(PatientCountDistinctEntries == 1) %>%
-                    mutate(ReferenceDiagnosisID = DiagnosisID,
-                           IsLikelyAssociated = FALSE) %>%
-                    bind_rows(df_Aux_Diagnosis_ClassifiedAssociations) %>%
-                    mutate(IsReferenceEntry = (ReferenceDiagnosisID == DiagnosisID),
-                                              .after = DiagnosisID) %>%
-                    arrange(PatientID) %>%
-                    relocate(c(PatientID, ReferenceDiagnosisID), .before = DiagnosisID) %>%
-                    rename(all_of(c(SubDiagnosisID = "DiagnosisID",
-                                    DiagnosisID = "ReferenceDiagnosisID")))
+# Reassemble DataSet$Diagnosis after processing of associated diagnosis entries
+DataSet$Diagnosis <- DataSet$Diagnosis %>%
+                          filter(PatientCountDistinctEntries == 1) %>%
+                          mutate(ReferenceDiagnosisID = DiagnosisID,
+                                 IsLikelyAssociated = FALSE) %>%
+                          bind_rows(df_Aux_Diagnosis_ClassifiedAssociations) %>%
+                          mutate(IsReferenceEntry = (ReferenceDiagnosisID == DiagnosisID),
+                                                    .after = DiagnosisID) %>%
+                          arrange(PatientID) %>%
+                          relocate(c(PatientID, ReferenceDiagnosisID), .before = DiagnosisID) %>%
+                          rename(all_of(c(SubDiagnosisID = "DiagnosisID",
+                                          DiagnosisID = "ReferenceDiagnosisID")))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1639,7 +1615,7 @@ df_Diagnosis <- df_Diagnosis %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # a) Number of associated diagnosis entries and
 # b) Number of patients that have associated diagnosis entries
-CountDiagnosisAssociations <- sum(df_Diagnosis$IsLikelyAssociated, na.rm = TRUE)
+CountDiagnosisAssociations <- sum(DataSet$Diagnosis$IsLikelyAssociated, na.rm = TRUE)
 CountPatientsWithDiagnosisAssociations <- df_Aux_Diagnosis_ClassifiedAssociations %>%
                                               filter(IsLikelyAssociated == TRUE) %>%
                                               pull(PatientID) %>%
@@ -1656,7 +1632,7 @@ Messages$DiagnosisAssociation <- Message
 
 
 # Create table for DiagnosisID replacement in related tables
-df_Aux_Diagnosis_IDMappingAssociations <- df_Diagnosis %>%
+df_Aux_Diagnosis_IDMappingAssociations <- DataSet$Diagnosis %>%
                                               ungroup() %>%
                                               select(PatientID, OriginalDiagnosisID, DiagnosisID) %>%
                                               rename(all_of(c(OldDiagnosisID = "OriginalDiagnosisID",
@@ -1671,50 +1647,17 @@ df_Aux_Diagnosis_IDMappingAssociations <- df_Diagnosis %>%
 #     - Rearrange column order
 #-------------------------------------------------------------------------------
 
-if (nrow(df_GeneralCondition) > 0)
-{
-    df_GeneralCondition <- df_GeneralCondition %>%
-                                    ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                                    relocate(c(PatientID, DiagnosisID), .before = GeneralConditionID)
-}
+DataSet <- DataSet %>%
+                imap(function(Table, tablename)
+                     {
+                        if (nrow(Table) > 0 & tablename %in% c("BioSampling", "Diagnosis", "Histology", "Patient", "TherapyRecommendation") == FALSE)
+                        {
+                            Table %>%
+                                ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                                relocate(c(PatientID, DiagnosisID))   # Moves features 'PatientID' and 'DiagnosisID' to front of table
 
-df_Metastasis <- df_Metastasis %>%
-                      ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                      relocate(c(PatientID, DiagnosisID), .before = MetastasisID)
-
-if (nrow(df_MolecularDiagnostics) > 0)
-{
-    df_MolecularDiagnostics <- df_MolecularDiagnostics %>%
-                                    ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                                    relocate(c(PatientID, DiagnosisID), .before = MolecularDiagnosticsID)
-}
-
-if (nrow(df_OtherClassification) > 0)
-{
-    df_OtherClassification <- df_OtherClassification %>%
-                                    ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                                    relocate(c(PatientID, DiagnosisID), .before = OtherClassificationID)
-}
-
-df_Progress <- df_Progress %>%
-                    ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                    relocate(c(PatientID, DiagnosisID), .before = ProgressID)
-
-df_RadiationTherapy <- df_RadiationTherapy %>%
-                            ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                            relocate(c(PatientID, DiagnosisID), .before = RadiationTherapyID)
-
-df_Staging <- df_Staging %>%
-                  ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                  relocate(c(PatientID, DiagnosisID), .before = StagingID)
-
-df_Surgery <- df_Surgery %>%
-                  ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                  relocate(c(PatientID, DiagnosisID), .before = SurgeryID)
-
-df_SystemicTherapy <- df_SystemicTherapy %>%
-                          ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                          relocate(c(PatientID, DiagnosisID), .before = SystemicTherapyID)
+                        } else { return(Table) }
+                     })
 
 } else {
 
@@ -1731,55 +1674,148 @@ df_SystemicTherapy <- df_SystemicTherapy %>%
 
 
 
-# Module 4 D) Reconstruct df_Histology from df_Diagnosis
+# Module D 4)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Reconstruct DataSet$Histology from DataSet$Diagnosis
+#   - Modify DataSet$Diagnosis
+#-------------------------------------------------------------------------------
 
-# Remove OriginalDiagnosisID column (not needed anymore)
-df_Diagnosis <-  df_Diagnosis %>%
-                      select(-OriginalDiagnosisID)
+# Reconstruction of DataSet$Histology
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if (PerformDiagnosisAssociationCheck.S == TRUE)
+if (Settings$DiagnosisAssociation_Check == TRUE)
 {
-    # Reconstruct df_Histology
-    df_Histology <- df_Diagnosis %>%
-                        select(all_of(c("SubDiagnosisID", names(df_Histology)))) %>%
-                        relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = HistologyID)
+    # Reconstruct DataSet$Histology
+    DataSet$Histology <- DataSet$Diagnosis %>%
+                              select(all_of(c("SubDiagnosisID", names(DataSet$Histology)))) %>%
+                              relocate(c(PatientID, DiagnosisID, SubDiagnosisID), .before = HistologyID)
 } else {
 
-    df_Histology <- df_Diagnosis %>%
-                        select(all_of(names(df_Histology))) %>%
-                        mutate(SubDiagnosisID = DiagnosisID, .after = DiagnosisID)
+    DataSet$Histology <- DataSet$Diagnosis %>%
+                              select(all_of(names(DataSet$Histology))) %>%
+                              mutate(SubDiagnosisID = DiagnosisID, .after = DiagnosisID)
+}
+
+
+# Remove OriginalDiagnosisID column (not needed anymore)
+DataSet$Diagnosis <-  DataSet$Diagnosis %>%
+                          select(-OriginalDiagnosisID)
+
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MODULE E)  Secondary entry exclusion
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Remove ineligible entries that may have been introduced during processing
+#   - Same proceedings as in primary table cleaning (Module B))
+#-------------------------------------------------------------------------------
+
+# Set up progress bar
+#-------------------------------------------------------------------------------
+CountProgressItems <- 15
+ProgressBar <- progress_bar$new(format = "Secondary exclusion: Excluding ineligible table entries [:bar] :percent in :elapsed  :spin",
+                                total = CountProgressItems, clear = FALSE, width = 100)
+try(ProgressBar$tick())
+#-------------------------------------------------------------------------------
+
+DataSetRoot <- DataSet$Patient %>%
+                    left_join(DataSet$Diagnosis, by = join_by(PatientID)) %>%
+                    CleanTable(TableNameLookup = c("Diagnosis", "Patient"),
+                               RemoveRedundantEntries = FALSE,
+                               FeatureObligations_RuleSet = Settings$FeatureObligations_RuleSet,
+                               FeatureObligations_Profile = Settings$FeatureObligations_Profile) %>%
+                    select(PatientID, DiagnosisID) %>%
+                    distinct()
+
+DataSet <- DataSet %>%
+                imap(function(Table, tablename)
+                     {
+                        try(ProgressBar$tick())
+
+                        if (!(is.null(Table) | length(Table) == 0 | nrow(Table) == 0))
+                        {
+                            # Join current table with preselection of 'DataSetRoot'
+                            if (tablename %in% c("BioSampling", "GeneralCondition", "Patient", "TherapyRecommendation"))
+                            {
+                                Table <- DataSetRoot %>%
+                                            select(PatientID) %>%
+                                            distinct() %>%
+                                            left_join(Table, by = join_by(PatientID))
+                            } else {
+
+                                Table <- DataSetRoot %>%
+                                              left_join(Table, by = join_by(PatientID, DiagnosisID))
+                            }
+
+                            # Clean current table using auxiliary function dsCCPhos::CleanTable()
+                            CleanedTable <- Table %>%
+                                                CleanTable(TableNameLookup = tablename,
+                                                           RemoveRedundantEntries = TRUE,
+                                                           FeatureObligations_RuleSet = Settings$FeatureObligations_RuleSet,
+                                                           FeatureObligations_Profile = Settings$FeatureObligations_Profile)
+                            return(CleanedTable)
+
+                        } else {
+
+                            return(Table)
+                        }
+                     })
+
+try(ProgressBar$terminate())
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MONITORING: Count ineligible entries after secondary exclusion
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Count entries in data frames after secondary exclusion
+CountEntriesAfterSecondaryExclusion <- DataSet %>%
+                                          imap_int(function(Table, tablename)
+                                                   {
+                                                      if (tablename == "Diagnosis")
+                                                      {
+                                                          Table <- Table %>% filter(IsReferenceEntry == TRUE)
+                                                      }
+
+                                                      return(ifelse(!is.null(nrow(Table)), nrow(Table), 0))
+                                                   })
+
+# Count ineligible entries
+CountIneligibleEntries_Secondary <- CountEntriesAfterPrimaryExclusion - CountEntriesAfterSecondaryExclusion
+
+
+# Print messages for live monitoring in local tests
+cat("\n")
+for (i in 1:length(CountIneligibleEntries_Secondary))
+{
+    Message <- paste0("Secondary exclusion: Removed ", CountIneligibleEntries_Secondary[i], " ineligible entries from '", names(CountIneligibleEntries_Secondary)[i], "' table.")
+    cli::cat_bullet(Message, bullet = "info")
+
+    # Save messages in output object
+    Messages$IneligibleEntries_Secondary <- c(Messages$IneligibleEntries,
+                                              info = Message)
 }
 
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Re-pack data frames into list to get compact Curated Data Set (CDS) object
+# Conversion of Tables from tibble to data.frame, because dataSHIELD can handle data.frames better
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# - Conversion from tibble to data.frame (if necessary), because dataSHIELD can handle data.frames better
-#-------------------------------------------------------------------------------
-ls_CuratedDataSet <- list(BioSampling = as.data.frame(df_BioSampling),
-                          Diagnosis = as.data.frame(df_Diagnosis),
-                          GeneralCondition = as.data.frame(df_GeneralCondition),
-                          Histology = as.data.frame(df_Histology),
-                          Metastasis = as.data.frame(df_Metastasis),
-                          MolecularDiagnostics = as.data.frame(df_MolecularDiagnostics),
-                          OtherClassification = as.data.frame(df_OtherClassification),
-                          Patient = as.data.frame(df_Patient),
-                          Progress = as.data.frame(df_Progress),
-                          RadiationTherapy = as.data.frame(df_RadiationTherapy),
-                          Staging = as.data.frame(df_Staging),
-                          Surgery = as.data.frame(df_Surgery),
-                          SystemicTherapy = as.data.frame(df_SystemicTherapy),
-                          TherapyRecommendation = as.data.frame(df_TherapyRecommendation))
+
+DataSet <- DataSet %>%
+                map(\(Table) as.data.frame(Table))
+
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Define content of CurationReport
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_CurationReport <- list(IneligibleEntries = CountIneligibleEntries,      # Named vector
+ls_CurationReport <- list(IneligibleEntries = list(PrimaryExclusion = CountIneligibleEntries_Primary,      # List of named vectors
+                                                   SecondaryExclusion = CountIneligibleEntries_Secondary),
                           Transformation = list(Monitors = ls_TransformationMonitors,      # List of lists
                                                 EligibilityOverviews = ls_EligibilityOverviews,
                                                 ValueSetOverviews = ls_ValueSetOverviews),
@@ -1815,7 +1851,7 @@ Messages$FinalMessage <- "Curation performed successfully!"
 # finally =
 # {
 #   # Return the Curated Data Set (CDS) a Curation Report (defined above) and Messages
-  return(list(CuratedDataSet = ls_CuratedDataSet,
+  return(list(CuratedDataSet = DataSet,
               CurationReport = ls_CurationReport,
               CurationMessages = Messages))
 # })

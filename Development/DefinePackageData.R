@@ -40,38 +40,50 @@ use_data(Meta_ValueSets, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta data: Raw Data Harmonization rule set
+# Settings: Feature obligations
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RuleSet_RawDataHarmonization <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                           sheet = "RawDataHarmonization")
+Meta_FeatureObligations <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                      sheet = "FeatureObligations")
 
 # Save data in .rda-file and make it part of package
-use_data(RuleSet_RawDataHarmonization, overwrite = TRUE)
+use_data(Meta_FeatureObligations, overwrite = TRUE)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta data: Diagnosis association rule set
+# Settings: Raw Data Harmonization rule set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RuleSet_DiagnosisAssociation <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                           sheet = "DiagnosisAssociation")
+Meta_DataHarmonization <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                     sheet = "DataHarmonization")
 
 # Save data in .rda-file and make it part of package
-use_data(RuleSet_DiagnosisAssociation, overwrite = TRUE)
+use_data(Meta_DataHarmonization, overwrite = TRUE)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta data: Diagnosis redundancy rule set
+# Settings: Diagnosis association rule set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RuleSet_DiagnosisRedundancy <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                          sheet = "DiagnosisRedundancy")
+Meta_DiagnosisAssociation <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                        sheet = "DiagnosisAssociation")
 
 # Save data in .rda-file and make it part of package
-use_data(RuleSet_DiagnosisRedundancy, overwrite = TRUE)
+use_data(Meta_DiagnosisAssociation, overwrite = TRUE)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Settings: Diagnosis redundancy rule set
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Meta_DiagnosisRedundancy <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                       sheet = "DiagnosisRedundancy")
+
+# Save data in .rda-file and make it part of package
+use_data(Meta_DiagnosisRedundancy, overwrite = TRUE)
 
 
 

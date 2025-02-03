@@ -6,43 +6,53 @@
 \usage{
 CurateDataDS(
   RawDataSetName.S = "RawDataSet",
-  RuleSet_RawDataHarmonization.S = dsCCPhos::RuleSet_RawDataHarmonization,
-  RuleProfile_RawDataHarmonization.S = "Default",
-  RuleSet_DiagnosisRedundancy.S = dsCCPhos::RuleSet_DiagnosisRedundancy,
-  RuleProfile_DiagnosisRedundancy.S = "Default",
-  RuleSet_DiagnosisAssociation.S = dsCCPhos::RuleSet_DiagnosisAssociation,
-  RuleProfile_DiagnosisAssociation.S = "Default"
+  Settings.S = list(DataHarmonization_RuleSet = dsCCPhos::Meta_DataHarmonization,
+    DataHarmonization_Profile = "Default", DiagnosisRedundancy_Check = TRUE,
+    DiagnosisRedundancy_RuleSet = dsCCPhos::Meta_DiagnosisRedundancy,
+    DiagnosisRedundancy_Profile = "Default", DiagnosisAssociation_Check = TRUE,
+    DiagnosisAssociation_RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
+    DiagnosisAssociation_Profile = "Default", FeatureObligations_RuleSet =
+    dsCCPhos::Meta_FeatureObligations, FeatureObligations_Profile = "Default")
 )
 }
 \arguments{
-\item{RawDataSetName.S}{String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'}
+\item{RawDataSetName.S}{\code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'}
 
-\item{RuleSet_RawDataHarmonization.S}{Data frame}
-
-\item{RuleSet_DiagnosisRedundancy.S}{Data frame}
-
-\item{RuleSet_DiagnosisAssociation.S}{Data frame}
+\item{Settings.S}{\code{list} - Settings passed to function
+\itemize{\item DataHarmonization_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
+\item DataHarmonization_Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{RawDataHarmonization_RuleSet} - Default: 'Default'
+\item DiagnosisRedundancy_Check \code{logical} - Whether or not to check for redundant diagnosis entries
+\item DiagnosisRedundancy_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DiagnosisRedundancy}
+\item DiagnosisRedundancy_Profile \code{character} - Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{DiagnosisRedundancy_RuleSet} - Default: 'Default'
+\item DiagnosisAssociation_Check \code{logical} - Whether or not to classify associated diagnosis entries
+\item DiagnosisAssociation_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DiagnosisAssociation}
+\item DiagnosisAssociation_Profile \code{character} - Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{DiagnosisAssociation_RuleSet} - Default: 'Default'
+\item FeatureObligations_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
+\item FeatureObligations_Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations_RuleSet} - Default: 'Default'}}
 }
 \value{
 A list containing the following objects:
 \itemize{\item CuratedDataSet (list)
 \itemize{\item BioSampling
 \item Diagnosis
+\item GeneralCondition
 \item Histology
 \item Metastasis
 \item MolecularDiagnostics
+\item OtherClassification
 \item Patient
 \item Progress
 \item RadiationTherapy
 \item Staging
 \item Surgery
-\item SystemicTherapy}
+\item SystemicTherapy
+\item TherapyRecommendation}
 \item CurationReport (list)
 \itemize{\item IneligibleEntries (named vector)
-\item Transformation (list of data frames)
-\itemize{\item BioSampling
-\item Diagnosis
-\item ...}
+\item Transformation (list of lists)
+\itemize{\item Monitors
+\item EligibilityOverviews
+\item ValueSetOverviews}
 \item DiagnosisClassification (named vector)}
 \item CurationMessages (list)}
 }

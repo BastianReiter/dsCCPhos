@@ -25,14 +25,14 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet")
 #     - Loading of required package namespaces
 #     - Unpacking Curated Data Set (CDS)
 #
-#   MODULE 1)  Creation of df_ADS_Events
+#   MODULE A)  Creation of df_ADS_Events
 #       - Diagnosis-related
 #       - Patient-related
 #
-#   MODULE 2)  Creation of df_ADS_Diagnoses
+#   MODULE B)  Creation of df_ADS_Diagnoses
 #       - Consolidate information from df_ADS_Events
 #
-#   MODULE 3)  Creation of df_ADS_Patients
+#   MODULE C)  Creation of df_ADS_Patients
 #       - Consolidate information from df_ADS_Events and df_ADS_Diagnoses
 #
 #   Return statement
@@ -80,21 +80,6 @@ Messages$FinalMessage <- "Augmentation not completed"
 # Use tryCatch to catch warnings and errors
 # Note: Warnings and errors must be defined and thrown explicitly for this to work. Unspecified errors will not be caught directly but will also not lead to harsh stops.
 # tryCatch({
-
-
-# Extract data frames from list
-# df_CDS_BioSampling <- CuratedDataSet$BioSampling
-# df_CDS_Diagnosis <- CuratedDataSet$Diagnosis
-# df_CDS_Histology <- CuratedDataSet$Histology
-# df_CDS_Metastasis <- CuratedDataSet$Metastasis
-# df_CDS_MolecularDiagnostics <- CuratedDataSet$MolecularDiagnostics
-# df_CDS_Patient <- CuratedDataSet$Patient
-# df_CDS_Progress <- CuratedDataSet$Progress
-# df_CDS_RadiationTherapy <- CuratedDataSet$RadiationTherapy
-# df_CDS_Staging <- CuratedDataSet$Staging
-# df_CDS_Surgery <- CuratedDataSet$Surgery
-# df_CDS_SystemicTherapy <- CuratedDataSet$SystemicTherapy
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -171,7 +156,7 @@ Messages$FinalMessage <- "Augmentation not completed"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE 1)  Generate df_ADS_Events
+# MODULE A)  Generate df_ADS_Events
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Initiation
 #   - Loop through CDS tables and generate event data
@@ -473,14 +458,14 @@ try(ProgressBar$terminate())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE 2)  Generate df_ADS_Diagnoses
+# MODULE B)  Generate df_ADS_Diagnoses
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 #--- Set up progress bar -------------------------------------------------------
-# CountProgressItems <- df_ADS_Events %>% pull(DiagnosisID) %>% n_distinct()
-# ProgressBar <- progress_bar$new(format = "Summarizing event data [:bar] :percent in :elapsed  :spin",
-#                                 total = CountProgressItems, clear = FALSE, width= 100)
+CountProgressItems <- df_ADS_Events %>% pull(DiagnosisID) %>% n_distinct()
+ProgressBar <- progress_bar$new(format = "Summarizing event data [:bar] :percent in :elapsed  :spin",
+                                total = CountProgressItems, clear = FALSE, width= 100)
 # #-------------------------------------------------------------------------------
 
 # Summarize diagnosis-specific event data using dsCCPhos::SummarizeEventData()
@@ -552,7 +537,7 @@ df_ADS_Diagnoses <- df_Aux_DiagnosisData %>%
 #
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE 3)  Generate df_ADS_Patients
+# MODULE C)  Generate df_ADS_Patients
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

@@ -12,7 +12,6 @@
 #' @return List of named vectors (serving as hash tables)
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 CompileHashTables <- function(TableName,
                               RuleSet,
