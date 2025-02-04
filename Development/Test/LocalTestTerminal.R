@@ -114,7 +114,8 @@ CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
                                                            DiagnosisRedundancy_Check = TRUE,
                                                            DiagnosisRedundancy_Profile = "Default",
                                                            DiagnosisAssociation_Check = TRUE,
-                                                           DiagnosisAssociation_Profile = "Default"))
+                                                           DiagnosisAssociation_Profile = "Default",
+                                                           FeatureObligations_Profile = "Default"))
 
 
 # CurationOutput$CurationReport$UnlinkedEntries
