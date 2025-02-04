@@ -473,7 +473,7 @@ df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
                                       unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
                                       group_by(PatientID, DiagnosisID) %>%
                                           group_modify(~ SummarizeEventData(EventEntries = .x,
-                                                                            ProgressBarObject = NULL)) %>%
+                                                                            ProgressBarObject = ProgressBar)) %>%
                                       ungroup()
 
 

@@ -19,7 +19,7 @@
 #'                            \item FeatureObligations_Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations_RuleSet} - Default: 'Default'}
 #'
 #' @return A list containing the following objects:
-#'         \itemize{\item CuratedDataSet (list)
+#'         \itemize{\item CuratedDataSet \code{list}
 #'                      \itemize{\item BioSampling
 #'                               \item Diagnosis
 #'                               \item GeneralCondition
@@ -34,14 +34,20 @@
 #'                               \item Surgery
 #'                               \item SystemicTherapy
 #'                               \item TherapyRecommendation}
-#'                  \item CurationReport (list)
-#'                      \itemize{\item IneligibleEntries (named vector)
+#'                  \item CurationReport \code{list}
+#'                      \itemize{\item ExcludedEntries
+#'                                    \itemize{\item PrimaryExclusion
+#'                                             \item SecondaryExclusion}
 #'                               \item Transformation (list of lists)
 #'                                    \itemize{\item Monitors
 #'                                             \item EligibilityOverviews
 #'                                             \item ValueSetOverviews}
-#'                               \item DiagnosisClassification (named vector)}
-#'                  \item CurationMessages (list)}
+#'                               \item DiagnosisClassification
+#'                                    \itemize{\item DiagnosisRedundancies
+#'                                             \item PatientsWithDiagnosisRedundancies
+#'                                             \item DiagnosisAssociations
+#'                                             \item PatientsWithDiagnosisAssociations}}
+#'                  \item CurationMessages \code{list}}
 #' @export
 #' @author Bastian Reiter
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
@@ -183,7 +189,8 @@ ls_CurationReport <- NULL
 
 # Initiate Messaging objects
 Messages <- list()
-Messages$IneligibleEntries <- character()
+Messages$ExcludedEntries_Primary <- character()
+Messages$ExcludedEntries_Secondary <- character()
 Messages$DiagnosisRedundancies <- character()
 Messages$DiagnosisAssociation <- character()
 Messages$CheckCurationCompletion <- "red"
@@ -383,20 +390,20 @@ try(ProgressBar$terminate())
 CountEntriesAfterPrimaryExclusion <- DataSet %>%
                                         map_int(\(Table) ifelse (!is.null(nrow(Table)), nrow(Table), 0))
 
-# Count ineligible entries
-CountIneligibleEntries_Primary <- CountEntriesBeforeExclusion - CountEntriesAfterPrimaryExclusion
+# Count excluded entries
+CountExcludedEntries_Primary <- CountEntriesBeforeExclusion - CountEntriesAfterPrimaryExclusion
 
 
 # Print messages for live monitoring in local tests
 cat("\n")
-for (i in 1:length(CountIneligibleEntries_Primary))
+for (i in 1:length(CountExcludedEntries_Primary))
 {
-    Message <- paste0("Primary exclusion: Removed ", CountIneligibleEntries_Primary[i], " ineligible entries from '", names(CountIneligibleEntries_Primary)[i], "' table.")
+    Message <- paste0("Primary exclusion: Removed ", CountExcludedEntries_Primary[i], " ineligible entries from '", names(CountExcludedEntries_Primary)[i], "' table.")
     cli::cat_bullet(Message, bullet = "info")
 
     # Save messages in output object
-    Messages$IneligibleEntries_Primary <- c(Messages$IneligibleEntries,
-                                            info = Message)
+    Messages$ExcludedEntries_Primary <- c(Messages$ExcludedEntries_Primary,
+                                          info = Message)
 }
 
 
@@ -1781,20 +1788,20 @@ CountEntriesAfterSecondaryExclusion <- DataSet %>%
                                                       return(ifelse(!is.null(nrow(Table)), nrow(Table), 0))
                                                    })
 
-# Count ineligible entries
-CountIneligibleEntries_Secondary <- CountEntriesAfterPrimaryExclusion - CountEntriesAfterSecondaryExclusion
+# Count excluded entries
+CountExcludedEntries_Secondary <- CountEntriesAfterPrimaryExclusion - CountEntriesAfterSecondaryExclusion
 
 
 # Print messages for live monitoring in local tests
 cat("\n")
-for (i in 1:length(CountIneligibleEntries_Secondary))
+for (i in 1:length(CountExcludedEntries_Secondary))
 {
-    Message <- paste0("Secondary exclusion: Removed ", CountIneligibleEntries_Secondary[i], " ineligible entries from '", names(CountIneligibleEntries_Secondary)[i], "' table.")
+    Message <- paste0("Secondary exclusion: Removed ", CountExcludedEntries_Secondary[i], " ineligible entries from '", names(CountExcludedEntries_Secondary)[i], "' table.")
     cli::cat_bullet(Message, bullet = "info")
 
     # Save messages in output object
-    Messages$IneligibleEntries_Secondary <- c(Messages$IneligibleEntries,
-                                              info = Message)
+    Messages$ExcludedEntries_Secondary <- c(Messages$ExcludedEntries_Secondary,
+                                            info = Message)
 }
 
 
@@ -1814,15 +1821,15 @@ DataSet <- DataSet %>%
 # Define content of CurationReport
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ls_CurationReport <- list(IneligibleEntries = list(PrimaryExclusion = CountIneligibleEntries_Primary,      # List of named vectors
-                                                   SecondaryExclusion = CountIneligibleEntries_Secondary),
-                          Transformation = list(Monitors = ls_TransformationMonitors,      # List of lists
-                                                EligibilityOverviews = ls_EligibilityOverviews,
-                                                ValueSetOverviews = ls_ValueSetOverviews),
-                          DiagnosisClassification = c(DiagnosisRedundancies = CountDiagnosisRedundancies,      # Named vector
-                                                      PatientsWithDiagnosisRedundancies = CountPatientsWithDiagnosisRedundancies,
-                                                      DiagnosisAssociations = CountDiagnosisAssociations,
-                                                      PatientsWithDiagnosisAssociations = CountPatientsWithDiagnosisAssociations))
+CurationReport <- list(ExcludedEntries = list(PrimaryExclusion = CountExcludedEntries_Primary,
+                                              SecondaryExclusion = CountExcludedEntries_Secondary),
+                       Transformation = list(Monitors = ls_TransformationMonitors,
+                                             EligibilityOverviews = ls_EligibilityOverviews,
+                                             ValueSetOverviews = ls_ValueSetOverviews),
+                       DiagnosisClassification = c(DiagnosisRedundancies = CountDiagnosisRedundancies,
+                                                   PatientsWithDiagnosisRedundancies = CountPatientsWithDiagnosisRedundancies,
+                                                   DiagnosisAssociations = CountDiagnosisAssociations,
+                                                   PatientsWithDiagnosisAssociations = CountPatientsWithDiagnosisAssociations))
 
 Messages$CheckCurationCompletion <- "green"
 Messages$FinalMessage <- "Curation performed successfully!"
@@ -1852,7 +1859,7 @@ Messages$FinalMessage <- "Curation performed successfully!"
 # {
 #   # Return the Curated Data Set (CDS) a Curation Report (defined above) and Messages
   return(list(CuratedDataSet = DataSet,
-              CurationReport = ls_CurationReport,
+              CurationReport = CurationReport,
               CurationMessages = Messages))
 # })
 

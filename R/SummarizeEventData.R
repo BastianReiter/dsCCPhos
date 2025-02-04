@@ -19,10 +19,10 @@ SummarizeEventData <- function(EventEntries,
     require(dplyr)
 
 
-    # For function testing purposes
-    EventEntries <- df_ADS_Events %>%
-                        filter(PatientID == "Pat_2063") %>%
-                        unnest(cols = c(EventDetails), keep_empty = TRUE)
+    ### For function testing purposes
+    # EventEntries <- df_ADS_Events %>%
+    #                     filter(PatientID == "Pat_2063") %>%
+    #                     unnest(cols = c(EventDetails), keep_empty = TRUE)
 
 
 
