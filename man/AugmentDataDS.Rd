@@ -7,13 +7,13 @@
 AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 }
 \arguments{
-\item{CuratedDataSetName.S}{String | Name of the Curated Data Set object on server | Default: 'CuratedDataSet'}
+\item{CuratedDataSetName.S}{\code{character} - Name of the Curated Data Set object on server - Default: 'CuratedDataSet'}
 }
 \value{
 A list containing the following objects:
-\itemize{\item AugmentedDataSet (list)
-\item AugmentationReport (list)
-\item AugmentationMessages (list)}
+\itemize{\item AugmentedDataSet \code{list}
+\item AugmentationReport \code{list}
+\item AugmentationMessages \code{list}
 }
 \description{
 Transforms Curated Data Set (CDS) into Augmented Data Set (ADS)

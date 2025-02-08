@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{Meta_CancerGrouping}}{
 
-Tibble
+\code{tibble}
 \describe{
 \item{ICD10CodeShort}{Three digit ICD-10 code}
 \item{CancerTopographyGroup_ICD10}{Topography group as put forth by ICD-10}

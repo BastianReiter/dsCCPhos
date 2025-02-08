@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{Meta_DiagnosisAssociation}}{
 
-Tibble
+\code{tibble}
 \describe{
 \item{Profile}{}
 \item{Feature}{}

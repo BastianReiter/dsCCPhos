@@ -3,6 +3,30 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_AugmentEventData.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Meta_AugmentEventData
+#'
+#' Rules for engineering of informative features in event data
+#'
+#' @format ## `Meta_AugmentEventData`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{Feature}{}
+#'   \item{Value}{}
+#'   \item{ValueRank}{}
+#'   \item{EvaluationOrder}{}
+#'   \item{Condition}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_AugmentEventData"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Meta_CancerGrouping.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -11,7 +35,7 @@
 #' A tibble containing meta data about grouping of ICD-10 cancer codes
 #'
 #' @format ## `Meta_CancerGrouping`
-#' Tibble
+#' \code{tibble}
 #' \describe{
 #'   \item{ICD10CodeShort}{Three digit ICD-10 code}
 #'   \item{CancerTopographyGroup_ICD10}{Topography group as put forth by ICD-10}
@@ -38,7 +62,7 @@
 #' A tibble containing rules
 #'
 #' @format ## `Meta_DataHarmonization`
-#' Tibble
+#' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
 #'   \item{Table}{}
@@ -64,7 +88,7 @@
 #' A tibble containing rules
 #'
 #' @format ## `Meta_DiagnosisAssociation`
-#' Tibble
+#' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
 #'   \item{Feature}{}
@@ -88,7 +112,7 @@
 #' A tibble containing rules
 #'
 #' @format ## `Meta_DiagnosisRedundancy`
-#' Tibble
+#' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
 #'   \item{Feature}{}
@@ -112,7 +136,7 @@
 #' A tibble containing meta data about corresponding feature names in Raw Data Model (RDM) and Curated Data Model (CDM)
 #'
 #' @format ## `Meta_Features`
-#' Tibble
+#' \code{tibble}
 #' \describe{
 #'   \item{TableName_Raw}{Name of table in Opal}
 #'   \item{TableName_Curated}{Name of table after loading into R session}
@@ -139,7 +163,7 @@
 #' A tibble
 #'
 #' @format ## `Meta_FeatureObligations`
-#' Tibble
+#' \code{tibble}
 #' \describe{
 #'   \item{TableName}{}
 #'   \item{FeatureName}{}
@@ -160,7 +184,7 @@
 #' A tibble containing meta data about corresponding table names in Raw Data Model (RDM) and Curated Data Model (CDM)
 #'
 #' @format ## `Meta_Tables`
-#' Tibble
+#' \code{tibble}
 #' \describe{
 #'   \item{TableName_Raw}{Table name in Raw Data Model}
 #'   \item{TableName_Curated}{Corresponding table name in Curated Data Model}
@@ -180,7 +204,7 @@
 #' A tibble containing meta data about eligible data values in Curated Data Model (CDM)
 #'
 #' @format ## `Meta_ValueSets`
-#' Tibble
+#' \code{tibble}
 #' \describe{
 #'   \item{TableName_Curated}{Table selector}
 #'   \item{FeatureName}{Feature name}
