@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{Meta_FeatureObligations}}{
 
-Tibble
+\code{tibble}
 \describe{
 \item{TableName}{}
 \item{FeatureName}{}

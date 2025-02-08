@@ -106,10 +106,10 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 ### For testing purposes
 # Settings.S <- list(DataHarmonization_RuleSet = dsCCPhos::Meta_DataHarmonization,
 #                    DataHarmonization_Profile = "Default",
-#                    DiagnosisRedundancy_Check = TRUE,
+#                    DiagnosisRedundancy_Check = FALSE,
 #                    DiagnosisRedundancy_RuleSet = dsCCPhos::Meta_DiagnosisRedundancy,
 #                    DiagnosisRedundancy_Profile = "Default",
-#                    DiagnosisAssociation_Check = TRUE,
+#                    DiagnosisAssociation_Check = FALSE,
 #                    DiagnosisAssociation_RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
 #                    DiagnosisAssociation_Profile = "Default",
 #                    FeatureObligations_RuleSet = dsCCPhos::Meta_FeatureObligations,
@@ -308,12 +308,12 @@ DataSet <- DataSet %>%
 #-------------------------------------------------------------------------------
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MONITORING: Count ineligible entries
+# MONITORING: Count table entries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Count entries in data frames before exclusion
-CountEntriesBeforeExclusion <- DataSet %>%
-                                  map_int(\(Table) ifelse (!is.null(nrow(Table)), nrow(Table), 0))
+# Count entries in initial data frames
+CountEntries_Initial <- DataSet %>%
+                            map_int(\(Table) ifelse (!is.null(nrow(Table)), nrow(Table), 0))
 
 
 # Set up progress bar
@@ -387,11 +387,11 @@ try(ProgressBar$terminate())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Count entries in data frames after primary exclusion
-CountEntriesAfterPrimaryExclusion <- DataSet %>%
-                                        map_int(\(Table) ifelse (!is.null(nrow(Table)), nrow(Table), 0))
+CountEntries_AfterPrimaryExclusion <- DataSet %>%
+                                          map_int(\(Table) ifelse (!is.null(nrow(Table)), nrow(Table), 0))
 
 # Count excluded entries
-CountExcludedEntries_Primary <- CountEntriesBeforeExclusion - CountEntriesAfterPrimaryExclusion
+CountExcludedEntries_Primary <- CountEntries_Initial - CountEntries_AfterPrimaryExclusion
 
 
 # Print messages for live monitoring in local tests
@@ -1396,6 +1396,7 @@ DataSet$Diagnosis <- DataSet$Diagnosis %>%
 
 if (Settings$DiagnosisRedundancy_Check == TRUE)
 {
+#///////////////////////////////////////////////////////////////////////////////
 
 # Compile rule calls from data in Settings$DiagnosisRedundancy_RuleSet using dsCCPhos::CompileClassificationCall
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1458,6 +1459,13 @@ Messages$DiagnosisRedundancies <- Message
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Update related tables
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#     - After classification of redundant diagnosis entries, replace DiagnosisIDs in related tables
+#     - Removal of auxiliary columns
+#-------------------------------------------------------------------------------
+
 # Replace IDs (Original DiagnosisID and not newly composed one) of redundant diagnosis entries in related tables
 # Get table of affected DiagnosisIDs
 df_Aux_Diagnosis_IDMappingRedundancies <- DataSet$Diagnosis %>%
@@ -1469,10 +1477,6 @@ df_Aux_Diagnosis_IDMappingRedundancies <- DataSet$Diagnosis %>%
                                                               NewDiagnosisID = "OriginalDiagnosisID"))) %>%
                                               filter(OldDiagnosisID != NewDiagnosisID) %>%
                                               distinct()
-
-
-# After classification of redundant diagnosis entries, replace DiagnosisIDs in related tables
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DataSet <- DataSet %>%
                 imap(function(Table, tablename)
@@ -1491,6 +1495,7 @@ DataSet$Diagnosis <- DataSet$Diagnosis %>%
                                     RedundantOriginalIDs,
                                     CountRedundancies))
 
+#///////////////////////////////////////////////////////////////////////////////
 } else {   # In case no diagnosis redundancy check was performed
 
     DataSet$Diagnosis <- DataSet$Diagnosis %>%
@@ -1519,7 +1524,7 @@ DataSet$Diagnosis <- DataSet$Diagnosis %>%
 
 if (Settings$DiagnosisAssociation_Check == TRUE)
 {
-
+#///////////////////////////////////////////////////////////////////////////////
 
 # Compile rule calls (unevaluated dplyr::case_when-Statements) with dsCCPhos::CompileClassificationCall
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1635,39 +1640,20 @@ cli::cat_bullet(Message, bullet = "info")
 # Save message in output object
 Messages$DiagnosisAssociation <- Message
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+#///////////////////////////////////////////////////////////////////////////////
+} else {      # In case Diagnosis Association Check is skipped
 
-# Create table for DiagnosisID replacement in related tables
-df_Aux_Diagnosis_IDMappingAssociations <- DataSet$Diagnosis %>%
-                                              ungroup() %>%
-                                              select(PatientID, OriginalDiagnosisID, DiagnosisID) %>%
-                                              rename(all_of(c(OldDiagnosisID = "OriginalDiagnosisID",
-                                                              NewDiagnosisID = "DiagnosisID"))) %>%
-                                              distinct()
+    # Add empty/trivial features to keep CDS output consistent
+    DataSet$Diagnosis <- DataSet$Diagnosis %>%
+                              mutate(DiagnosisID = OriginalDiagnosisID,
+                                     SubDiagnosisID = OriginalDiagnosisID,
+                                     IsReferenceEntry = TRUE,
+                                     .after = DiagnosisID) %>%
+                              mutate(IsLikelyAssociated = FALSE,
+                                     Association = NA)
 
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Update related tables
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#     - Replace DiagnosisIDs to associate entries
-#     - Rearrange column order
-#-------------------------------------------------------------------------------
-
-DataSet <- DataSet %>%
-                imap(function(Table, tablename)
-                     {
-                        if (nrow(Table) > 0 & tablename %in% c("BioSampling", "Diagnosis", "Histology", "Patient", "TherapyRecommendation") == FALSE)
-                        {
-                            Table %>%
-                                ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
-                                relocate(c(PatientID, DiagnosisID))   # Moves features 'PatientID' and 'DiagnosisID' to front of table
-
-                        } else { return(Table) }
-                     })
-
-} else {
-
+    # Set relevant Counts NA
     CountDiagnosisAssociations <- NA
     CountPatientsWithDiagnosisAssociations <- NA
 
@@ -1681,10 +1667,38 @@ DataSet <- DataSet %>%
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Update related tables
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#     - Replace DiagnosisIDs to associate entries
+#     - Rearrange column order
+#-------------------------------------------------------------------------------
+
+# Create table for DiagnosisID replacement in related tables
+df_Aux_Diagnosis_IDMappingAssociations <- DataSet$Diagnosis %>%
+                                              ungroup() %>%
+                                              select(PatientID, OriginalDiagnosisID, DiagnosisID) %>%
+                                              rename(all_of(c(OldDiagnosisID = "OriginalDiagnosisID",
+                                                              NewDiagnosisID = "DiagnosisID"))) %>%
+                                              distinct()
+
+DataSet <- DataSet %>%
+                imap(function(Table, tablename)
+                     {
+                        if (nrow(Table) > 0 & tablename %in% c("BioSampling", "Diagnosis", "Histology", "Patient", "TherapyRecommendation") == FALSE)
+                        {
+                            Table %>%
+                                ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingAssociations) %>%
+                                relocate(c(PatientID, DiagnosisID))   # Moves features 'PatientID' and 'DiagnosisID' to front of table
+
+                        } else { return(Table) }
+                     })
+
+
+
 # Module D 4)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Reconstruct DataSet$Histology from DataSet$Diagnosis
-#   - Modify DataSet$Diagnosis
 #-------------------------------------------------------------------------------
 
 # Reconstruction of DataSet$Histology
@@ -1702,12 +1716,6 @@ if (Settings$DiagnosisAssociation_Check == TRUE)
                               select(all_of(names(DataSet$Histology))) %>%
                               mutate(SubDiagnosisID = DiagnosisID, .after = DiagnosisID)
 }
-
-
-# Remove OriginalDiagnosisID column (not needed anymore)
-DataSet$Diagnosis <-  DataSet$Diagnosis %>%
-                          select(-OriginalDiagnosisID)
-
 
 
 
@@ -1777,19 +1785,24 @@ try(ProgressBar$terminate())
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Count entries in data frames after secondary exclusion
-CountEntriesAfterSecondaryExclusion <- DataSet %>%
-                                          imap_int(function(Table, tablename)
-                                                   {
-                                                      if (tablename == "Diagnosis")
-                                                      {
-                                                          Table <- Table %>% filter(IsReferenceEntry == TRUE)
-                                                      }
+CountEntries_AfterSecondaryExclusion <- DataSet %>%
+                                            imap_int(function(Table, tablename)
+                                                     {
+                                                        if (tablename == "Diagnosis")
+                                                        {
+                                                            if (Settings$DiagnosisAssociation_Check == FALSE)
+                                                            {
+                                                                Table <- Table %>% distinct(OriginalDiagnosisID, .keep_all = TRUE)
+                                                            }
 
-                                                      return(ifelse(!is.null(nrow(Table)), nrow(Table), 0))
-                                                   })
+                                                            Table <- Table %>% filter(IsReferenceEntry == TRUE)
+                                                        }
+
+                                                        return(ifelse(!is.null(nrow(Table)), nrow(Table), 0))
+                                                     })
 
 # Count excluded entries
-CountExcludedEntries_Secondary <- CountEntriesAfterPrimaryExclusion - CountEntriesAfterSecondaryExclusion
+CountExcludedEntries_Secondary <- CountEntries_AfterPrimaryExclusion - CountEntries_AfterSecondaryExclusion
 
 
 # Print messages for live monitoring in local tests
@@ -1808,9 +1821,14 @@ for (i in 1:length(CountExcludedEntries_Secondary))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Conversion of Tables from tibble to data.frame, because dataSHIELD can handle data.frames better
+# Final modifications
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Remove OriginalDiagnosisID column from 'Diagnosis' (not needed anymore)
+DataSet$Diagnosis <-  DataSet$Diagnosis %>%
+                          select(-OriginalDiagnosisID)
+
+# Conversion of Tables from tibble to data.frame, because DataSHIELD can handle data.frames better
 DataSet <- DataSet %>%
                 map(\(Table) as.data.frame(Table))
 
@@ -1821,8 +1839,12 @@ DataSet <- DataSet %>%
 # Define content of CurationReport
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-CurationReport <- list(ExcludedEntries = list(PrimaryExclusion = CountExcludedEntries_Primary,
-                                              SecondaryExclusion = CountExcludedEntries_Secondary),
+CurationReport <- list(EntryCount = tibble(Table = names(DataSet),
+                                           Initial = CountEntries_Initial,
+                                           ExcludedPrimary = CountExcludedEntries_Primary,
+                                           AfterPrimaryExclusion = CountEntries_AfterPrimaryExclusion,
+                                           ExcludedSecondary = CountExcludedEntries_Secondary,
+                                           AfterSecondaryExclusion = CountEntries_AfterSecondaryExclusion),
                        Transformation = list(Monitors = ls_TransformationMonitors,
                                              EligibilityOverviews = ls_EligibilityOverviews,
                                              ValueSetOverviews = ls_ValueSetOverviews),

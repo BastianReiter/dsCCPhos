@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{Meta_ValueSets}}{
 
-Tibble
+\code{tibble}
 \describe{
 \item{TableName_Curated}{Table selector}
 \item{FeatureName}{Feature name}

@@ -42,8 +42,6 @@ SummarizeEventData <- function(EventEntries,
                                                      TRUE ~ NA_integer_),
                             IsDocumentedDeceased = case_when(!is.na(TimeDiagnosisToDeath) ~ TRUE,
                                                              TRUE ~ FALSE))
-                            #---------------------------------------------------
-                            #IsLikelyCancerProgression = case_when(GlobalStatus %in% c("D", "P") |))
 
 
     return(as.data.frame(Output))

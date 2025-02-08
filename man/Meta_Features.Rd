@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{Meta_Features}}{
 
-Tibble
+\code{tibble}
 \describe{
 \item{TableName_Raw}{Name of table in Opal}
 \item{TableName_Curated}{Name of table after loading into R session}

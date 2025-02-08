@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{Meta_DataHarmonization}}{
 
-Tibble
+\code{tibble}
 \describe{
 \item{Profile}{}
 \item{Table}{}

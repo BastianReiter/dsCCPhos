@@ -32,7 +32,7 @@ CurateDataDS(
 }
 \value{
 A list containing the following objects:
-\itemize{\item CuratedDataSet (list)
+\itemize{\item CuratedDataSet \code{list}
 \itemize{\item BioSampling
 \item Diagnosis
 \item GeneralCondition
@@ -47,14 +47,20 @@ A list containing the following objects:
 \item Surgery
 \item SystemicTherapy
 \item TherapyRecommendation}
-\item CurationReport (list)
-\itemize{\item IneligibleEntries (named vector)
+\item CurationReport \code{list}
+\itemize{\item ExcludedEntries
+\itemize{\item PrimaryExclusion
+\item SecondaryExclusion}
 \item Transformation (list of lists)
 \itemize{\item Monitors
 \item EligibilityOverviews
 \item ValueSetOverviews}
-\item DiagnosisClassification (named vector)}
-\item CurationMessages (list)}
+\item DiagnosisClassification
+\itemize{\item DiagnosisRedundancies
+\item PatientsWithDiagnosisRedundancies
+\item DiagnosisAssociations
+\item PatientsWithDiagnosisAssociations}}
+\item CurationMessages \code{list}}
 }
 \description{
 Takes Raw Data Set (RDS) and transforms it into Curated Data Set (CDS) while tracing data transformation.

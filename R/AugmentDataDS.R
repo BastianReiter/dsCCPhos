@@ -5,12 +5,12 @@
 #'
 #' Server-side ASSIGN method
 #'
-#' @param CuratedDataSetName.S String | Name of the Curated Data Set object on server | Default: 'CuratedDataSet'
+#' @param CuratedDataSetName.S \code{character} - Name of the Curated Data Set object on server - Default: 'CuratedDataSet'
 #'
 #' @return A list containing the following objects:
-#'         \itemize{\item AugmentedDataSet (list)
-#'                  \item AugmentationReport (list)
-#'                  \item AugmentationMessages (list)}
+#'         \itemize{\item AugmentedDataSet \code{list}
+#'                  \item AugmentationReport \code{list}
+#'                  \item AugmentationMessages \code{list}
 #' @export
 #' @author Bastian Reiter
 AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet")
@@ -23,16 +23,15 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet")
 #   SETUP
 #     - Evaluation and parsing of input
 #     - Loading of required package namespaces
-#     - Unpacking Curated Data Set (CDS)
 #
-#   MODULE A)  Creation of df_ADS_Events
+#   MODULE A)  Creation of ADS$Events
 #       - Diagnosis-related
 #       - Patient-related
 #
-#   MODULE B)  Creation of df_ADS_Diagnoses
+#   MODULE B)  Creation of ADS$Diagnoses
 #       - Consolidate information from df_ADS_Events
 #
-#   MODULE C)  Creation of df_ADS_Patients
+#   MODULE C)  Creation of ADS$Patients
 #       - Consolidate information from df_ADS_Events and df_ADS_Diagnoses
 #
 #   Return statement
@@ -68,8 +67,8 @@ require(tidyr)
 options(dplyr.summarise.inform = FALSE)
 
 # Initiate output objects
-ls_AugmentedDataSet <- NULL
-ls_AugmentationReport <- NULL
+ADS <- list()
+AugmentationReport <- NULL
 
 # Initiate Messaging objects
 Messages <- list()
@@ -86,17 +85,17 @@ Messages$FinalMessage <- "Augmentation not completed"
 # Augmented Data Model (ADM)
 # Augmented Data Set (ADS)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#                      _________________
-#                     / df_ADS_Patients \
-#                     \_________________/
-#
-#                      __________________
-#                     / df_ADS_Diagnoses \
-#                     \__________________/
+#                      ______________
+#                     / ADS$Patients \
+#                     \______________/
 #
 #                      _______________
-#                     / df_ADS_Events \
+#                     / ADS$Diagnoses \
 #                     \_______________/
+#
+#                      ____________
+#                     / ADS$Events \
+#                     \____________/
 
 
 
@@ -156,10 +155,11 @@ Messages$FinalMessage <- "Augmentation not completed"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE A)  Generate df_ADS_Events
+# MODULE A)  Generate ADS$Events
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Initiation
-#   - Loop through CDS tables and generate event data
+#   1) Initiation
+#   2) Loop through CDS tables and generate event data
+#   3) Enhance data set with useful features
 #-------------------------------------------------------------------------------
 
 
@@ -172,33 +172,33 @@ try(ProgressBar$tick())
 
 
 
-# Initiate df_ADS_Events, integrating patient-specific and initial diagnosis events
+# 1) Initiate ADS$Events, integrating patient-specific and initial diagnosis events
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Initiation 1: Initial diagnosis event
-df_ADS_Events <- CDS$Patient %>%
-                      right_join(CDS$Diagnosis, join_by(PatientID)) %>%
-                      filter(IsReferenceEntry == TRUE) %>%
-                      group_by(PatientID, DiagnosisID) %>%
-                          mutate(EventType = "Point",
-                                 EventDate = DiagnosisDate,
-                                 EventDateEnd = NULL,      # For events of type "Period"
-                                 EventDateIsAdjusted = FALSE,      # In case event date is adjusted later for plausibility reasons
-                                 EventClass = "Diagnosis",
-                                 EventSubclass = "InitialDiagnosis",
-                                 EventRankWithinSubclass = row_number(),
-                                 EventOrderSignificance = NULL) %>%
-                          nest(EventDetails = c(ICD10Code,
-                                                ICDOTopographyCode,
-                                                ICDOMorphologyCode,
-                                                Grading)) %>%
-                          select(PatientID,
-                                 DateOfBirth,
-                                 DiagnosisID,
-                                 DiagnosisDate,
-                                 starts_with("Event"))
-                          #--- Update PB ---
-                          try(ProgressBar$tick())
+ADS$Events <- CDS$Patient %>%
+                  right_join(CDS$Diagnosis, join_by(PatientID)) %>%
+                  filter(IsReferenceEntry == TRUE) %>%
+                  group_by(PatientID, DiagnosisID) %>%
+                      mutate(EventType = "Point",
+                             EventDate = DiagnosisDate,
+                             EventDateEnd = NULL,      # For events of type "Period"
+                             EventDateIsAdjusted = FALSE,      # In case event date is adjusted later for plausibility reasons
+                             EventClass = "Diagnosis",
+                             EventSubclass = "InitialDiagnosis",
+                             EventRankWithinSubclass = row_number(),
+                             EventOrderSignificance = NULL) %>%
+                      nest(EventDetails = c(ICD10Code,
+                                            ICDOTopographyCode,
+                                            ICDOMorphologyCode,
+                                            Grading)) %>%
+                      select(PatientID,
+                             DateOfBirth,
+                             DiagnosisID,
+                             DiagnosisDate,
+                             starts_with("Event"))
+                      #--- Update PB ---
+                      try(ProgressBar$tick())
 
 
 # Initiation 2: Last known vital status
@@ -224,17 +224,16 @@ df_Events_LastVitalStatus <- CDS$Patient %>%
 
 
 # Initiation 3: Row-bind data frames from Initiation 1 and 2
-df_ADS_Events <- df_ADS_Events %>%
-                      bind_rows(df_Events_LastVitalStatus)
+ADS$Events <- ADS$Events %>%
+                  bind_rows(df_Events_LastVitalStatus)
 
 try(ProgressBar$tick())
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Loop through CDS tables to generate event data
+# 2) Loop through CDS tables to generate event data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # Deselect tables 'Patient' and 'Diagnosis' from CDS
                   imap(function(Table, tablename)
@@ -395,6 +394,7 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                                                            starts_with("Event"))
                               return(TableEventData)
                           }
+
                           else { return(NULL) }
 
                        }) %>%
@@ -404,46 +404,46 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
 
 # Consolidate Event-oriented data from CDS tables
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-df_ADS_Events <- df_ADS_Events %>%
-                      bind_rows(EventData) %>%
-                      group_by(PatientID) %>%
-                          fill(DateOfBirth,
-                               .direction = "downup") %>%
-                      group_by(PatientID, DiagnosisID) %>%
-                          filter(!is.na(EventDate)) %>%
-                          arrange(EventDate, .by_group = TRUE) %>%
-                          # Important adjustment!
-                          mutate(FirstEventDate = min(EventDate, na.rm = TRUE),
-                                 LastEventDate = max(EventDate, na.rm = TRUE),
-                                 EventDateIsAdjusted = case_when(EventSubclass == "InitialDiagnosis" & EventDate > FirstEventDate ~ TRUE,
-                                                                 EventClass == "VitalStatus" & EventDate < LastEventDate ~ TRUE,
-                                                                 .default = FALSE),
-                                 EventDate = case_when(EventSubclass == "InitialDiagnosis" ~ FirstEventDate,
-                                                       EventClass == "VitalStatus" ~ LastEventDate,
-                                                       .default = EventDate),
-                                 InitialDiagnosisDate = FirstEventDate,
-                                 EventRank = row_number(),
-                                 EventDaysSinceDiagnosis = round(as.numeric(difftime(EventDate, InitialDiagnosisDate, units = "days")), digits = 1),
-                                 EventPatientAge = floor(time_length(difftime(EventDate, DateOfBirth), unit = "years"))) %>%
-                      select(PatientID,
-                             DateOfBirth,
-                             DiagnosisID,
-                             InitialDiagnosisDate,
-                             EventRank,
-                             EventType,
-                             EventDate,
-                             EventDateEnd,
-                             EventDateIsAdjusted,
-                             EventPatientAge,
-                             EventDaysSinceDiagnosis,
-                             EventClass,
-                             EventSubclass,
-                             EventRankWithinSubclass,
-                             EventOrderSignificance,
-                             EventDetails) %>%
-                      ungroup()
-                      #--- Update PB ---
-                      try(ProgressBar$tick())
+ADS$Events <- ADS$Events %>%
+                  bind_rows(EventData) %>%
+                  group_by(PatientID) %>%
+                      fill(DateOfBirth,
+                           .direction = "downup") %>%
+                  group_by(PatientID, DiagnosisID) %>%
+                      filter(!is.na(EventDate)) %>%
+                      arrange(EventDate, .by_group = TRUE) %>%
+                      # Important adjustment!
+                      mutate(FirstEventDate = min(EventDate, na.rm = TRUE),
+                             LastEventDate = max(EventDate, na.rm = TRUE),
+                             EventDateIsAdjusted = case_when(EventSubclass == "InitialDiagnosis" & EventDate > FirstEventDate ~ TRUE,
+                                                             EventClass == "VitalStatus" & EventDate < LastEventDate ~ TRUE,
+                                                             .default = FALSE),
+                             EventDate = case_when(EventSubclass == "InitialDiagnosis" ~ FirstEventDate,
+                                                   EventClass == "VitalStatus" ~ LastEventDate,
+                                                   .default = EventDate),
+                             InitialDiagnosisDate = FirstEventDate,
+                             EventRank = row_number(),
+                             EventDaysSinceDiagnosis = round(as.numeric(difftime(EventDate, InitialDiagnosisDate, units = "days")), digits = 1),
+                             EventPatientAge = floor(time_length(difftime(EventDate, DateOfBirth), unit = "years"))) %>%
+                  select(PatientID,
+                         DateOfBirth,
+                         DiagnosisID,
+                         InitialDiagnosisDate,
+                         EventRank,
+                         EventType,
+                         EventDate,
+                         EventDateEnd,
+                         EventDateIsAdjusted,
+                         EventPatientAge,
+                         EventDaysSinceDiagnosis,
+                         EventClass,
+                         EventSubclass,
+                         EventRankWithinSubclass,
+                         EventOrderSignificance,
+                         EventDetails) %>%
+                  ungroup()
+                  #--- Update PB ---
+                  try(ProgressBar$tick())
 
 #--- Terminate PB ---
 try(ProgressBar$terminate())
@@ -455,6 +455,16 @@ try(ProgressBar$terminate())
 #                       unnest(cols = c(EventDetails), keep_empty = TRUE)
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 3) Enhance ADS$Events with informative features
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#ADS$Events <- ADS$Events %>%
+
+
+
+
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -463,13 +473,13 @@ try(ProgressBar$terminate())
 
 
 #--- Set up progress bar -------------------------------------------------------
-CountProgressItems <- df_ADS_Events %>% pull(DiagnosisID) %>% n_distinct()
+CountProgressItems <- ADS$Events %>% pull(DiagnosisID) %>% n_distinct()
 ProgressBar <- progress_bar$new(format = "Summarizing event data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
 # #-------------------------------------------------------------------------------
 
 # Summarize diagnosis-specific event data using dsCCPhos::SummarizeEventData()
-df_Aux_DiagnosisSummary_Events <- df_ADS_Events %>%
+df_Aux_DiagnosisSummary_Events <- ADS$Events %>%
                                       unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
                                       group_by(PatientID, DiagnosisID) %>%
                                           group_modify(~ SummarizeEventData(EventEntries = .x,
@@ -497,12 +507,12 @@ df_Aux_DiagnosisData <- CDS$Diagnosis %>%
                             # try(ProgressBar$tick())
 
 
-df_ADS_Diagnoses <- df_Aux_DiagnosisData %>%
-                        left_join(df_Aux_DiagnosisSummary_Events, by = join_by(PatientID, DiagnosisID)) %>%
-                        #filter(is.na(TimeDiagnosisToDeath) | TimeDiagnosisToDeath >= 0) %>%
-                        ungroup()
-                        #--- Update PB ---
-                        # try(ProgressBar$tick())
+ADS$Diagnoses <- df_Aux_DiagnosisData %>%
+                      left_join(df_Aux_DiagnosisSummary_Events, by = join_by(PatientID, DiagnosisID)) %>%
+                      #filter(is.na(TimeDiagnosisToDeath) | TimeDiagnosisToDeath >= 0) %>%
+                      ungroup()
+                      #--- Update PB ---
+                      # try(ProgressBar$tick())
 
 
 
@@ -560,15 +570,15 @@ df_Aux_PatientSummary_Diagnosis <- CDS$Diagnosis %>%
 
 
 # !!! TEMPORARY !!! (For easier testing, slice is performed to filter for only one diagnosis per patient)
-df_ADS_Patients <- CDS$Patient %>%
-                        left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID)) %>%
-                        left_join(df_ADS_Diagnoses, by = join_by(PatientID)) %>%      # <--- TEMPORARY: Joining with ADS_Diagnoses
-                        group_by(PatientID) %>%
-                            arrange(DiagnosisDate) %>%
-                            slice_head() %>%      # <--- TEMPORARY: Slice performed
-                        ungroup()
-                        #--- Update PB ---
-                        try(ProgressBar$tick())
+ADS$Patients <- CDS$Patient %>%
+                    left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID)) %>%
+                    left_join(ADS$Diagnoses, by = join_by(PatientID)) %>%      # <--- TEMPORARY: Joining with ADS_Diagnoses
+                    group_by(PatientID) %>%
+                        arrange(DiagnosisDate) %>%
+                        slice_head() %>%      # <--- TEMPORARY: Slice performed
+                    ungroup()
+                    #--- Update PB ---
+                    try(ProgressBar$tick())
 
 #--- Terminate PB ---
 try(ProgressBar$terminate())

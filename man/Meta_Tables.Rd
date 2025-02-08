@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{Meta_Tables}}{
 
-Tibble
+\code{tibble}
 \describe{
 \item{TableName_Raw}{Table name in Raw Data Model}
 \item{TableName_Curated}{Corresponding table name in Curated Data Model}
