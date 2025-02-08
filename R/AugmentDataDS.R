@@ -7,10 +7,10 @@
 #'
 #' @param CuratedDataSetName.S \code{character} - Name of the Curated Data Set object on server - Default: 'CuratedDataSet'
 #'
-#' @return A list containing the following objects:
+#' @return A \code{list} containing the following objects:
 #'         \itemize{\item AugmentedDataSet \code{list}
 #'                  \item AugmentationReport \code{list}
-#'                  \item AugmentationMessages \code{list}
+#'                  \item AugmentationMessages \code{list}}
 #' @export
 #' @author Bastian Reiter
 AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet")

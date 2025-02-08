@@ -18,7 +18,7 @@
 #'                            \item FeatureObligations_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
 #'                            \item FeatureObligations_Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations_RuleSet} - Default: 'Default'}
 #'
-#' @return A list containing the following objects:
+#' @return A \code{list} containing the following objects:
 #'         \itemize{\item CuratedDataSet \code{list}
 #'                      \itemize{\item BioSampling
 #'                               \item Diagnosis
@@ -35,9 +35,13 @@
 #'                               \item SystemicTherapy
 #'                               \item TherapyRecommendation}
 #'                  \item CurationReport \code{list}
-#'                      \itemize{\item ExcludedEntries
-#'                                    \itemize{\item PrimaryExclusion
-#'                                             \item SecondaryExclusion}
+#'                      \itemize{\item EntryCounts \code{tibble}
+#'                                    \itemize{\item Table
+#'                                             \item InitialCount
+#'                                             \item ExcludedPrimary
+#'                                             \item AfterPrimaryExclusion
+#'                                             \item ExcludedSecondary
+#'                                             \item AfterSecondaryExclusion}
 #'                               \item Transformation (list of lists)
 #'                                    \itemize{\item Monitors
 #'                                             \item EligibilityOverviews
@@ -1839,12 +1843,12 @@ DataSet <- DataSet %>%
 # Define content of CurationReport
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-CurationReport <- list(EntryCount = tibble(Table = names(DataSet),
-                                           Initial = CountEntries_Initial,
-                                           ExcludedPrimary = CountExcludedEntries_Primary,
-                                           AfterPrimaryExclusion = CountEntries_AfterPrimaryExclusion,
-                                           ExcludedSecondary = CountExcludedEntries_Secondary,
-                                           AfterSecondaryExclusion = CountEntries_AfterSecondaryExclusion),
+CurationReport <- list(EntryCounts = tibble(Table = names(DataSet),
+                                            InitialCount = CountEntries_Initial,
+                                            ExcludedPrimary = CountExcludedEntries_Primary,
+                                            AfterPrimaryExclusion = CountEntries_AfterPrimaryExclusion,
+                                            ExcludedSecondary = CountExcludedEntries_Secondary,
+                                            AfterSecondaryExclusion = CountEntries_AfterSecondaryExclusion),
                        Transformation = list(Monitors = ls_TransformationMonitors,
                                              EligibilityOverviews = ls_EligibilityOverviews,
                                              ValueSetOverviews = ls_ValueSetOverviews),
