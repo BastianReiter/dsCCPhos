@@ -3,7 +3,7 @@
 \docType{data}
 \name{Meta_AugmentEventData}
 \alias{Meta_AugmentEventData}
-\title{Meta data on rule-based identification of redundant diagnosis entries}
+\title{Meta_AugmentEventData}
 \format{
 \subsection{\code{Meta_AugmentEventData}}{
 
@@ -25,7 +25,7 @@
 Meta_AugmentEventData
 }
 \description{
-A tibble containing rules
+Rules for engineering of informative features in event data
 }
 \author{
 Bastian Reiter

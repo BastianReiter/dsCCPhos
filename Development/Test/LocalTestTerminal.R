@@ -118,7 +118,7 @@ CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
                                                            FeatureObligations_Profile = "Default"))
 
 
-# CurationOutput$CurationReport$UnlinkedEntries
+# CurationOutput$CurationReport$EntryCounts
 # View(CurationOutput$CurationReport$Transformation$Monitors$Staging)
 # View(CurationOutput$CurationReport$Transformation$EligibilityOverviews$Staging)
 # View(CurationOutput$CurationReport$Transformation$ValueSetOverviews$Staging$Harmonized)

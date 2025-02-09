@@ -17,7 +17,6 @@
 #' @return A vector (or factor)
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 FinalizeDataTransformation <- function(TargetVector,
                                        TableName,

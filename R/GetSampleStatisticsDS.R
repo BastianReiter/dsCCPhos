@@ -9,9 +9,9 @@
 #' @param RemoveMissings.S \code{logical} | With numeric features; Whether NA values should be removed before calculating statistics
 #'
 #' @return A \code{tibble} containing parametric and non-parametric sample statistics
-#' @export
 #'
-#' @examples
+#' @export
+#' @author Bastian Reiter
 GetSampleStatisticsDS <- function(TableName.S,
                                   MetricFeatureName.S,
                                   GroupingFeatureName.S = NULL,

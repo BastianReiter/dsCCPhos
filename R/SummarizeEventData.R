@@ -28,7 +28,7 @@ SummarizeEventData <- function(EventEntries,
 
     # Update progress bar object, if assigned in function call
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (!is.null(ProgressBarObject)) { ProgressBarObject$tick() }
+    if (!is.null(ProgressBarObject)) { try(ProgressBarObject$tick()) }
 
 
     Output <- EventEntries %>%
