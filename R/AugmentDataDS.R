@@ -172,6 +172,7 @@ try(ProgressBar$tick())
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 1) Initiate ADS$Events, integrating patient-specific and initial diagnosis events
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -366,8 +367,7 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                                                        "RelationToSurgery")
                           }
 
-
-
+                          # Create table of events for every CDS table, incorporating values / features defined above
                           if (!(is.null(Table) | length(Table) == 0 | nrow(Table) == 0))
                           {
                               if (length(GroupingFeature) == 1) { TableEventData <- Table %>% group_by(PatientID) }
@@ -401,9 +401,10 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                   list_rbind()
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 3) Consolidate Event-oriented data from CDS tables in one coherent table
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Consolidate Event-oriented data from CDS tables
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ADS$Events <- ADS$Events %>%
                   bind_rows(EventData) %>%
                   group_by(PatientID) %>%
@@ -421,8 +422,9 @@ ADS$Events <- ADS$Events %>%
                              EventDate = case_when(EventSubclass == "InitialDiagnosis" ~ FirstEventDate,
                                                    EventClass == "VitalStatus" ~ LastEventDate,
                                                    .default = EventDate),
-                             InitialDiagnosisDate = FirstEventDate,
-                             EventRank = row_number(),
+                             InitialDiagnosisDate = FirstEventDate) %>%
+                      arrange(EventDate, .by_group = TRUE) %>%      # Sort by date again after possible date adjustments
+                      mutate(EventRank = row_number(),
                              EventDaysSinceDiagnosis = round(as.numeric(difftime(EventDate, InitialDiagnosisDate, units = "days")), digits = 1),
                              EventPatientAge = floor(time_length(difftime(EventDate, DateOfBirth), unit = "years"))) %>%
                   select(PatientID,
@@ -456,10 +458,16 @@ try(ProgressBar$terminate())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 3) Enhance ADS$Events with informative features
+# 4) Enhance ADS$Events with customizably engineered features
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#ADS$Events <- ADS$Events %>%
+#--- Set up progress bar -------------------------------------------------------
+# CountProgressItems <- ADS$Events %>% select(PatientID, DiagnosisID) %>% n_distinct()
+# ProgressBar <- progress_bar$new(format = "Augmenting event data [:bar] :percent in :elapsed  :spin",
+#                                 total = CountProgressItems, clear = FALSE, width= 100)
+# #-------------------------------------------------------------------------------
+#
+# ADS$Events <- ADS$Events
 
 
 
@@ -468,15 +476,15 @@ try(ProgressBar$terminate())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE B)  Generate df_ADS_Diagnoses
+# MODULE B)  Generate ADS$Diagnoses
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 #--- Set up progress bar -------------------------------------------------------
-CountProgressItems <- ADS$Events %>% pull(DiagnosisID) %>% n_distinct()
+CountProgressItems <- ADS$Events %>% select(PatientID, DiagnosisID) %>% n_distinct()
 ProgressBar <- progress_bar$new(format = "Summarizing event data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width= 100)
-# #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 # Summarize diagnosis-specific event data using dsCCPhos::SummarizeEventData()
 df_Aux_DiagnosisSummary_Events <- ADS$Events %>%
@@ -547,7 +555,7 @@ ADS$Diagnoses <- df_Aux_DiagnosisData %>%
 #
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE C)  Generate df_ADS_Patients
+# MODULE C)  Generate ADS$Patients
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -586,14 +594,10 @@ try(ProgressBar$terminate())
 
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Put data frames into list to get compact Augmented Data Set (ADS) object
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# - Conversion from tibble to data.frame (if necessary), because dataSHIELD can handle data.frames better
-#-------------------------------------------------------------------------------
-ls_AugmentedDataSet <- list(Patients = as.data.frame(df_ADS_Patients),
-                            Diagnoses = as.data.frame(df_ADS_Diagnoses),
-                            Events = as.data.frame(df_ADS_Events))
+# Conversion of ADS tables from tibble to data.frame, because DataSHIELD can handle data.frames better
+ADS <- ADS %>%
+            map(\(Table) as.data.frame(Table))
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -630,7 +634,7 @@ Messages$FinalMessage <- "Augmentation performed successfully!"
 # finally =
 # {
 #   # Return the Augmented Data Set (ADS), an Augmentation Report (defined above) and Messages
-  return(list(AugmentedDataSet = ls_AugmentedDataSet,
+  return(list(AugmentedDataSet = ADS,
               AugmentationReport = ls_AugmentationReport,
               AugmentationMessages = Messages))
 # })

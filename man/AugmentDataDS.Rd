@@ -10,10 +10,10 @@ AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 \item{CuratedDataSetName.S}{\code{character} - Name of the Curated Data Set object on server - Default: 'CuratedDataSet'}
 }
 \value{
-A list containing the following objects:
+A \code{list} containing the following objects:
 \itemize{\item AugmentedDataSet \code{list}
 \item AugmentationReport \code{list}
-\item AugmentationMessages \code{list}
+\item AugmentationMessages \code{list}}
 }
 \description{
 Transforms Curated Data Set (CDS) into Augmented Data Set (ADS)

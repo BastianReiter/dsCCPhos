@@ -31,7 +31,7 @@ CurateDataDS(
 \item FeatureObligations_Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations_RuleSet} - Default: 'Default'}}
 }
 \value{
-A list containing the following objects:
+A \code{list} containing the following objects:
 \itemize{\item CuratedDataSet \code{list}
 \itemize{\item BioSampling
 \item Diagnosis
@@ -48,9 +48,13 @@ A list containing the following objects:
 \item SystemicTherapy
 \item TherapyRecommendation}
 \item CurationReport \code{list}
-\itemize{\item ExcludedEntries
-\itemize{\item PrimaryExclusion
-\item SecondaryExclusion}
+\itemize{\item EntryCounts \code{tibble}
+\itemize{\item Table
+\item InitialCount
+\item ExcludedPrimary
+\item AfterPrimaryExclusion
+\item ExcludedSecondary
+\item AfterSecondaryExclusion}
 \item Transformation (list of lists)
 \itemize{\item Monitors
 \item EligibilityOverviews
