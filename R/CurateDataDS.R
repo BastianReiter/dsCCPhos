@@ -187,10 +187,6 @@ if (Settings$FeatureObligations_Profile %in% names(Settings$FeatureObligations_R
 # Suppress summarize info messages
 options(dplyr.summarise.inform = FALSE)
 
-# Initiate output objects
-ls_CuratedDataSet <- NULL
-ls_CurationReport <- NULL
-
 # Initiate Messaging objects
 Messages <- list()
 Messages$ExcludedEntries_Primary <- character()
@@ -201,7 +197,7 @@ Messages$CheckCurationCompletion <- "red"
 Messages$FinalMessage <- "Curation not completed"
 
 
-# Set up 'DataSet' as object that holds all data throughout the function. It will be un- and repacked a couple of times during processing.
+# For semantic reasons, set up 'DataSet' as object that holds all data throughout the function
 DataSet <- RawDataSet
 
 
