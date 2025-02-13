@@ -27,10 +27,10 @@ FinalizeDataTransformation <- function(TargetVector,
 {
     require(dplyr)
 
-    # For testing purposes
-    # TargetVector <- df_Progress$GlobalStatus
-    # TableName = "Progress"
-    # FeatureName = "GlobalStatus"
+    ### For testing purposes
+    # TargetVector <- DataSet$RadiationTherapy$ApplicationType
+    # TableName = "RadiationTherapy"
+    # FeatureName = "ApplicationType"
     # ExcludeIneligibleValues = TRUE
     # ConvertToFactor = FALSE
     # AssignFactorLabels = FALSE

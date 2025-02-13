@@ -666,7 +666,7 @@ try(ProgressBar$tick())
 # Module C 5)  Data recoding and formatting
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Recoding data using dsCCPhos::RecodeData()
-#   - dsCCPhos::RecodeData() uses a dictionary in the form of a named vector to perform recoding on a target vector
+#   - RecodeData() uses a dictionary in the form of a named vector to perform recoding on a target vector
 #   - Data formatting instructions
 #-------------------------------------------------------------------------------
 
@@ -681,13 +681,13 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding --------------------------------------------
-                                            mutate(Aliquot = dsCCPhos::RecodeData(Aliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Aliquot"),
+                                            mutate(Aliquot = RecodeData(Aliquot, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Aliquot"),
                                                                                                 set_names(Value_Curated, Value_Raw))),
-                                                   Status = dsCCPhos::RecodeData(Status, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Status"),
+                                                   Status = RecodeData(Status, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Status"),
                                                                                               set_names(Value_Curated, Value_Raw))),
-                                                   Type = dsCCPhos::RecodeData(Type, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Type"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
+                                                   Type = RecodeData(Type, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "Type"),      # Looking up Feature to transform in Meta Data Table of Eligible Values
                                                                                           set_names(Value_Curated, Value_Raw))),      # This returns a vector of the form c("Value_Raw1" = "Value1", ...), thereby inducing replacement of original values with new ones as defined in Meta Data
-                                                   TypeCXX = dsCCPhos::RecodeData(TypeCXX, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "TypeCXX"),
+                                                   TypeCXX = RecodeData(TypeCXX, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "BioSampling" & Feature == "TypeCXX"),
                                                                                                 set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ------------------------------------------
                                             mutate(BioSamplingDate = format(as_datetime(BioSamplingDate), format = "%Y-%m-%d"))
@@ -697,9 +697,9 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding ------------------------------------------
-                                            mutate(LocalizationSide = dsCCPhos::RecodeData(LocalizationSide, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "LocalizationSide"),
+                                            mutate(LocalizationSide = RecodeData(LocalizationSide, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "LocalizationSide"),
                                                                                                                   set_names(Value_Curated, Value_Raw))),
-                                                   DiagnosisConfirmation = dsCCPhos::RecodeData(DiagnosisConfirmation, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "DiagnosisConfirmation"),
+                                                   DiagnosisConfirmation = RecodeData(DiagnosisConfirmation, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Diagnosis" & Feature == "DiagnosisConfirmation"),
                                                                                                                             set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ----------------------------------------
                                             mutate(DiagnosisDate = format(as_datetime(DiagnosisDate), format = "%Y-%m-%d"),
@@ -710,7 +710,7 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding ------------------------------------------
-                                            mutate(ECOG = dsCCPhos::RecodeData(ECOG, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "GeneralCondition" & Feature == "ECOG"),
+                                            mutate(ECOG = RecodeData(ECOG, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "GeneralCondition" & Feature == "ECOG"),
                                                                                           set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ----------------------------------------
                                             mutate(GeneralConditionDate = format(as_datetime(GeneralConditionDate), format = "%Y-%m-%d"))
@@ -720,7 +720,7 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding ------------------------------------------
-                                            mutate(Grading = dsCCPhos::RecodeData(Grading, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Histology" & Feature == "Grading"),
+                                            mutate(Grading = RecodeData(Grading, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Histology" & Feature == "Grading"),
                                                                                                 set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ----------------------------------------
                                             mutate(HistologyDate = format(as_datetime(HistologyDate), format = "%Y-%m-%d"))
@@ -730,7 +730,7 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding ------------------------------------------
-                                            mutate(Localization = dsCCPhos::RecodeData(Localization, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Metastasis" & Feature == "Localization"),
+                                            mutate(Localization = RecodeData(Localization, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Metastasis" & Feature == "Localization"),
                                                                                                           set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting --------------------------------------
                                             mutate(MetastasisDate = format(as_datetime(MetastasisDate), format = "%Y-%m-%d"),
@@ -755,9 +755,9 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding ------------------------------------------
-                                            mutate(Gender = dsCCPhos::RecodeData(Gender, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "Gender"),
+                                            mutate(Gender = RecodeData(Gender, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "Gender"),
                                                                                               set_names(Value_Curated, Value_Raw))),
-                                                   LastVitalStatus = dsCCPhos::RecodeData(LastVitalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "LastVitalStatus"),
+                                                   LastVitalStatus = RecodeData(LastVitalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Patient" & Feature == "LastVitalStatus"),
                                                                                                                 set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ----------------------------------------
                                             mutate(LastVitalStatusDate = format(as_datetime(LastVitalStatusDate), format = "%Y-%m-%d"))
@@ -767,13 +767,13 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding ------------------------------------------
-                                            mutate(GlobalStatus = dsCCPhos::RecodeData(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus"),
+                                            mutate(GlobalStatus = RecodeData(GlobalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "GlobalStatus"),
                                                                                                           set_names(Value_Curated, Value_Raw))),
-                                                   PrimarySiteStatus = dsCCPhos::RecodeData(PrimarySiteStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "PrimarySiteStatus"),
+                                                   PrimarySiteStatus = RecodeData(PrimarySiteStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "PrimarySiteStatus"),
                                                                                                                     set_names(Value_Curated, Value_Raw))),
-                                                   LymphnodalStatus = dsCCPhos::RecodeData(LymphnodalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "LymphnodalStatus"),
+                                                   LymphnodalStatus = RecodeData(LymphnodalStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "LymphnodalStatus"),
                                                                                                                   set_names(Value_Curated, Value_Raw))),
-                                                   MetastasisStatus = dsCCPhos::RecodeData(MetastasisStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "MetastasisStatus"),
+                                                   MetastasisStatus = RecodeData(MetastasisStatus, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Progress" & Feature == "MetastasisStatus"),
                                                                                                           set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ----------------------------------------
                                             mutate(ProgressDate = format(as_datetime(ProgressDate), format = "%Y-%m-%d"))
@@ -784,13 +784,23 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding ----------------------------------
-                                            mutate(RelationToSurgery = dsCCPhos::RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RelationToSurgery"),
+                                            mutate(RelationToSurgery = RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RelationToSurgery"),
                                                                                                                     set_names(Value_Curated, Value_Raw))),
-                                                   Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "Intention"),
+                                                   Intention = RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "Intention"),
                                                                                                     set_names(Value_Curated, Value_Raw))),
-                                                   ApplicationType = dsCCPhos::RecodeData(ApplicationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "ApplicationType"),
+                                                   ApplicationType = RecodeData(ApplicationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "ApplicationType"),
                                                                                                                 set_names(Value_Curated, Value_Raw))),
-                                                   RadiationType = dsCCPhos::RecodeData(RadiationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationType"),
+                                                   RadiationType = RecodeData(RadiationType, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "RadiationType"),
+                                                                                                            set_names(Value_Curated, Value_Raw))),
+                                                   Boost = RecodeData(Boost, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "Boost"),
+                                                                                                            set_names(Value_Curated, Value_Raw))),
+                                                   SingleDailyDoseUnit = RecodeData(SingleDailyDoseUnit, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "SingleDailyDoseUnit"),
+                                                                                                            set_names(Value_Curated, Value_Raw))),
+                                                   EndReason = RecodeData(EndReason, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "EndReason"),
+                                                                                                            set_names(Value_Curated, Value_Raw))),
+                                                   TargetArea = RecodeData(TargetArea, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "TargetArea"),
+                                                                                                            set_names(Value_Curated, Value_Raw))),
+                                                   TotalDoseUnit = RecodeData(TotalDoseUnit, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "RadiationTherapy" & Feature == "TotalDoseUnit"),
                                                                                                             set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting --------------------------------
                                             mutate(RadiationTherapyStartDate = format(as_datetime(RadiationTherapyStartDate), format = "%Y-%m-%d"),
@@ -801,19 +811,35 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding --------------------------------------------
-                                            mutate(UICCStage = dsCCPhos::RecodeData(UICCStage, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "UICCStage"),
+                                            mutate(UICCStage = RecodeData(UICCStage, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "UICCStage"),
                                                                                                     set_names(Value_Curated, Value_Raw))),
-                                                   TNM_T = dsCCPhos::RecodeData(TNM_T, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_T"),
+                                                   TNM_T = RecodeData(TNM_T, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_T"),
                                                                                             set_names(Value_Curated, Value_Raw))),
-                                                   TNM_N = dsCCPhos::RecodeData(TNM_N, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_N"),
+                                                   TNM_N = RecodeData(TNM_N, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_N"),
                                                                                             set_names(Value_Curated, Value_Raw))),
-                                                   TNM_M = dsCCPhos::RecodeData(TNM_M, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M"),
+                                                   TNM_M = RecodeData(TNM_M, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M"),
                                                                                             set_names(Value_Curated, Value_Raw))),
-                                                   TNM_T_Prefix = dsCCPhos::RecodeData(TNM_T_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_T_Prefix"),
+                                                   TNM_T_Prefix = RecodeData(TNM_T_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_T_Prefix"),
                                                                                                           set_names(Value_Curated, Value_Raw))),
-                                                   TNM_N_Prefix = dsCCPhos::RecodeData(TNM_N_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_N_Prefix"),
+                                                   TNM_N_Prefix = RecodeData(TNM_N_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_N_Prefix"),
                                                                                                           set_names(Value_Curated, Value_Raw))),
-                                                   TNM_M_Prefix = dsCCPhos::RecodeData(TNM_M_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M_Prefix"),
+                                                   TNM_M_Prefix = RecodeData(TNM_M_Prefix, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_M_Prefix"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNMVersion = RecodeData(TNMVersion, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNMVersion"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNM_L = RecodeData(TNM_L, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_L"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNM_mSymbol = RecodeData(TNM_mSymbol, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_mSymbol"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNM_Pn = RecodeData(TNM_Pn, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_Pn"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNM_rSymbol = RecodeData(TNM_rSymbol, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_rSymbol"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNM_S = RecodeData(TNM_S, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_S"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNM_V = RecodeData(TNM_V, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_V"),
+                                                                                                          set_names(Value_Curated, Value_Raw))),
+                                                   TNM_ySymbol = RecodeData(TNM_ySymbol, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Staging" & Feature == "TNM_ySymbol"),
                                                                                                           set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ------------------------------------------
                                             mutate(StagingDate = format(as_datetime(StagingDate), format = "%Y-%m-%d"))
@@ -823,12 +849,16 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding --------------------------------------------
-                                            mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "Intention"),
+                                            mutate(Intention = RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "Intention"),
                                                                                                     set_names(Value_Curated, Value_Raw))),
-                                                   ResidualAssessmentLocal = dsCCPhos::RecodeData(ResidualAssessmentLocal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentLocal"),
+                                                   OPSVersion = RecodeData(OPSVersion, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "OPSVersion"),
+                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   ResidualAssessmentLocal = RecodeData(ResidualAssessmentLocal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentLocal"),
                                                                                                                                 set_names(Value_Curated, Value_Raw))),
-                                                   ResidualAssessmentTotal = dsCCPhos::RecodeData(ResidualAssessmentTotal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentTotal"),
-                                                                                                                                set_names(Value_Curated, Value_Raw)))) %>%
+                                                   ResidualAssessmentTotal = RecodeData(ResidualAssessmentTotal, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "ResidualAssessmentTotal"),
+                                                                                                                                set_names(Value_Curated, Value_Raw))),
+                                                   SurgeryComplicationsADT = RecodeData(SurgeryComplicationsADT, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "Surgery" & Feature == "SurgeryComplicationsADT"),
+                                                                                                    set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ------------------------------------------
                                             mutate(SurgeryDate = format(as_datetime(SurgeryDate), format = "%Y-%m-%d"))
                             }
@@ -837,9 +867,13 @@ DataSet <- DataSet %>%
                             {
                                 Table <- Table %>%
                                             #--- Recoding ------------------------------------
-                                            mutate(Intention = dsCCPhos::RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "Intention"),
+                                            mutate(Intention = RecodeData(Intention, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "Intention"),
                                                                                                     set_names(Value_Curated, Value_Raw))),
-                                                   RelationToSurgery = dsCCPhos::RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "RelationToSurgery"),
+                                                   RelationToSurgery = RecodeData(RelationToSurgery, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "RelationToSurgery"),
+                                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   CTCAEGrade = RecodeData(CTCAEGrade, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "CTCAEGrade"),
+                                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   Type = RecodeData(Type, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "SystemicTherapy" & Feature == "Type"),
                                                                                                                     set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ----------------------------------
                                             mutate(IsChemotherapy = as.logical(IsChemotherapy),
@@ -853,6 +887,11 @@ DataSet <- DataSet %>%
                             if (tablename == "TherapyRecommendation")
                             {
                                 Table <- Table %>%
+                                            #--- Recoding ------------------------------------
+                                            mutate(Deviation = RecodeData(Deviation, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "TherapyRecommendation" & Feature == "Deviation"),
+                                                                                                    set_names(Value_Curated, Value_Raw))),
+                                                   Type = RecodeData(Type, with(dplyr::filter(dsCCPhos::Meta_ValueSets, Table == "TherapyRecommendation" & Feature == "Type"),
+                                                                                                                    set_names(Value_Curated, Value_Raw)))) %>%
                                             #--- Formatting ----------------------------
                                             mutate(TherapyRecommendationDate = format(as_datetime(TherapyRecommendationDate), format = "%Y-%m-%d"))
                             }
@@ -945,32 +984,35 @@ DataSet <- DataSet %>%
                             if (tablename == "BioSampling")
                             {
                                 Table <- Table %>%
-                                            mutate(Type = dsCCPhos::FinalizeDataTransformation(Type, TableName = "BioSampling", FeatureName = "Type"),
-                                                   TypeCXX = dsCCPhos::FinalizeDataTransformation(TypeCXX, TableName = "BioSampling", FeatureName = "TypeCXX"),
-                                                   Aliquot = dsCCPhos::FinalizeDataTransformation(Aliquot, TableName = "BioSampling", FeatureName = "Aliquot"))
+                                            mutate(Type = FinalizeDataTransformation(Type, TableName = "BioSampling", FeatureName = "Type"),
+                                                   TypeCXX = FinalizeDataTransformation(TypeCXX, TableName = "BioSampling", FeatureName = "TypeCXX"),
+                                                   Aliquot = FinalizeDataTransformation(Aliquot, TableName = "BioSampling", FeatureName = "Aliquot"),
+                                                   Status = FinalizeDataTransformation(Status, TableName = "BioSampling", FeatureName = "Status"))
                             }
 
                             if (tablename == "Diagnosis")
                             {
                                 Table <- Table %>%
-                                            mutate(LocalizationSide = dsCCPhos::FinalizeDataTransformation(LocalizationSide, TableName = "Diagnosis", FeatureName = "LocalizationSide"))   # Assign factor labels?
+                                            mutate(LocalizationSide = FinalizeDataTransformation(LocalizationSide, TableName = "Diagnosis", FeatureName = "LocalizationSide"),   # Assign factor labels?
+                                                   DiagnosisConfirmation = FinalizeDataTransformation(DiagnosisConfirmation, TableName = "Diagnosis", FeatureName = "DiagnosisConfirmation"))
                             }
 
                             if (tablename == "GeneralCondition")
                             {
                                 Table <- Table %>%
-                                            mutate(ECOG = dsCCPhos::FinalizeDataTransformation(ECOG, TableName = "GeneralCondition", FeatureName = "ECOG"))   # Assign factor labels?
+                                            mutate(ECOG = FinalizeDataTransformation(ECOG, TableName = "GeneralCondition", FeatureName = "ECOG"))   # Assign factor labels?
                             }
 
                             if (tablename == "Histology")
                             {
                                 Table <- Table %>%
-                                            mutate(Grading = dsCCPhos::FinalizeDataTransformation(Grading, TableName = "Histology", FeatureName = "Grading"))   # Assign factor labels?
+                                            mutate(Grading = FinalizeDataTransformation(Grading, TableName = "Histology", FeatureName = "Grading"))   # Assign factor labels?
                             }
 
                             if (tablename == "Metastasis")
                             {
-                                #/
+                                Table <- Table %>%
+                                            mutate(Localization = FinalizeDataTransformation(Localization, TableName = "Metastasis", FeatureName = "Localization"))
                             }
 
                             if (tablename == "MolecularDiagnostics")
@@ -980,66 +1022,83 @@ DataSet <- DataSet %>%
 
                             if (tablename == "OtherClassification")
                             {
-                                Table <- Table %>%
-                                            mutate(Classification = dsCCPhos::FinalizeDataTransformation(Classification, TableName = "OtherClassification", FeatureName = "Classification"))
+                                #/
                             }
 
                             if (tablename == "Patient")
                             {
                                 Table <- Table %>%
-                                            mutate(Gender = dsCCPhos::FinalizeDataTransformation(Gender, TableName = "Patient", FeatureName = "Gender"),   # Assign factor labels?
-                                                   LastVitalStatus = dsCCPhos::FinalizeDataTransformation(LastVitalStatus, TableName = "Patient", FeatureName = "LastVitalStatus"))
+                                            mutate(Gender = FinalizeDataTransformation(Gender, TableName = "Patient", FeatureName = "Gender"),   # Assign factor labels?
+                                                   LastVitalStatus = FinalizeDataTransformation(LastVitalStatus, TableName = "Patient", FeatureName = "LastVitalStatus"))
                             }
 
                             if (tablename == "Progress")
                             {
                                 Table <- Table %>%
-                                            mutate(GlobalStatus = dsCCPhos::FinalizeDataTransformation(GlobalStatus, TableName = "Progress", FeatureName = "GlobalStatus"),   # Assign factor labels?
-                                                   PrimarySiteStatus = dsCCPhos::FinalizeDataTransformation(PrimarySiteStatus, TableName = "Progress", FeatureName = "PrimarySiteStatus"),   # Assign factor labels?
-                                                   LymphnodalStatus = dsCCPhos::FinalizeDataTransformation(LymphnodalStatus, TableName = "Progress", FeatureName = "LymphnodalStatus"),   # Assign factor labels?
-                                                   MetastasisStatus = dsCCPhos::FinalizeDataTransformation(MetastasisStatus, TableName = "Progress", FeatureName = "MetastasisStatus"))   # Assign factor labels?
+                                            mutate(GlobalStatus = FinalizeDataTransformation(GlobalStatus, TableName = "Progress", FeatureName = "GlobalStatus"),   # Assign factor labels?
+                                                   PrimarySiteStatus = FinalizeDataTransformation(PrimarySiteStatus, TableName = "Progress", FeatureName = "PrimarySiteStatus"),   # Assign factor labels?
+                                                   LymphnodalStatus = FinalizeDataTransformation(LymphnodalStatus, TableName = "Progress", FeatureName = "LymphnodalStatus"),   # Assign factor labels?
+                                                   MetastasisStatus = FinalizeDataTransformation(MetastasisStatus, TableName = "Progress", FeatureName = "MetastasisStatus"))   # Assign factor labels?
                             }
 
                             if (tablename == "RadiationTherapy")
                             {
                                 Table <- Table %>%
-                                            mutate(RelationToSurgery = dsCCPhos::FinalizeDataTransformation(RelationToSurgery, TableName = "RadiationTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
-                                                   Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "RadiationTherapy", FeatureName = "Intention"))   # Assign factor labels?
+                                            mutate(RelationToSurgery = FinalizeDataTransformation(RelationToSurgery, TableName = "RadiationTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
+                                                   Intention = FinalizeDataTransformation(Intention, TableName = "RadiationTherapy", FeatureName = "Intention"),   # Assign factor labels?
+                                                   ApplicationType = FinalizeDataTransformation(ApplicationType, TableName = "RadiationTherapy", FeatureName = "ApplicationType"),   # Assign factor labels?
+                                                   RadiationType = FinalizeDataTransformation(RadiationType, TableName = "RadiationTherapy", FeatureName = "RadiationType"),   # Assign factor labels?
+                                                   Boost = FinalizeDataTransformation(Boost, TableName = "RadiationTherapy", FeatureName = "Boost"),
+                                                   SingleDailyDoseUnit = FinalizeDataTransformation(SingleDailyDoseUnit, TableName = "RadiationTherapy", FeatureName = "SingleDailyDoseUnit"),
+                                                   EndReason = FinalizeDataTransformation(EndReason, TableName = "RadiationTherapy", FeatureName = "EndReason"),
+                                                   TargetArea = FinalizeDataTransformation(TargetArea, TableName = "RadiationTherapy", FeatureName = "TargetArea"),
+                                                   TotalDoseUnit = FinalizeDataTransformation(TotalDoseUnit, TableName = "RadiationTherapy", FeatureName = "TotalDoseUnit"))
                             }
 
                             if (tablename == "Staging")
                             {
                                 Table <- Table %>%
-                                            mutate(UICCStage = dsCCPhos::FinalizeDataTransformation(UICCStage, TableName = "Staging", FeatureName = "UICCStage"),
-                                                   TNM_T = dsCCPhos::FinalizeDataTransformation(TNM_T, TableName = "Staging", FeatureName = "TNM_T"),
-                                                   TNM_N = dsCCPhos::FinalizeDataTransformation(TNM_N, TableName = "Staging", FeatureName = "TNM_N"),
-                                                   TNM_M = dsCCPhos::FinalizeDataTransformation(TNM_M, TableName = "Staging", FeatureName = "TNM_M"),
-                                                   TNM_T_Prefix = dsCCPhos::FinalizeDataTransformation(TNM_T_Prefix, TableName = "Staging", FeatureName = "TNM_T_Prefix"),
-                                                   TNM_N_Prefix = dsCCPhos::FinalizeDataTransformation(TNM_N_Prefix, TableName = "Staging", FeatureName = "TNM_N_Prefix"),
-                                                   TNM_M_Prefix = dsCCPhos::FinalizeDataTransformation(TNM_M_Prefix, TableName = "Staging", FeatureName = "TNM_M_Prefix"),
-                                                   TNM_ySymbol = dsCCPhos::FinalizeDataTransformation(TNM_ySymbol, TableName = "Staging", FeatureName = "TNM_ySymbol"),
-                                                   TNM_rSymbol = dsCCPhos::FinalizeDataTransformation(TNM_rSymbol, TableName = "Staging", FeatureName = "TNM_rSymbol"))
+                                            mutate(UICCStage = FinalizeDataTransformation(UICCStage, TableName = "Staging", FeatureName = "UICCStage"),
+                                                   TNM_T = FinalizeDataTransformation(TNM_T, TableName = "Staging", FeatureName = "TNM_T"),
+                                                   TNM_N = FinalizeDataTransformation(TNM_N, TableName = "Staging", FeatureName = "TNM_N"),
+                                                   TNM_M = FinalizeDataTransformation(TNM_M, TableName = "Staging", FeatureName = "TNM_M"),
+                                                   TNM_T_Prefix = FinalizeDataTransformation(TNM_T_Prefix, TableName = "Staging", FeatureName = "TNM_T_Prefix"),
+                                                   TNM_N_Prefix = FinalizeDataTransformation(TNM_N_Prefix, TableName = "Staging", FeatureName = "TNM_N_Prefix"),
+                                                   TNM_M_Prefix = FinalizeDataTransformation(TNM_M_Prefix, TableName = "Staging", FeatureName = "TNM_M_Prefix"),
+                                                   TNM_ySymbol = FinalizeDataTransformation(TNM_ySymbol, TableName = "Staging", FeatureName = "TNM_ySymbol"),
+                                                   TNM_rSymbol = FinalizeDataTransformation(TNM_rSymbol, TableName = "Staging", FeatureName = "TNM_rSymbol"),
+                                                   TNMVersion = FinalizeDataTransformation(TNMVersion, TableName = "Staging", FeatureName = "TNMVersion"),
+                                                   TNM_L = FinalizeDataTransformation(TNM_L, TableName = "Staging", FeatureName = "TNM_L"),
+                                                   TNM_mSymbol = FinalizeDataTransformation(TNM_mSymbol, TableName = "Staging", FeatureName = "TNM_mSymbol"),
+                                                   TNM_Pn = FinalizeDataTransformation(TNM_Pn, TableName = "Staging", FeatureName = "TNM_Pn"),
+                                                   TNM_S = FinalizeDataTransformation(TNM_S, TableName = "Staging", FeatureName = "TNM_S"),
+                                                   TNM_V = FinalizeDataTransformation(TNM_V, TableName = "Staging", FeatureName = "TNM_V"))
                             }
 
                             if (tablename == "Surgery")
                             {
                                 Table <- Table %>%
-                                            mutate(Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "Surgery", FeatureName = "Intention"),   # Assign factor labels?
-                                                   ResidualAssessmentLocal = dsCCPhos::FinalizeDataTransformation(ResidualAssessmentLocal, TableName = "Surgery", FeatureName = "ResidualAssessmentLocal"),
-                                                   ResidualAssessmentTotal = dsCCPhos::FinalizeDataTransformation(ResidualAssessmentTotal, TableName = "Surgery", FeatureName = "ResidualAssessmentTotal"))
+                                            mutate(Intention = FinalizeDataTransformation(Intention, TableName = "Surgery", FeatureName = "Intention"),   # Assign factor labels?
+                                                   OPSVersion = FinalizeDataTransformation(OPSVersion, TableName = "Surgery", FeatureName = "OPSVersion"),
+                                                   ResidualAssessmentLocal = FinalizeDataTransformation(ResidualAssessmentLocal, TableName = "Surgery", FeatureName = "ResidualAssessmentLocal"),
+                                                   ResidualAssessmentTotal = FinalizeDataTransformation(ResidualAssessmentTotal, TableName = "Surgery", FeatureName = "ResidualAssessmentTotal"),
+                                                   SurgeryComplicationsADT = FinalizeDataTransformation(Intention, TableName = "Surgery", FeatureName = "SurgeryComplicationsADT"))
                             }
 
                             if (tablename == "SystemicTherapy")
                             {
                                 Table <- Table %>%
-                                            mutate(RelationToSurgery = dsCCPhos::FinalizeDataTransformation(RelationToSurgery, TableName = "SystemicTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
-                                                   Intention = dsCCPhos::FinalizeDataTransformation(Intention, TableName = "SystemicTherapy", FeatureName = "Intention"))   # Assign factor labels?
+                                            mutate(RelationToSurgery = FinalizeDataTransformation(RelationToSurgery, TableName = "SystemicTherapy", FeatureName = "RelationToSurgery"),   # Assign factor labels?
+                                                   Intention = FinalizeDataTransformation(Intention, TableName = "SystemicTherapy", FeatureName = "Intention"),   # Assign factor labels?
+                                                   CTCAEGrade = FinalizeDataTransformation(CTCAEGrade, TableName = "SystemicTherapy", FeatureName = "CTCAEGrade"),
+                                                   Type = FinalizeDataTransformation(Type, TableName = "SystemicTherapy", FeatureName = "Type"))
                             }
 
                             if (tablename == "TherapyRecommendation")
                             {
                                 Table <- Table %>%
-                                            mutate(Type = dsCCPhos::FinalizeDataTransformation(Type, TableName = "TherapyRecommendation", FeatureName = "Type"))
+                                            mutate(Deviation = FinalizeDataTransformation(Deviation, TableName = "TherapyRecommendation", FeatureName = "Deviation"),
+                                                   Type = FinalizeDataTransformation(Type, TableName = "TherapyRecommendation", FeatureName = "Type"))
                             }
                         }
 
