@@ -37,8 +37,8 @@ CleanTable <- function(Table,
     # Get table's set of (strictly) obligatory features from meta data passed to function
     ObligatoryFeatures <- FeatureObligations_RuleSet %>%
                               rename(Rule = all_of(FeatureObligations_Profile)) %>%      # Renaming feature based on passed argument
-                              filter(TableName %in% TableNameLookup, Rule == "Obligatory") %>%
-                              pull(FeatureName)
+                              filter(Table %in% TableNameLookup, Rule == "Obligatory") %>%
+                              pull(Feature)
 
     # Filter out entries that have NAs in any of strictly obligatory features
     CleanedTable <- Table %>%
@@ -66,7 +66,7 @@ CleanTable <- function(Table,
     # Get current table's set of trans-feature obligation rules (stated as pseudo-code), if there are any defined in meta data passed to function
     TransFeatureRules <- FeatureObligations_RuleSet %>%
                               rename(Rule = all_of(FeatureObligations_Profile)) %>%
-                              filter(TableName %in% TableNameLookup, !is.na(Rule), Rule != "NA", Rule != "Obligatory") %>%
+                              filter(Table %in% TableNameLookup, !is.na(Rule), Rule != "NA", Rule != "Obligatory") %>%
                               distinct(Rule) %>%
                               pull()
 

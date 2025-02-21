@@ -111,11 +111,12 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
                                          Settings.S = list(DataHarmonization_RuleProfile = "Default",
-                                                           DiagnosisRedundancy_Check = FALSE,
+                                                           DiagnosisRedundancy_Check = TRUE,
                                                            DiagnosisRedundancy_Profile = "Default",
-                                                           DiagnosisAssociation_Check = FALSE,
+                                                           DiagnosisAssociation_Check = TRUE,
                                                            DiagnosisAssociation_Profile = "Default",
-                                                           FeatureObligations_Profile = "Default"))
+                                                           FeatureObligations_Profile = "Default",
+                                                           FeatureTracking_Profile = "Default"))
 
 
 # CurationOutput$CurationReport$EntryCounts

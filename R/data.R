@@ -165,13 +165,35 @@
 #' @format ## `Meta_FeatureObligations`
 #' \code{tibble}
 #' \describe{
-#'   \item{TableName}{}
-#'   \item{FeatureName}{}
+#'   \item{Table}{}
+#'   \item{Feature}{}
 #'   \item{Default}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
 "Meta_FeatureObligations"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_FeatureTracking.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Containing preferences on which features should be tracked/monitored during curation process
+#'
+#' A tibble
+#'
+#' @format ## `Meta_FeatureTracking`
+#' \code{tibble}
+#' \describe{
+#'   \item{Table}{}
+#'   \item{Feature}{}
+#'   \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
+#'   \item{Default}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_FeatureTracking"
 
 
 
@@ -206,8 +228,8 @@
 #' @format ## `Meta_ValueSets`
 #' \code{tibble}
 #' \describe{
-#'   \item{TableName_Curated}{Table selector}
-#'   \item{FeatureName}{Feature name}
+#'   \item{Table}{Table name}
+#'   \item{Feature}{Feature name}
 #'   \item{ScaleLevel}{Scale level of feature}
 #'   \item{Value_Raw}{Value in original / raw data}
 #'   \item{Value_Curated}{Value as preferred}

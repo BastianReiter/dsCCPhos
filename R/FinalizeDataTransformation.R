@@ -3,24 +3,22 @@
 #'
 #' Auxiliary function within \code{\link{CurateDataDS}}
 #'
-#' Ineligible data (including data that could not be transformed) is optionally turned into NA.
+#' Ineligible data (including data that could not be transformed) is turned into NA per default.
 #' Optional factor conversion establishes level order where appropriate.
 #' Value eligibility and factor information is defined in dsCCPhos::Meta_ValueSets.
 #'
-#' @param TargetVector Vector | Feature to be finalized
-#' @param TableName String | For look-up purposes: Name of parenting table within Curated Data Set (CDS)
-#' @param FeatureName String | For look-up purposes: Name of the feature to be finalized
-#' @param ExcludeIneligibleValues Logical | Whether to set all ineligible values NA | Default: TRUE
-#' @param ConvertToFactor Logical | Whether to convert vector to factor | Default: FALSE
-#' @param AssignFactorLabels Logical | Whether to assign factor labels during factor conversion | Default: FALSE
+#' @param TargetVector \code{vector} - Feature to be finalized
+#' @param EligibleValueSet \code{data.frame} - Containing set of eligible values
+#' @param ExcludeIneligibleValues \code{logical} - Whether to set all ineligible values NA | Default: TRUE
+#' @param ConvertToFactor \code{logical} - Whether to convert vector to factor | Default: FALSE
+#' @param AssignFactorLabels \code{logical} - Whether to assign factor labels during factor conversion | Default: FALSE
 #'
-#' @return A vector (or factor)
+#' @return A \code{vector} (or factor)
 #' @export
 #'
 #' @author Bastian Reiter
 FinalizeDataTransformation <- function(TargetVector,
-                                       TableName,
-                                       FeatureName,
+                                       EligibleValueSet,
                                        ExcludeIneligibleValues = TRUE,
                                        ConvertToFactor = FALSE,
                                        AssignFactorLabels = FALSE)
@@ -29,19 +27,17 @@ FinalizeDataTransformation <- function(TargetVector,
 
     ### For testing purposes
     # TargetVector <- DataSet$RadiationTherapy$ApplicationType
-    # TableName = "RadiationTherapy"
-    # FeatureName = "ApplicationType"
+    # EligibleValueSet
     # ExcludeIneligibleValues = TRUE
     # ConvertToFactor = FALSE
     # AssignFactorLabels = FALSE
 
 
-    RelevantValueSet <- dsCCPhos::Meta_ValueSets %>%
-                            filter(Table == TableName & Feature == FeatureName) %>%
+    EligibleValueSet <- EligibleValueSet %>%
                             arrange(FactorRank)
 
-    vc_EligibleValues <- RelevantValueSet$Value_Curated
-    vc_EligibleValueLabels <- RelevantValueSet$Label_Curated
+    vc_EligibleValues <- EligibleValueSet$Value_Curated
+    vc_EligibleValueLabels <- EligibleValueSet$Label_Curated
 
     if (AssignFactorLabels == TRUE) { ConvertToFactor <- TRUE }
 
