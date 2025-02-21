@@ -13,17 +13,19 @@
 RecodeData <- function(TargetVector,
                        Dictionary)
 {
+    require(stringr)
+
     # Look-up Values come from names(Dictionary)
     vc_LookupValues <- paste0("^",      # Embrace Lookup Values with "^" and "$" to isolate them, so that for example "R" is not recognized (and replaced) in "CR", but only when it stands isolated
-                              stringr::str_escape(names(Dictionary)),      # Introduce escaping of special characters, for example "(" and "/"
+                              str_escape(names(Dictionary)),      # Introduce escaping of special characters, for example "(" and "/"
                               "$")
 
     # Add "Protection Prefix" to mark freshly changed Values, so that they won't be looked up themselves
     vc_NewValues <- paste0("NEW_", Dictionary)
     names(vc_NewValues) <- vc_LookupValues
 
-    vc_Output <- stringr::str_replace_all(TargetVector, vc_NewValues)
-    vc_Output <- stringr::str_remove_all(vc_Output, "NEW_")      # Remove the introduced "Protection Prefix"
+    vc_Output <- str_replace_all(TargetVector, vc_NewValues)
+    vc_Output <- str_remove_all(vc_Output, "NEW_")      # Remove the introduced "Protection Prefix"
 
     return(vc_Output)
 }

@@ -6,34 +6,31 @@
 \usage{
 FinalizeDataTransformation(
   TargetVector,
-  TableName,
-  FeatureName,
+  EligibleValueSet,
   ExcludeIneligibleValues = TRUE,
   ConvertToFactor = FALSE,
   AssignFactorLabels = FALSE
 )
 }
 \arguments{
-\item{TargetVector}{Vector | Feature to be finalized}
+\item{TargetVector}{\code{vector} - Feature to be finalized}
 
-\item{TableName}{String | For look-up purposes: Name of parenting table within Curated Data Set (CDS)}
+\item{EligibleValueSet}{\code{data.frame} - Containing set of eligible values}
 
-\item{FeatureName}{String | For look-up purposes: Name of the feature to be finalized}
+\item{ExcludeIneligibleValues}{\code{logical} - Whether to set all ineligible values NA | Default: TRUE}
 
-\item{ExcludeIneligibleValues}{Logical | Whether to set all ineligible values NA | Default: TRUE}
+\item{ConvertToFactor}{\code{logical} - Whether to convert vector to factor | Default: FALSE}
 
-\item{ConvertToFactor}{Logical | Whether to convert vector to factor | Default: FALSE}
-
-\item{AssignFactorLabels}{Logical | Whether to assign factor labels during factor conversion | Default: FALSE}
+\item{AssignFactorLabels}{\code{logical} - Whether to assign factor labels during factor conversion | Default: FALSE}
 }
 \value{
-A vector (or factor)
+A \code{vector} (or factor)
 }
 \description{
 Auxiliary function within \code{\link{CurateDataDS}}
 }
 \details{
-Ineligible data (including data that could not be transformed) is optionally turned into NA.
+Ineligible data (including data that could not be transformed) is turned into NA per default.
 Optional factor conversion establishes level order where appropriate.
 Value eligibility and factor information is defined in dsCCPhos::Meta_ValueSets.
 }

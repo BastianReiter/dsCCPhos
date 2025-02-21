@@ -9,8 +9,8 @@
 
 \code{tibble}
 \describe{
-\item{TableName_Curated}{Table selector}
-\item{FeatureName}{Feature name}
+\item{Table}{Table name}
+\item{Feature}{Feature name}
 \item{ScaleLevel}{Scale level of feature}
 \item{Value_Raw}{Value in original / raw data}
 \item{Value_Curated}{Value as preferred}

@@ -4,7 +4,7 @@ library(usethis)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta Data: CCP Table names
+# Meta Data: CCP Tables
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Meta_Tables <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
@@ -16,7 +16,7 @@ use_data(Meta_Tables, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta Data: CCP Feature names
+# Meta Data: CCP Features
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Meta_Features <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
@@ -60,6 +60,18 @@ Meta_FeatureObligations <- read_excel(path = "./Development/Data/MetaData/MetaDa
 
 # Save data in .rda-file and make it part of package
 use_data(Meta_FeatureObligations, overwrite = TRUE)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Settings: Feature tracking
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Meta_FeatureTracking <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                   sheet = "FeatureTracking")
+
+# Save data in .rda-file and make it part of package
+use_data(Meta_FeatureTracking, overwrite = TRUE)
 
 
 
