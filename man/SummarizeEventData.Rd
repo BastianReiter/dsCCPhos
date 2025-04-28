@@ -4,21 +4,21 @@
 \alias{SummarizeEventData}
 \title{SummarizeEventData}
 \usage{
-SummarizeEventData(EventEntries, ProgressBarObject = NULL)
+SummarizeEventData(EventData, ProgressBarObject = NULL)
 }
 \arguments{
-\item{EventEntries}{Data frame that contains entries from unnested ADS_Events}
+\item{EventData}{\code{data.frame} that contains entries from \code{ADS$Events}}
 
-\item{ProgressBarObject}{Optionally pass object of type progress::progress_bar to display progress}
+\item{ProgressBarObject}{Optionally pass object of type \code{progress::progress_bar} to display progress}
 }
 \value{
-Data frame containing summarized information
+\code{data.frame} containing summarized information
 }
 \description{
-Auxiliary function within \code{\link{AugmentDataDS}}
+Auxiliary function within \code{\link{AugmentDataDS()}}
 }
 \details{
-Summarize data stored in ADS_Events and create meaningful features for ADS_Diagnosis and ADS_Patient
+Summarize data stored in \code{ADS$Events} and create meaningful features for \code{ADS$Diagnosis} and \code{ADS$Patient}
 }
 \author{
 Bastian Reiter

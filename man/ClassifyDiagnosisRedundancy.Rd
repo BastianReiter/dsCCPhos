@@ -21,6 +21,7 @@ ClassifyDiagnosisRedundancy(
 \code{data.frame} of consolidated diagnosis entries
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} \cr\cr
 Auxiliary function within \code{\link{CurateDataDS}}
 }
 \details{

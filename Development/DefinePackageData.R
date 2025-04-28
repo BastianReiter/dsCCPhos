@@ -28,26 +28,27 @@ use_data(Meta_Features, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta Data: CCP Value sets
+# Meta Data: Feature values
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_ValueSets <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                             sheet = "ValueSets")
+Meta_Values <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                          sheet = "Values",
+                          skip = 1)
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_ValueSets, overwrite = TRUE)
+use_data(Meta_Values, overwrite = TRUE)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Settings: Augment Event Data
+# Settings: Event Feature Engineering
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_AugmentEventData <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                    sheet = "AugmentEventData")
+Meta_EventFeatures <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                 sheet = "EventFeatures")
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_AugmentEventData, overwrite = TRUE)
+use_data(Meta_EventFeatures, overwrite = TRUE)
 
 
 
@@ -56,7 +57,8 @@ use_data(Meta_AugmentEventData, overwrite = TRUE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Meta_FeatureObligations <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                      sheet = "FeatureObligations")
+                                      sheet = "FeatureObligations",
+                                      skip = 1)
 
 # Save data in .rda-file and make it part of package
 use_data(Meta_FeatureObligations, overwrite = TRUE)
@@ -68,7 +70,8 @@ use_data(Meta_FeatureObligations, overwrite = TRUE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Meta_FeatureTracking <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                   sheet = "FeatureTracking")
+                                   sheet = "FeatureTracking",
+                                   skip = 1)
 
 # Save data in .rda-file and make it part of package
 use_data(Meta_FeatureTracking, overwrite = TRUE)
@@ -80,7 +83,8 @@ use_data(Meta_FeatureTracking, overwrite = TRUE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Meta_DataHarmonization <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                     sheet = "DataHarmonization")
+                                     sheet = "DataHarmonization",
+                                     skip = 1)
 
 # Save data in .rda-file and make it part of package
 use_data(Meta_DataHarmonization, overwrite = TRUE)

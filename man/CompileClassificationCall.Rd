@@ -12,19 +12,19 @@ CompileClassificationCall(
 )
 }
 \arguments{
-\item{TargetFeature}{String | Name of feature that is being engineered}
+\item{TargetFeature}{\code{string} - Name of feature that is being engineered}
 
-\item{RuleSet}{Data frame | Contains predefined set of rules}
+\item{RuleSet}{\code{data.frame} - Contains predefined set of rules}
 
-\item{RuleProfile}{String | Profile name stated in rule set data frame}
+\item{RuleProfile}{\code{string} - Profile name stated in rule set data frame}
 
-\item{ValueIfNoRuleMet}{String | Value (as string) of TargetFeature if no rules are fulfilled | Default = "NA"}
+\item{ValueIfNoRuleMet}{\code{string} - Value (as string) of TargetFeature if no rules are fulfilled | Default = "NA"}
 }
 \value{
-String containing an unevaluated dplyr::case_when() expression
+\code{string} containing an unevaluated dplyr::case_when() expression
 }
 \description{
-Auxiliary function to compile calls used in \code{\link{ClassifyDiagnosisRedundancy}} and \code{\link{ClassifyDiagnosisAssociation}}
+Auxiliary function to compile calls used in \code{\link{ClassifyDiagnosisAssociation}}
 }
 \details{
 Based on a predefined rule set data frame, compile a dplyr::case_when() expression and return it as a string

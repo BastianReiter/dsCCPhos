@@ -1,18 +1,18 @@
 
 #' SummarizeEventData
 #'
-#' Auxiliary function within \code{\link{AugmentDataDS}}
+#' Auxiliary function within \code{\link{AugmentDataDS()}}
 #'
-#' Summarize data stored in ADS_Events and create meaningful features for ADS_Diagnosis and ADS_Patient
+#' Summarize data stored in \code{ADS$Events} and create meaningful features for \code{ADS$Diagnosis} and \code{ADS$Patient}
 #'
-#' @param EventEntries Data frame that contains entries from unnested ADS_Events
-#' @param ProgressBarObject Optionally pass object of type progress::progress_bar to display progress
+#' @param EventData \code{data.frame} that contains entries from \code{ADS$Events}
+#' @param ProgressBarObject Optionally pass object of type \code{progress::progress_bar} to display progress
 #'
-#' @return Data frame containing summarized information
+#' @return \code{data.frame} containing summarized information
 #' @export
 #'
 #' @author Bastian Reiter
-SummarizeEventData <- function(EventEntries,
+SummarizeEventData <- function(EventData,
                                ProgressBarObject = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
@@ -20,7 +20,7 @@ SummarizeEventData <- function(EventEntries,
 
 
     ### For function testing purposes
-    # EventEntries <- df_ADS_Events %>%
+    # EventData <- df_ADS_Events %>%
     #                     filter(PatientID == "Pat_2063") %>%
     #                     unnest(cols = c(EventDetails), keep_empty = TRUE)
 
@@ -31,10 +31,10 @@ SummarizeEventData <- function(EventEntries,
     if (!is.null(ProgressBarObject)) { try(ProgressBarObject$tick()) }
 
 
-    Output <- EventEntries %>%
+    Output <- EventData %>%
                   summarize(PatientAgeAtDiagnosis = first(EventPatientAge[EventSubclass == "InitialDiagnosis"]),      # !!! TEMPORARY? !!! If multiple "InitialDiagnosis" entries occur (Which shouldn't be), select only the first
                             #---------------------------------------------------
-                            TimeDiagnosisToDeath = ifelse("Deceased" %in% EventEntries$EventSubclass,
+                            TimeDiagnosisToDeath = ifelse("Deceased" %in% EventData$EventSubclass,
                                                           EventDaysSinceDiagnosis[EventSubclass == "Deceased"],
                                                           NA_integer_),
                             TimeFollowUp = case_when(!is.na(TimeDiagnosisToDeath) ~ TimeDiagnosisToDeath,
@@ -42,6 +42,8 @@ SummarizeEventData <- function(EventEntries,
                                                      TRUE ~ NA_integer_),
                             IsDocumentedDeceased = case_when(!is.na(TimeDiagnosisToDeath) ~ TRUE,
                                                              TRUE ~ FALSE))
+                            #---------------------------------------------------
+                            #HadChemotherapy = )
 
 
     return(as.data.frame(Output))

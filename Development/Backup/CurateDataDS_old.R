@@ -1,22 +1,21 @@
 
 #' CurateDataDS
 #'
-#' `r lifecycle::badge("stable")` \cr\cr
 #' Transforms Raw Data Set (RDS) into Curated Data Set (CDS) while tracing data transformation.
 #'
 #' Server-side ASSIGN method
 #'
 #' @param RawDataSetName.S \code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
 #' @param Settings.S \code{list} - Settings passed to function
-#'                   \itemize{\item DataHarmonization \code{list}
-#'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
-#'                                         \item Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
-#'                            \item FeatureObligations \code{list}
-#'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
-#'                                         \item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
-#'                            \item FeatureTracking \code{list}
-#'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
-#'                                         \item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}}
+#'                   \itemize{\item DataHarmonization_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
+#'                            \item DataHarmonization_Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{RawDataHarmonization_RuleSet} - Default: 'Default'
+#'                            \item DiagnosisRedundancy_Check \code{logical} - Whether or not to check for redundant diagnosis entries
+#'                            \item DiagnosisRedundancy_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DiagnosisRedundancy}
+#'                            \item DiagnosisRedundancy_Profile \code{character} - Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{DiagnosisRedundancy_RuleSet} - Default: 'Default'
+#'                            \item FeatureObligations_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
+#'                            \item FeatureObligations_Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations_RuleSet} - Default: 'Default'
+#'                            \item FeatureTracking_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
+#'                            \item FeatureTracking_Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking_RuleSet} - Default: 'Default'}
 #'
 #' @return A \code{list} containing the following objects:
 #'         \itemize{\item CuratedDataSet \code{list}
@@ -47,17 +46,23 @@
 #'                               \item Transformation (list of lists)
 #'                                    \itemize{\item Monitors
 #'                                             \item EligibilityOverviews
-#'                                             \item ValueSetOverviews}}
+#'                                             \item ValueSetOverviews}
+#'                               \item DiagnosisRedundancies
+#'                                    \itemize{\item DiagnosisRedundancies
+#'                                             \item PatientsWithDiagnosisRedundancies}}
 #'                  \item CurationMessages \code{list}}
 #' @export
 #' @author Bastian Reiter
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
-                         Settings.S = list(DataHarmonization = list(RuleSet = dsCCPhos::Meta_DataHarmonization,
-                                                                    Profile = "Default"),
-                                           FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
-                                                                     Profile = "Default"),
-                                           FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking,
-                                                                  Profile = "Default")))
+                         Settings.S = list(DataHarmonization_RuleSet = dsCCPhos::Meta_DataHarmonization,
+                                           DataHarmonization_Profile = "Default",
+                                           DiagnosisRedundancy_Check = TRUE,
+                                           DiagnosisRedundancy_RuleSet = dsCCPhos::Meta_DiagnosisRedundancy,
+                                           DiagnosisRedundancy_Profile = "Default",
+                                           FeatureObligations_RuleSet = dsCCPhos::Meta_FeatureObligations,
+                                           FeatureObligations_Profile = "Default",
+                                           FeatureTracking_RuleSet = dsCCPhos::Meta_FeatureTracking,
+                                           FeatureTracking_Profile = "Default"))
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # OVERVIEW
@@ -101,12 +106,15 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 ### For testing purposes
-# Settings.S <- list(DataHarmonization = list(RuleSet = dsCCPhos::Meta_DataHarmonization,
-#                                             Profile = "Default"),
-#                    FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
-#                                              Profile = "Default"),
-#                    FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking,
-#                                           Profile = "Default"))
+# Settings.S <- list(DataHarmonization_RuleSet = dsCCPhos::Meta_DataHarmonization,
+#                    DataHarmonization_Profile = "Default",
+#                    DiagnosisRedundancy_Check = FALSE,
+#                    DiagnosisRedundancy_RuleSet = dsCCPhos::Meta_DiagnosisRedundancy,
+#                    DiagnosisRedundancy_Profile = "Default",
+#                    FeatureObligations_RuleSet = dsCCPhos::Meta_FeatureObligations,
+#                    FeatureObligations_Profile = "Default",
+#                    FeatureTracking_RuleSet = dsCCPhos::Meta_FeatureTracking,
+#                    FeatureTracking_Profile = "Default")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,12 +141,15 @@ require(tidyr)
 Settings <- Settings.S
 
 # If list of 'Settings' passed to function is incomplete, complete it with default values
-if (is.null(Settings$DataHarmonization$RuleSet)) { Settings$DataHarmonization$RuleSet <- dsCCPhos::Meta_DataHarmonization }
-if (is.null(Settings$DataHarmonization$Profile)) { Settings$DataHarmonization$Profile <- "Default" }
-if (is.null(Settings$FeatureObligations$RuleSet)) { Settings$FeatureObligations$RuleSet <- dsCCPhos::Meta_FeatureObligations }
-if (is.null(Settings$FeatureObligations$Profile)) { Settings$FeatureObligations$Profile <- "Default" }
-if (is.null(Settings$FeatureTracking$RuleSet)) { Settings$FeatureTracking$RuleSet <- dsCCPhos::Meta_FeatureTracking }
-if (is.null(Settings$FeatureTracking$Profile)) { Settings$FeatureTracking$Profile <- "Default" }
+if (is.null(Settings$DataHarmonization_RuleSet)) { Settings$DataHarmonization_RuleSet <- dsCCPhos::Meta_DataHarmonization }
+if (is.null(Settings$DataHarmonization_Profile)) { Settings$DataHarmonization_Profile <- "Default" }
+if (is.null(Settings$DiagnosisRedundancy_Check)) { Settings$DiagnosisRedundancy_Check <- TRUE }
+if (is.null(Settings$DiagnosisRedundancy_RuleSet)) { Settings$DiagnosisRedundancy_RuleSet <- dsCCPhos::Meta_DiagnosisRedundancy }
+if (is.null(Settings$DiagnosisRedundancy_Profile)) { Settings$DiagnosisRedundancy_Profile <- "Default" }
+if (is.null(Settings$FeatureObligations_RuleSet)) { Settings$FeatureObligations_RuleSet <- dsCCPhos::Meta_FeatureObligations }
+if (is.null(Settings$FeatureObligations_Profile)) { Settings$FeatureObligations_Profile <- "Default" }
+if (is.null(Settings$FeatureTracking_RuleSet)) { Settings$FeatureTracking_RuleSet <- dsCCPhos::Meta_FeatureTracking }
+if (is.null(Settings$FeatureTracking_Profile)) { Settings$FeatureTracking_Profile <- "Default" }
 
 
 
@@ -156,15 +167,15 @@ if (is.character(RawDataSetName.S))
     stop(ClientMessage, call. = FALSE)
 }
 
-
-if (Settings$FeatureObligations$Profile %in% names(Settings$FeatureObligations$RuleSet) == FALSE)
+if (Settings$FeatureObligations_Profile %in% names(Settings$FeatureObligations_RuleSet) == FALSE)
 {
-    ClientMessage <- "ERROR: Value of settings argument 'FeatureObligations$Profile' must be column name of data.frame passed in settings argument 'FeatureObligations$RuleSet'."
+    ClientMessage <- "ERROR: Value of settings argument 'FeatureObligations_Profile' must be column name of data.frame passed in settings argument 'FeatureObligations_RuleSet'."
     stop(ClientMessage, call. = FALSE)
 }
-if (Settings$FeatureTracking$Profile %in% names(Settings$FeatureTracking$RuleSet) == FALSE)
+
+if (Settings$FeatureTracking_Profile %in% names(Settings$FeatureTracking_RuleSet) == FALSE)
 {
-    ClientMessage <- "ERROR: Value of settings argument 'FeatureTracking$Profile' must be column name of data.frame passed in settings argument 'FeatureTracking$RuleSet'."
+    ClientMessage <- "ERROR: Value of settings argument 'FeatureTracking_Profile' must be column name of data.frame passed in settings argument 'FeatureTracking_RuleSet'."
     stop(ClientMessage, call. = FALSE)
 }
 
@@ -186,8 +197,9 @@ options(dplyr.summarise.inform = FALSE)
 # Initiate Messaging objects
 Messages <- list()
 Messages$ExcludedEntries_Primary <- character()
-Messages$ExcludedEntries_Secondary <- character()
 Messages$ExcludedEntries_SecondaryRedundancy <- character()
+Messages$ExcludedEntries_Secondary <- character()
+Messages$DiagnosisRedundancies <- character()
 Messages$CheckCurationCompletion <- "red"
 Messages$FinalMessage <- "Curation not completed"
 
@@ -318,7 +330,8 @@ DataSetRoot <- DataSet$Patient %>%
                     left_join(DataSet$Diagnosis, by = join_by(PatientID)) %>%
                     CleanTable(TableNameLookup = c("Diagnosis", "Patient"),
                                RemoveRedundantEntries = FALSE,
-                               FeatureObligations = Settings$FeatureObligations) %>%
+                               FeatureObligations_RuleSet = Settings$FeatureObligations_RuleSet,
+                               FeatureObligations_Profile = Settings$FeatureObligations_Profile) %>%
                     select(PatientID, DiagnosisID) %>%
                     distinct()
 
@@ -360,7 +373,8 @@ DataSet <- DataSet %>%
                             CleanedTable <- Table %>%
                                                 CleanTable(TableNameLookup = tablename,
                                                            RemoveRedundantEntries = TRUE,
-                                                           FeatureObligations = Settings$FeatureObligations)
+                                                           FeatureObligations_RuleSet = Settings$FeatureObligations_RuleSet,
+                                                           FeatureObligations_Profile = Settings$FeatureObligations_Profile)
                             return(CleanedTable)
 
                         } else {
@@ -430,8 +444,8 @@ cat("\n")
 ls_MonitorMetaData <- names(DataSet) %>%
                           map(function(tablename)
                               {
-                                  vc_FeaturesToTrack <- Settings$FeatureTracking$RuleSet %>%
-                                                            rename(IsTracked = all_of(Settings$FeatureTracking$Profile)) %>%      # Renaming feature based on passed argument
+                                  vc_FeaturesToTrack <- Settings$FeatureTracking_RuleSet %>%
+                                                            rename(IsTracked = all_of(Settings$FeatureTracking_Profile)) %>%      # Renaming feature based on passed argument
                                                             filter(Table == tablename,
                                                                    IsTracked == TRUE) %>%
                                                             pull(Feature)
@@ -439,7 +453,7 @@ ls_MonitorMetaData <- names(DataSet) %>%
                                   ls_EligibleValues <- vc_FeaturesToTrack %>%
                                                             map(function(featurename)
                                                                 {
-                                                                    Values <- dsCCPhos::Meta_Values %>%
+                                                                    Values <- dsCCPhos::Meta_ValueSets %>%
                                                                                   filter(Table == tablename,
                                                                                          Feature == featurename) %>%
                                                                                   select(Value_Raw,
@@ -519,8 +533,8 @@ DataSet <- DataSet %>%
                          Table %>%
                               mutate(TrackID = row_number()) %>%      # Enables tracking of transformation (see above)
                               HarmonizeData(TableName = tablename,
-                                            RuleSet = Settings$DataHarmonization$RuleSet,
-                                            Profile = Settings$DataHarmonization$Profile)
+                                            RuleSet = Settings$DataHarmonization_RuleSet,
+                                            Profile = Settings$DataHarmonization_Profile)
                      })
 
 try(ProgressBar$terminate())
@@ -588,7 +602,7 @@ if (all(names(DataSet) == names(ls_MonitorMetaData)))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Module C 5)  Data recoding and formatting
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - Recoding data using dsCCPhos::RecodeData() based on specifications in dsCCPhos::Meta_Values
+#   - Recoding data using dsCCPhos::RecodeData() based on specifications in dsCCPhos::Meta_ValueSets
 #   - RecodeData() uses a dictionary in the form of a named vector to perform recoding on a target vector
 #   - Format / Re-type data using dsCCPhos::FormatData() based on specifications in dsCCPhos::Meta_Features
 #-------------------------------------------------------------------------------
@@ -608,12 +622,12 @@ DataSet <- DataSet %>%
                             # Recode table data as defined in meta data
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-                            FeaturesWithValueSets <- dsCCPhos::Meta_Values %>%
+                            FeaturesWithValueSets <- dsCCPhos::Meta_ValueSets %>%
                                                           filter(Table == tablename) %>%
                                                           pull(Feature) %>%
                                                           unique()
 
-                            # ValueSets <- dsCCPhos::Meta_Values %>%
+                            # ValueSets <- dsCCPhos::Meta_ValueSets %>%
                             #                   filter(Table == tablename)
                             #
                             # Dictionaries <- ValueSets %>%
@@ -624,7 +638,7 @@ DataSet <- DataSet %>%
                             {
                                 for (i in 1:length(FeaturesWithValueSets))
                                 {
-                                    Dictionary <- with(dsCCPhos::Meta_Values %>% filter(Table == tablename, Feature == FeaturesWithValueSets[i]),
+                                    Dictionary <- with(dsCCPhos::Meta_ValueSets %>% filter(Table == tablename, Feature == FeaturesWithValueSets[i]),
                                                        set_names(Value_Curated, Value_Raw))
 
                                     Table <- Table %>%
@@ -723,7 +737,7 @@ if (all(names(DataSet) == names(ls_MonitorMetaData)))
 #   - (Optional / Default) Exclusion of ineligible data (including data that could not be transformed)
 #   - (Optional) Conversion to ordered factor
 #   - (Optional) Assignment of factor labels   <-- Conversion to factor is put off for now, 02/2024
-#   - All predefined information stored in dsCCPhos::Meta_Values
+#   - All predefined information stored in dsCCPhos::Meta_ValueSets
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -738,7 +752,7 @@ DataSet <- DataSet %>%
 
                         if (!(nrow(Table) == 0))
                         {
-                            FeaturesWithValueSets <- dsCCPhos::Meta_Values %>%
+                            FeaturesWithValueSets <- dsCCPhos::Meta_ValueSets %>%
                                                           filter(Table == tablename) %>%
                                                           pull(Feature) %>%
                                                           unique()
@@ -747,7 +761,7 @@ DataSet <- DataSet %>%
                             {
                                 for (i in 1:length(FeaturesWithValueSets))
                                 {
-                                    EligibleValueSet <- dsCCPhos::Meta_Values %>%
+                                    EligibleValueSet <- dsCCPhos::Meta_ValueSets %>%
                                                             filter(Table == tablename,
                                                                    Feature == FeaturesWithValueSets[i])
 
@@ -1084,7 +1098,8 @@ DataSetRoot <- DataSet$Patient %>%
                     left_join(DataSet$Diagnosis, by = join_by(PatientID)) %>%
                     CleanTable(TableNameLookup = c("Diagnosis", "Patient"),
                                RemoveRedundantEntries = FALSE,
-                               FeatureObligations = Settings$FeatureObligations) %>%
+                               FeatureObligations_RuleSet = Settings$FeatureObligations_RuleSet,
+                               FeatureObligations_Profile = Settings$FeatureObligations_Profile) %>%
                     select(PatientID, DiagnosisID) %>%
                     distinct()
 
@@ -1113,7 +1128,8 @@ DataSet <- DataSet %>%
                             CleanedTable <- Table %>%
                                                 CleanTable(TableNameLookup = tablename,
                                                            RemoveRedundantEntries = TRUE,
-                                                           FeatureObligations = Settings$FeatureObligations)
+                                                           FeatureObligations_RuleSet = Settings$FeatureObligations_RuleSet,
+                                                           FeatureObligations_Profile = Settings$FeatureObligations_Profile)
                             return(CleanedTable)
 
                         } else {
@@ -1183,6 +1199,28 @@ Aux_DiagnosisRedundancies <- DataSet$Diagnosis %>%
 Aux_RedundanciesIDMapping <- Aux_DiagnosisRedundancies %>%
                                   filter(IsRedundant == TRUE) %>%
                                   select(PatientID, DiagnosisID, ReferenceID)
+
+# For messaging and reporting count
+# a) Number of redundant diagnosis entries and
+# b) Number of patients that had redundant diagnosis entries
+#-------------------------------------------------------------------------------
+CountRedundancies_Diagnosis <- Aux_DiagnosisRedundancies %>%
+                                    filter(IsRedundant == TRUE) %>%
+                                    nrow()
+
+CountPatientsWithRedundancies_Diagnosis <- Aux_DiagnosisRedundancies %>%
+                                                filter(IsRedundant == TRUE) %>%
+                                                pull(PatientID) %>%
+                                                n_distinct()
+
+# Print message for live monitoring in local tests
+Message <- paste0("Found ", CountRedundancies_Diagnosis, " redundancies related to ", CountPatientsWithRedundancies_Diagnosis, " patient IDs.")
+cli::cat_bullet(Message, bullet = "info")
+cat("\n")
+
+# Save message in output object
+Messages$DiagnosisRedundancies <- Message
+#-------------------------------------------------------------------------------
 
 # Afterwards, remove redundant entries from 'Diagnosis'
 DataSet$Diagnosis <- Aux_DiagnosisRedundancies %>%
@@ -1256,6 +1294,155 @@ cat("\n")
 
 
 
+
+# Module D 1) Join tables 'Diagnosis' and 'Histology'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Create composed ID ('DiagnosisID / HistologyID')
+#   - Add auxiliary features for filtering purposes
+#-------------------------------------------------------------------------------
+
+# DataSet$Diagnosis <- DataSet$Diagnosis %>%
+#                           left_join(DataSet$Histology, by = join_by(PatientID, DiagnosisID)) %>%
+#                           mutate(OriginalDiagnosisID = DiagnosisID,
+#                                  DiagnosisID = paste0(DiagnosisID, "/", HistologyID)) %>%
+#                           relocate(DiagnosisID, .after = PatientID) %>%
+#                           group_by(PatientID) %>%
+#                               mutate(PatientCountInitialEntries = n()) %>%
+#                           ungroup()
+
+
+
+# Module D 2) Classification and removal of redundant diagnosis entries
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - In patients with multiple diagnosis entries:
+#     Use dsCCPhos-function ClassifyDiagnosisRedundancy() to identify and consolidate redundant diagnosis entries
+#   - Rules for classification of redundancy are defined in customizable data object delivered with dsCCPhos
+#   - Replace redundant DiagnosisIDs in all related tables
+#-------------------------------------------------------------------------------
+
+# if (Settings$DiagnosisRedundancy_Check == TRUE)
+# {
+#///////////////////////////////////////////////////////////////////////////////
+
+# Compile rule calls from data in Settings$DiagnosisRedundancy_RuleSet using dsCCPhos::CompileClassificationCall
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Pass required information to dsCCPhos::CompileClassificationCall to compile rule calls (dplyr::case_when-Statements)
+# Call_IsLikelyRedundant <- CompileClassificationCall(TargetFeature = "IsLikelyRedundant",
+#                                                     RuleSet = Settings$DiagnosisRedundancy_RuleSet,
+#                                                     RuleProfile = Settings$DiagnosisRedundancy_Profile,
+#                                                     ValueIfNoRuleMet = FALSE)
+#
+# # Make list of rule calls to pass them to function
+# RuleCalls_DiagnosisRedundancy <- list(IsLikelyRedundant = Call_IsLikelyRedundant)
+
+
+# Set up progress bar
+#-------------------------------------------------------------------------------
+# CountProgressItems <- DataSet$Diagnosis %>% filter(PatientCountInitialEntries > 1) %>% pull(PatientID) %>% n_distinct()
+# ProgressBar <- progress_bar$new(format = "Classifying redundant diagnosis entries... [:bar] :percent in :elapsed  :spin",
+#                                 total = CountProgressItems, clear = FALSE, width= 100)
+#-------------------------------------------------------------------------------
+
+# Filter patients with multiple diagnosis entries and apply dsCCPhos::ClassifyDiagnosisRedundancy()
+# df_Aux_Diagnosis_ClassifiedRedundancies <- DataSet$Diagnosis %>%
+#                                                 filter(PatientCountInitialEntries > 1) %>%
+#                                                 group_by(PatientID) %>%
+#                                                     group_modify(~ ClassifyDiagnosisRedundancy(DiagnosisEntries = .x,
+#                                                                                                RuleCalls = RuleCalls_DiagnosisRedundancy,
+#                                                                                                ProgressBarObject = ProgressBar)) %>%
+#                                                 ungroup()
+
+# Reassemble DataSet$Diagnosis after processing of redundant diagnosis entries
+# DataSet$Diagnosis <- DataSet$Diagnosis %>%
+#                           filter(PatientCountInitialEntries == 1) %>%
+#                           bind_rows(df_Aux_Diagnosis_ClassifiedRedundancies) %>%
+#                           arrange(PatientID) %>%
+#                           group_by(PatientID) %>%
+#                               mutate(PatientCountDistinctEntries = n()) %>%
+#                           ungroup()
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MONITORING: Redundant diagnosis entries
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# a) Number of redundant diagnosis entries and
+# b) Number of patients that had redundant diagnosis entries
+# CountDiagnosisRedundancies <- sum(DataSet$Diagnosis$CountRedundancies, na.rm = TRUE)
+# CountPatientsWithDiagnosisRedundancies <- DataSet$Diagnosis %>%
+#                                               filter(CountRedundancies > 0) %>%
+#                                               pull(PatientID) %>%
+#                                               n_distinct()
+#
+# # Print message for live monitoring in local tests
+# Message <- paste0("Found ", CountDiagnosisRedundancies, " redundancies related to ", CountPatientsWithDiagnosisRedundancies, " patient IDs.")
+# cli::cat_bullet(Message, bullet = "info")
+# cat("\n")
+#
+# # Save message in output object
+# Messages$DiagnosisRedundancies <- Message
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Update related tables
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#     - After classification of redundant diagnosis entries, replace DiagnosisIDs in related tables
+#     - Removal of auxiliary columns
+#-------------------------------------------------------------------------------
+
+# Replace IDs (Original DiagnosisID and not newly composed one) of redundant diagnosis entries in related tables
+# Get table of affected DiagnosisIDs
+# df_Aux_Diagnosis_IDMappingRedundancies <- DataSet$Diagnosis %>%
+#                                               ungroup() %>%
+#                                               filter(CountRedundancies > 0) %>%
+#                                               select(PatientID, RedundantOriginalIDs, OriginalDiagnosisID) %>%
+#                                               unnest(cols = c(RedundantOriginalIDs)) %>%
+#                                               rename(all_of(c(OldDiagnosisID = "RedundantOriginalIDs",
+#                                                               NewDiagnosisID = "OriginalDiagnosisID"))) %>%
+#                                               filter(OldDiagnosisID != NewDiagnosisID) %>%
+#                                               distinct()
+
+# DataSet <- DataSet %>%
+#                 imap(function(Table, tablename)
+#                      {
+#                         if (nrow(Table) > 0 & tablename %in% c("BioSampling", "Diagnosis", "Histology", "Patient", "TherapyRecommendation") == FALSE)
+#                         {
+#                             Table %>%
+#                                 ReplaceDiagnosisIDs(IDMapping = df_Aux_Diagnosis_IDMappingRedundancies)
+#
+#                         } else { return(Table) }
+#                      })
+
+# Remove columns of redundant IDs (not needed anymore)
+# DataSet$Diagnosis <- DataSet$Diagnosis %>%
+#                           select(-c(RedundantIDs,
+#                                     RedundantOriginalIDs,
+#                                     CountRedundancies))
+
+#///////////////////////////////////////////////////////////////////////////////
+#} else {   # In case no diagnosis redundancy check was performed
+
+#     DataSet$Diagnosis <- DataSet$Diagnosis %>%
+#                               mutate(PatientCountDistinctEntries = PatientCountInitialEntries)
+#
+#     CountDiagnosisRedundancies <- NA
+#     CountPatientsWithDiagnosisRedundancies <- NA
+#
+#     # Print warning message if Diagnosis Redundancy Check was skipped
+#     Message <- "Diagnosis Redundancy Check was skipped!"
+#     cli::cat_bullet(Message, bullet = "warning")
+#     cat("\n")
+#
+#     # Save message in output object
+#     Messages$DiagnosisRedundancies <- Message
+# }
+
+
+
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Final modifications
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1268,7 +1455,7 @@ DataSet <- DataSet %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Compile content of 'CurationReport'
+# Define content of CurationReport
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CurationReport <- list(EntryCounts = tibble(Table = names(DataSet),
@@ -1281,7 +1468,9 @@ CurationReport <- list(EntryCounts = tibble(Table = names(DataSet),
                                             AfterSecondaryRedundancyExclusion = CountEntries_AfterSecondaryRedundancyExclusion),
                        Transformation = list(Monitors = ls_TransformationMonitors,
                                              EligibilityOverviews = ls_EligibilityOverviews,
-                                             ValueSetOverviews = ls_ValueSetOverviews))
+                                             ValueSetOverviews = ls_ValueSetOverviews),
+                       DiagnosisRedundancies = c(DiagnosisRedundancies = CountRedundancies_Diagnosis,
+                                                 PatientsWithDiagnosisRedundancies = CountPatientsWithRedundancies_Diagnosis))
 
 Messages$CheckCurationCompletion <- "green"
 Messages$FinalMessage <- "Data Curation performed successfully!"

@@ -6,47 +6,38 @@
 \usage{
 CurateDataDS(
   RawDataSetName.S = "RawDataSet",
-  Settings.S = list(DataHarmonization_RuleSet = dsCCPhos::Meta_DataHarmonization,
-    DataHarmonization_Profile = "Default", DiagnosisRedundancy_Check = TRUE,
-    DiagnosisRedundancy_RuleSet = dsCCPhos::Meta_DiagnosisRedundancy,
-    DiagnosisRedundancy_Profile = "Default", DiagnosisAssociation_Check = TRUE,
-    DiagnosisAssociation_RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
-    DiagnosisAssociation_Profile = "Default", FeatureObligations_RuleSet =
-    dsCCPhos::Meta_FeatureObligations, FeatureObligations_Profile = "Default",
-    FeatureTracking_RuleSet = dsCCPhos::Meta_FeatureTracking, 
-    
-    FeatureTracking_Profile = "Default")
+  Settings.S = list(DataHarmonization = list(RuleSet = dsCCPhos::Meta_DataHarmonization,
+    Profile = "Default"), FeatureObligations = list(RuleSet =
+    dsCCPhos::Meta_FeatureObligations, Profile = "Default"), FeatureTracking =
+    list(RuleSet = dsCCPhos::Meta_FeatureTracking, Profile = "Default"))
 )
 }
 \arguments{
 \item{RawDataSetName.S}{\code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'}
 
 \item{Settings.S}{\code{list} - Settings passed to function
-\itemize{\item DataHarmonization_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
-\item DataHarmonization_Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{RawDataHarmonization_RuleSet} - Default: 'Default'
-\item DiagnosisRedundancy_Check \code{logical} - Whether or not to check for redundant diagnosis entries
-\item DiagnosisRedundancy_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DiagnosisRedundancy}
-\item DiagnosisRedundancy_Profile \code{character} - Profile name defining rule set to be used for classification of diagnosis redundancies. Profile name must be stated in \code{DiagnosisRedundancy_RuleSet} - Default: 'Default'
-\item DiagnosisAssociation_Check \code{logical} - Whether or not to classify associated diagnosis entries
-\item DiagnosisAssociation_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DiagnosisAssociation}
-\item DiagnosisAssociation_Profile \code{character} - Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{DiagnosisAssociation_RuleSet} - Default: 'Default'
-\item FeatureObligations_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
-\item FeatureObligations_Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations_RuleSet} - Default: 'Default'
-\item FeatureTracking_RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
-\item FeatureTracking_Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking_RuleSet} - Default: 'Default'}}
+\itemize{\item DataHarmonization \code{list}
+\itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
+\item Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
+\item FeatureObligations \code{list}
+\itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
+\item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
+\item FeatureTracking \code{list}
+\itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
+\item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}}}
 }
 \value{
 A \code{list} containing the following objects:
 \itemize{\item CuratedDataSet \code{list}
 \itemize{\item BioSampling
 \item Diagnosis
+\item DiseaseStatus
 \item GeneralCondition
 \item Histology
 \item Metastasis
 \item MolecularDiagnostics
 \item OtherClassification
 \item Patient
-\item Progress
 \item RadiationTherapy
 \item Staging
 \item Surgery
@@ -59,20 +50,18 @@ A \code{list} containing the following objects:
 \item ExcludedPrimary
 \item AfterPrimaryExclusion
 \item ExcludedSecondary
-\item AfterSecondaryExclusion}
+\item AfterSecondaryExclusion
+\item ExcludedSecondaryRedundancy
+\item AfterSecondaryRedundancyExclusion}
 \item Transformation (list of lists)
 \itemize{\item Monitors
 \item EligibilityOverviews
-\item ValueSetOverviews}
-\item DiagnosisClassification
-\itemize{\item DiagnosisRedundancies
-\item PatientsWithDiagnosisRedundancies
-\item DiagnosisAssociations
-\item PatientsWithDiagnosisAssociations}}
+\item ValueSetOverviews}}
 \item CurationMessages \code{list}}
 }
 \description{
-Takes Raw Data Set (RDS) and transforms it into Curated Data Set (CDS) while tracing data transformation.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}} \cr\cr
+Transforms Raw Data Set (RDS) into Curated Data Set (CDS) while tracing data transformation.
 }
 \details{
 Server-side ASSIGN method
