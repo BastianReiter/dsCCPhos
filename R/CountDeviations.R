@@ -1,6 +1,7 @@
 
 #' CountDeviations
 #'
+#' `r lifecycle::badge("deprecated")` \cr\cr
 #' Take two rows from a data frame and count deviating values
 #'
 #' @param ReferenceEntry A data frame with one row

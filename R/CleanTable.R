@@ -4,10 +4,11 @@
 #' Auxiliary function in \code{dsCCPhos::CurateDataDS()} to perform exclusion of invalid table entries.
 #'
 #' @param Table \code{data.frame} or \code{tibble} - The table object to be cleaned
-#' @param TableNameLookup \code{character} - The table name(s) to be looked up in 'FeatureObligations_RuleSet'. Can be a single string or a character vector.
+#' @param TableNameLookup \code{character} - The table name(s) to be looked up in 'FeatureObligations$RuleSet'. Can be a single string or a character vector.
 #' @param RemoveRedundantEntries \code{logical} - Whether redundant entries should be removed
-#' @param FeatureObligations_RuleSet \code{data.frame}
-#' @param FeatureObligations_Profile \code{character}
+#' @param FeatureObligations \code{list}
+#'        \itemize{\item RuleSet \code{data.frame}
+#'                 \item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet}}
 #'
 #' @return \code{tibble} - Clean table
 #' @export
@@ -16,8 +17,7 @@
 CleanTable <- function(Table,
                        TableNameLookup,
                        RemoveRedundantEntries = TRUE,
-                       FeatureObligations_RuleSet,
-                       FeatureObligations_Profile)
+                       FeatureObligations)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     require(dplyr)
@@ -27,16 +27,16 @@ CleanTable <- function(Table,
     # Table <- DataSet$BioSampling
     # TableNameLookup <- "BioSampling"
     # RemoveRedundantEntries <- TRUE
-    # FeatureObligations_RuleSet <- Meta_FeatureObligations
-    # FeatureObligations_Profile <- "Default"
+    # FeatureObligations$RuleSet <- Meta_FeatureObligations
+    # FeatureObligations$Profile <- "Default"
 
 
     # 1) Remove entries that have missing values in strictly obligatory features
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # Get table's set of (strictly) obligatory features from meta data passed to function
-    ObligatoryFeatures <- FeatureObligations_RuleSet %>%
-                              rename(Rule = all_of(FeatureObligations_Profile)) %>%      # Renaming feature based on passed argument
+    ObligatoryFeatures <- FeatureObligations$RuleSet %>%
+                              rename(Rule = all_of(FeatureObligations$Profile)) %>%      # Renaming feature based on passed argument
                               filter(Table %in% TableNameLookup, Rule == "Obligatory") %>%
                               pull(Feature)
 
@@ -64,8 +64,8 @@ CleanTable <- function(Table,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # Get current table's set of trans-feature obligation rules (stated as pseudo-code), if there are any defined in meta data passed to function
-    TransFeatureRules <- FeatureObligations_RuleSet %>%
-                              rename(Rule = all_of(FeatureObligations_Profile)) %>%
+    TransFeatureRules <- FeatureObligations$RuleSet %>%
+                              rename(Rule = all_of(FeatureObligations$Profile)) %>%
                               filter(Table %in% TableNameLookup, !is.na(Rule), Rule != "NA", Rule != "Obligatory") %>%
                               distinct(Rule) %>%
                               pull()

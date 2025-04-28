@@ -1,16 +1,16 @@
 
 #' CompileClassificationCall
 #'
-#' Auxiliary function to compile calls used in \code{\link{ClassifyDiagnosisRedundancy}} and \code{\link{ClassifyDiagnosisAssociation}}
+#' Auxiliary function to compile calls used in \code{\link{ClassifyDiagnosisAssociation}}
 #'
 #' Based on a predefined rule set data frame, compile a dplyr::case_when() expression and return it as a string
 #'
-#' @param TargetFeature String | Name of feature that is being engineered
-#' @param RuleSet Data frame | Contains predefined set of rules
-#' @param RuleProfile String | Profile name stated in rule set data frame
-#' @param ValueIfNoRuleMet String | Value (as string) of TargetFeature if no rules are fulfilled | Default = "NA"
+#' @param TargetFeature \code{string} - Name of feature that is being engineered
+#' @param RuleSet \code{data.frame} - Contains predefined set of rules
+#' @param RuleProfile \code{string} - Profile name stated in rule set data frame
+#' @param ValueIfNoRuleMet \code{string} - Value (as string) of TargetFeature if no rules are fulfilled | Default = "NA"
 #'
-#' @return String containing an unevaluated dplyr::case_when() expression
+#' @return \code{string} containing an unevaluated dplyr::case_when() expression
 #' @export
 #'
 #' @author Bastian Reiter
@@ -32,7 +32,8 @@ CompileClassificationCall <- function(TargetFeature,
 
     # Filter relevant rules from given rule set
     RelevantRules <- RuleSet %>%
-                          filter(Profile == RuleProfile & Feature == TargetFeature) %>%
+                          filter(Profile == RuleProfile,
+                                 Feature == TargetFeature) %>%
                           arrange(EvaluationOrder)
 
     if (is.null(ValueIfNoRuleMet))

@@ -1,6 +1,7 @@
 
 #' ClassifyDiagnosisRedundancy
 #'
+#' `r lifecycle::badge("deprecated")` \cr\cr
 #' Auxiliary function within \code{\link{CurateDataDS}}
 #'
 #' In patients with multiple diagnosis entries: Identify, classify and remove redundant diagnosis entries.
@@ -19,7 +20,6 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     require(dplyr)
-    require(dsCCPhos)
     require(stringr)
     require(tidyr)
 
@@ -46,9 +46,7 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
 
     # Arrange diagnosis entries by DiagnosisDate and lowest number of relevant NAs
     DiagnosisEntries <- DiagnosisEntries %>%
-                            rowwise() %>%
-                                mutate(CountRelevantNAs = sum(is.na(across(all_of(PredictorFeatures))))) %>%
-                            ungroup() %>%
+                            mutate(CountRelevantNAs = rowSums(is.na(across(all_of(PredictorFeatures))))) %>%
                             arrange(DiagnosisDate, CountRelevantNAs)
 
     # First reference diagnosis

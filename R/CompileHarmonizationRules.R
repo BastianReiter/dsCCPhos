@@ -14,8 +14,8 @@
 #'
 #' @author Bastian Reiter
 CompileHarmonizationRules <- function(TableName,
-                                       RuleSet,
-                                       RuleProfile)
+                                      RuleSet,
+                                      RuleProfile)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     require(dplyr)

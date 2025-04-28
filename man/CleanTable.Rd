@@ -8,20 +8,19 @@ CleanTable(
   Table,
   TableNameLookup,
   RemoveRedundantEntries = TRUE,
-  FeatureObligations_RuleSet,
-  FeatureObligations_Profile
+  FeatureObligations
 )
 }
 \arguments{
 \item{Table}{\code{data.frame} or \code{tibble} - The table object to be cleaned}
 
-\item{TableNameLookup}{\code{character} - The table name(s) to be looked up in 'FeatureObligations_RuleSet'. Can be a single string or a character vector.}
+\item{TableNameLookup}{\code{character} - The table name(s) to be looked up in 'FeatureObligations$RuleSet'. Can be a single string or a character vector.}
 
 \item{RemoveRedundantEntries}{\code{logical} - Whether redundant entries should be removed}
 
-\item{FeatureObligations_RuleSet}{\code{data.frame}}
-
-\item{FeatureObligations_Profile}{\code{character}}
+\item{FeatureObligations}{\code{list}
+\itemize{\item RuleSet \code{data.frame}
+\item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet}}}
 }
 \value{
 \code{tibble} - Clean table
