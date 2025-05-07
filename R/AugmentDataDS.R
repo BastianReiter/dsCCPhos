@@ -526,9 +526,11 @@ df_Events_LastVitalStatus <- CDS$Patient %>%
                                       mutate(EventType = "Point",
                                              EventDate = LastVitalStatusDate,
                                              EventDateIsAdjusted = FALSE,
-                                             EventClass = "VitalStatus",
-                                             EventSubclass = if_else(is.na(LastVitalStatus), "Unknown", LastVitalStatus)) %>%
-                                      nest(EventDetails = c(DeathCancerRelated,
+                                             EventClass = "General",
+                                             EventSubclass = "LastVitalStatus",
+                                             LastVitalStatus = if_else(is.na(LastVitalStatus), "Unknown", LastVitalStatus)) %>%
+                                      nest(EventDetails = c(LastVitalStatus,
+                                                            DeathCancerRelated,
                                                             CausesOfDeath)) %>%
                                   ungroup() %>%
                                   select(PatientID,
@@ -571,7 +573,7 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                               DateFeature <- "BioSamplingDate"
                               Val_EventType <- "Point"
                               Val_EventClass <- "Diagnostics"
-                              Val_EventSubclass <- "Sample Taking"
+                              Val_EventSubclass <- "BioSampling"
                               EventDetailsFeatures <- c("Aliquot",
                                                         "Type",
                                                         "Status",
@@ -622,7 +624,7 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                               DateFeature <- "MolecularDiagnosticsDate"
                               Val_EventType <- "Point"
                               Val_EventClass <- "Diagnostics"
-                              Val_EventSubclass <- "Molecular Diagnostics"
+                              Val_EventSubclass <- "MolecularDiagnostics"
                               EventDetailsFeatures = c("MolecularMarker",
                                                        "MolecularMarkerStatus",
                                                        "Documentation")
@@ -634,7 +636,7 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                               EndDateFeature <- "RadiationTherapyEndDate"
                               Val_EventType <- "Period"
                               Val_EventClass <- "Therapy"
-                              Val_EventSubclass <- "Radiation Therapy"
+                              Val_EventSubclass <- "RadiationTherapy"
                               EventDetailsFeatures = c("Intention",
                                                        "RelationToSurgery",
                                                        "ApplicationType",
@@ -752,14 +754,27 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
 # 3) Consolidate Event data from CDS tables in one coherent table
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+SubclassOrder <- c("BioSampling" = 1,
+                   "Histology" = 2,
+                   "MolecularDiagnostics" = 3,
+                   "InitialDiagnosis" = 4,
+                   "Staging" = 5,
+                   "Metastasis" = 6,
+                   "DiseaseStatus" = 7,
+                   "Surgery" = 8,
+                   "SystemicTherapy" = 9,
+                   "RadiationTherapy" = 10,
+                   "LastVitalStatus" = 11)
+
 ADS$Events <- ADS$Events %>%
                   bind_rows(EventData) %>%
+                  mutate(SubclassOrder = SubclassOrder[EventSubclass]) %>%
                   group_by(PatientID) %>%
                       fill(DateOfBirth,
                            .direction = "downup") %>%
                   group_by(PatientID, DiagnosisID) %>%
                       filter(!is.na(EventDate)) %>%
-                      arrange(EventDate, .by_group = TRUE) %>%
+                      arrange(EventDate, SubclassOrder, .by_group = TRUE) %>%
                       # Important adjustment!
                       mutate(FirstEventDate = min(EventDate, na.rm = TRUE),
                              LastEventDate = max(EventDate, na.rm = TRUE),
@@ -792,7 +807,8 @@ ADS$Events <- ADS$Events %>%
                          EventDateIsAdjusted,
                          EventPatientAge,
                          EventDaysSinceDiagnosis,
-                         EventDetails) %>%
+                         EventDetails,
+                         SubclassOrder) %>%
                   ungroup()
                   #--- Update PB ---
                   try(ProgressBar$tick())
@@ -851,62 +867,72 @@ AssignComparatorCodes <- function(ValueVector, FeatureName)
                          }
 
 
+InitialDiseaseStatus <- ADS$Events %>%
+                            filter(EventSubclass == "Staging",
+                                   EventSubclassRank == 1) %>%
+                            unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
+                            mutate(PrimarySiteStatus_Initial = case_when(TNM_T == 0 ~ 0,
+                                                                         .default = 1),
+                                   LymphnodalStatus_Initial = case_when(str_starts(TNM_N, "0") ~ 0,
+                                                                        .default = 1),
+                                   MetastasisStatus_Initial = case_when(str_starts(TNM_M, "0") ~ 0,
+                                                                        .default = 1))
+
+
+
 
 ADS$DiseaseCourses <- ADS$Events %>%
                           filter(EventSubclass == "DiseaseStatus") %>%
                           unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
-                          mutate(PrimarySiteStatus_Comp = AssignComparatorCodes(PrimarySiteStatus, "PrimarySiteStatus"),
-                                 LymphnodalStatus_Comp = AssignComparatorCodes(LymphnodalStatus, "LymphnodalStatus"),
-                                 MetastasisStatus_Comp = AssignComparatorCodes(MetastasisStatus, "MetastasisStatus")) %>%
+                          bind_rows(InitialDiseaseStatus) %>%
+                          mutate(PrimarySiteStatus_Comp = case_when(EventSubclass == "Staging" ~ PrimarySiteStatus_Initial,
+                                                                    .default = AssignComparatorCodes(PrimarySiteStatus, "PrimarySiteStatus")),
+                                 LymphnodalStatus_Comp = case_when(EventSubclass == "Staging" ~ LymphnodalStatus_Initial,
+                                                                   .default = AssignComparatorCodes(LymphnodalStatus, "LymphnodalStatus")),
+                                 MetastasisStatus_Comp = case_when(EventSubclass == "Staging" ~ MetastasisStatus_Initial,
+                                                                   .default = AssignComparatorCodes(MetastasisStatus, "MetastasisStatus"))) %>%
                           group_by(PatientID, DiagnosisID) %>%
+                              arrange(EventDate, SubclassOrder, .by_group = TRUE) %>%
                               mutate(PrimarySiteStatus_Diff = PrimarySiteStatus_Comp - lag(PrimarySiteStatus_Comp),
                                      LymphnodalStatus_Diff = LymphnodalStatus_Comp - lag(LymphnodalStatus_Comp),
                                      MetastasisStatus_Diff = MetastasisStatus_Comp - lag(MetastasisStatus_Comp)) %>%
                           ungroup() %>%
-                              mutate(PrimarySiteChange = case_when(PrimarySiteStatus_Diff == 0 ~ "Stable",
-                                                                   PrimarySiteStatus_Diff < 0 ~ "Regression",
-                                                                   PrimarySiteStatus_Diff > 0 ~ "Progression",
-                                                                   .default = "Unclear"),
-                                     LymphnodalChange = case_when(LymphnodalStatus_Diff == 0 ~ "Stable",
-                                                                  LymphnodalStatus_Diff < 0 ~ "Regression",
-                                                                  LymphnodalStatus_Diff > 0 ~ "Progression",
-                                                                  .default = "Unclear"),
-                                     MetastasisChange = case_when(MetastasisStatus_Diff == 0 ~ "Stable",
-                                                                  MetastasisStatus_Diff < 0 ~ "Regression",
-                                                                  MetastasisStatus_Diff > 0 ~ "Progression",
-                                                                  .default = "Unclear"),
-                                     IsProgression = case_when(GlobalStatus %in% c('D', 'P') ~ TRUE,
-                                                               PrimarySiteStatus %in% c('rpT', 'R') | LymphnodalStatus %in% c('pL', 'L') | MetastasisStatus %in% c('pM', 'M') ~ TRUE,
-                                                               PrimarySiteChange == "Progression" | LymphnodalChange == "Progression" | MetastasisChange == "Progression" ~ TRUE,
-                                                               .default = FALSE),
-                                     IsContradiction = GlobalStatus %in% c('CR', 'CRr') & IsProgression == TRUE,
-                                     IsResponse = case_when(GlobalStatus %in% c('CR', 'CRr', 'PartRemission', 'MinResp') ~ TRUE,
-                                                            IsProgression == TRUE ~ FALSE,
-                                                            IsContradiction == TRUE ~ NA,
-                                                            is.na(GlobalStatus) & (PrimarySiteChange == "Regression" |
-                                                                                   LymphnodalChange == "Regression" |
-                                                                                   MetastasisChange == "Regression") ~ TRUE,
+                          mutate(PrimarySiteChange = case_when(PrimarySiteStatus_Diff == 0 ~ "Stable",
+                                                               PrimarySiteStatus_Diff < 0 ~ "Regression",
+                                                               PrimarySiteStatus_Diff > 0 ~ "Progression",
+                                                               .default = "Unclear"),
+                                 LymphnodalChange = case_when(LymphnodalStatus_Diff == 0 ~ "Stable",
+                                                              LymphnodalStatus_Diff < 0 ~ "Regression",
+                                                              LymphnodalStatus_Diff > 0 ~ "Progression",
+                                                              .default = "Unclear"),
+                                 MetastasisChange = case_when(MetastasisStatus_Diff == 0 ~ "Stable",
+                                                              MetastasisStatus_Diff < 0 ~ "Regression",
+                                                              MetastasisStatus_Diff > 0 ~ "Progression",
+                                                              .default = "Unclear"),
+                                 IsProgression = case_when(GlobalStatus %in% c("D", "P") ~ TRUE,
+                                                           PrimarySiteStatus %in% c("rpT", "R") | LymphnodalStatus %in% c("pL", "L") | MetastasisStatus %in% c("pM", "M") ~ TRUE,
+                                                           PrimarySiteChange == "Progression" | LymphnodalChange == "Progression" | MetastasisChange == "Progression" ~ TRUE,
+                                                           .default = FALSE),
+                                 IsContradiction = GlobalStatus %in% c("CR", "CRr") & IsProgression == TRUE,
+                                 IsResponse = case_when(GlobalStatus %in% c("CR", "CRr", "PartRemission", "MinResp") ~ TRUE,
+                                                        IsProgression == TRUE ~ FALSE,
+                                                        IsContradiction == TRUE ~ NA,
+                                                        is.na(GlobalStatus) & (PrimarySiteChange == "Regression" |
+                                                                               LymphnodalChange == "Regression" |
+                                                                               MetastasisChange == "Regression") ~ TRUE,
+                                                        .default = FALSE),
+                                 IsStableDisease = case_when(GlobalStatus == "NC" ~ TRUE,
+                                                             (is.na(GlobalStatus) &
+                                                                (PrimarySiteChange == "Stable" & LymphnodalChange == "Stable" & MetastasisChange == "Stable")) ~ TRUE,
+                                                             .default = FALSE),
+                                 IsInRemission = case_when(GlobalStatus %in% c("CR", "CRr", "PartRemission") ~ TRUE,
+                                                           is.na(GlobalStatus) & (PrimarySiteStatus == "N" & LymphnodalStatus == "N" & MetastasisStatus == "N") ~ TRUE,
+                                                           .default = FALSE),
+                                 IsNewRemission = case_when(IsInRemission == TRUE & (PrimarySiteChange == "Regression" | LymphnodalChange == "Regression" | MetastasisChange == "Regression") ~ TRUE,
                                                             .default = FALSE),
-                                     IsRemission = case_when(GlobalStatus %in% c('CR', 'CRr', 'PartRemission') ~ TRUE,
-                                                             (is.na(GlobalStatus) | GlobalStatus == 'NC') &
-                                                                  PrimarySiteStatus == 'N' &
-                                                                  LymphnodalStatus == 'N' &
-                                                                  MetastasisStatus == 'N' ~ TRUE,
-                                                             .default = FALSE))
-
-
-# Test <- ADS$Events %>%
-#             filter(EventSubclass == "Staging") %>%
-#             unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
-#                 mutate(UICCStage_Comp = AssignComparatorCodes(PrimarySiteStatus, "PrimarySiteStatus"),
-#                        LymphnodalStatus_Comp = AssignComparatorCodes(LymphnodalStatus, "LymphnodalStatus"),
-#                        MetastasisStatus_Comp = AssignComparatorCodes(MetastasisStatus, "MetastasisStatus")) %>%
-#
-
-
-
-            # CreateEventFeatures(RuleSet = Settings$EventFeatures$RuleSet,
-            #                     Profile = Settings$EventFeatures$Profile)
+                                 IsStableRemission = case_when(IsInRemission == TRUE & (PrimarySiteChange == "Stable" & LymphnodalChange == "Stable" & MetastasisChange == "Stable") ~ TRUE,
+                                                               .default = FALSE)) %>%
+                            filter(EventSubclass == "DiseaseStatus")
 
 
 
@@ -914,12 +940,36 @@ ADS$DiseaseCourses <- ADS$Events %>%
 # MODULE D)  Generate ADS$Therapies
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Test <- ADS$Events %>%
-#             filter(EventClass == "Therapy") %>%
-#             unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
-#             group_by(PatientID, DiagnosisID) %>%
-#                 arrange(EventDate, .by_group = TRUE) %>%       # Sort again by EventDate to make sure
-#                 mutate(IsFirstTherapy = )
+ColNamesTherapy <- ADS$Events %>%
+                        filter(EventClass == "Therapy") %>%
+                        unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
+                        colnames()
+
+ADS$Therapies <- ADS$Events %>%
+                      filter(EventClass == "Therapy") %>%
+                      unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
+                      mutate(AssociatedTherapyID = EventClassRank,
+                             AssociatedTherapyDate = EventDate) %>%
+                      bind_rows(ADS$DiseaseCourses) %>%
+                      group_by(PatientID, DiagnosisID) %>%
+                          arrange(EventDate, SubclassOrder, .by_group = TRUE) %>%      # Sort again by EventDate and SubclassOrder
+                          fill(AssociatedTherapyID, .direction = "down") %>%
+                          fill(AssociatedTherapyDate, .direction = "down") %>%
+                          mutate(TimeSinceTherapy = round(as.numeric(difftime(EventDate, AssociatedTherapyDate, units = "days")), digits = 1)) %>%
+                      group_by(PatientID, DiagnosisID, AssociatedTherapyID) %>%
+                          mutate(HasResponse = any(IsResponse, na.rm = TRUE),
+                                 TimeToResponse = TimeSinceTherapy[which(IsResponse == TRUE)[1]],
+                                 TimeToRemission = TimeSinceTherapy[which(IsInRemission == TRUE)[1]],
+                                 TimeToRelapse = TimeSinceTherapy[which(IsProgression == TRUE)[1]]) %>%
+                      ungroup() %>%
+                      filter(EventClass == "Therapy") %>%
+                      select(all_of(ColNamesTherapy),
+                             HasResponse,
+                             TimeToResponse,
+                             TimeToRemission,
+                             TimeToRelapse)
+
+
 
 
 # Features in ADS$Therapies
