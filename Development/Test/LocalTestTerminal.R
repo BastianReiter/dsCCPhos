@@ -31,7 +31,7 @@ RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # OPTIONAL: Sub-sample test data for easier testing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-NumberOfPatients <- 5000
+NumberOfPatients <- 1000
 
 # Get a random sample of PatientIDs
 SamplePatientIDs <- sample(RawDataSet$patient$"_id",
@@ -137,11 +137,11 @@ View(ADS$Patients)
 View(ADS$Events)
 View(ADS$Diagnoses)
 
-
-
-SampleStatistics <- GetSampleStatisticsDS(TableName.S = "ADS$Patients",
-                                          FeatureName.S = "LastVitalStatus")
-SampleStatistics$Statistics
+#
+#
+# SampleStatistics <- GetSampleStatisticsDS(TableName.S = "ADS$Patients",
+#                                           FeatureName.S = "LastVitalStatus")
+# SampleStatistics$Statistics
 
 
 
