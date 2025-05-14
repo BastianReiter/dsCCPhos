@@ -1271,14 +1271,14 @@ DataSet <- DataSet %>%
 # Compile content of 'CurationReport'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-CurationReport <- list(EntryCounts = tibble(Table = names(DataSet),
-                                            InitialCount = CountEntries_Initial,
-                                            ExcludedPrimary = CountExcludedEntries_Primary,
-                                            AfterPrimaryExclusion = CountEntries_AfterPrimaryExclusion,
-                                            ExcludedSecondary = CountExcludedEntries_Secondary,
-                                            AfterSecondaryExclusion = CountEntries_AfterSecondaryExclusion,
-                                            ExcludedSecondaryRedundancy = CountExcludedEntries_SecondaryRedundancy,
-                                            AfterSecondaryRedundancyExclusion = CountEntries_AfterSecondaryRedundancyExclusion),
+CurationReport <- list(EntryCounts = data.frame(Table = names(DataSet),
+                                                InitialCount = CountEntries_Initial,
+                                                ExcludedPrimary = CountExcludedEntries_Primary,
+                                                AfterPrimaryExclusion = CountEntries_AfterPrimaryExclusion,
+                                                ExcludedSecondary = CountExcludedEntries_Secondary,
+                                                AfterSecondaryExclusion = CountEntries_AfterSecondaryExclusion,
+                                                ExcludedSecondaryRedundancy = CountExcludedEntries_SecondaryRedundancy,
+                                                AfterSecondaryRedundancyExclusion = CountEntries_AfterSecondaryRedundancyExclusion),
                        Transformation = list(Monitors = ls_TransformationMonitors,
                                              EligibilityOverviews = ls_EligibilityOverviews,
                                              ValueSetOverviews = ls_ValueSetOverviews))
