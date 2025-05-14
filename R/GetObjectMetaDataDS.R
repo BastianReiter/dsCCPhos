@@ -27,6 +27,9 @@ GetObjectMetaDataDS <- function(ObjectName.S)
 # - Start of function proceedings -
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    ### For testing purposes
+    # ObjectName.S <- "CurationReport"
+
     # Initiate output list
     MetaData <- list()
 
