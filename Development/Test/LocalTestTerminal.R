@@ -133,9 +133,9 @@ AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CDS")
 
 ADS <- AugmentationOutput$AugmentedDataSet
 
-View(ADS$Patients)
+View(ADS$Patient)
 View(ADS$Events)
-View(ADS$Diagnoses)
+View(ADS$Diagnosis)
 
 #
 #

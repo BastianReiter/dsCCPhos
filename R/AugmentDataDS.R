@@ -20,15 +20,17 @@
 #' @return A \code{list} containing the following objects:
 #'         \itemize{\item AugmentedDataSet \code{list}
 #'                      \itemize{\item Events
-#'                               \item Therapies
-#'                               \item Diagnoses
-#'                               \item Patients}
+#'                               \item DiseaseCourse
+#'                               \item Therapy
+#'                               \item Diagnosis
+#'                               \item Patient}
 #'                  \item AugmentationReport \code{list}
 #'                  \item AugmentationMessages \code{list}}
 #' @export
 #' @author Bastian Reiter
 AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
-                          Settings.S = list(DiagnosisAssociation = list(Check = TRUE,
+                          Settings.S = list(CutoffValues = list(DaysDiagnosisToInitialStaging = 30),
+                                            DiagnosisAssociation = list(Check = TRUE,
                                                                         RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
                                                                         Profile = "Default"),
                                             EventFeatures = list(RuleSet = dsCCPhos::Meta_EventFeatures,
@@ -55,28 +57,31 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 #       - Diagnosis-related
 #       - Patient-related
 #
-#   MODULE B)  Creation of ADS$Therapies
+#   MODULE B)  Creation of ADS$Therapy
 #       - Consolidate information from ADS$Events
 #
-#   MODULE C)  Creation of ADS$Diagnoses
+#   MODULE C)  Creation of ADS$Diagnosis
 #       - Consolidate information from ADS$Events
 #
-#   MODULE D)  Creation of ADS$Patients
-#       - Consolidate information from ADS$Events, ADS$Therapies and ADS$Diagnoses
+#   MODULE D)  Creation of ADS$Patient
+#       - Consolidate information from ADS$Events, ADS$Therapy and ADS$Diagnosis
 #
 #   Return statement
 
 
 ### For testing purposes
-# Settings.S <- list(DiagnosisAssociation = list(Check = TRUE,
-#                                                RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
-#                                                Profile = "Default"),
-#                    EventFeatures = list(RuleSet = dsCCPhos::Meta_EventFeatures,
-#                                         Profile = "Default"),
-#                    TimeToEvent = list(ReferenceEvent = c(EventClass = "Diagnosis",
-#                                                          EventSubclass = "InitialDiagnosis"),
-#                                       TargetEvent = c(EventClass = "VitalStatus",
-#                                                       EventSubclass = "Deceased")))
+Settings.S <- list(CutoffValues = list(DaysDiagnosisToInitialStaging = 50),
+                   DiagnosisAssociation = list(Check = TRUE,
+                                               RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
+                                               Profile = "Default"),
+                   EventFeatures = list(RuleSet = dsCCPhos::Meta_EventFeatures,
+                                        Profile = "Default"),
+                   TherapyOfInterest = list(EventSubclass = "Surgery",
+                                            EventSubclassRank = 1),
+                   TimeToEvent = list(ReferenceEvent = c(EventClass = "Diagnosis",
+                                                         EventSubclass = "InitialDiagnosis"),
+                                      TargetEvent = c(EventClass = "VitalStatus",
+                                                      EventSubclass = "Deceased")))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -166,16 +171,20 @@ Messages$FinalMessage <- "Augmentation not completed"
 # Augmented Data Set (ADS)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                      ______________
-#                     / ADS$Patients \
+#                     / ADS$Patient  \
 #                     \______________/
 #
 #                      _______________
-#                     / ADS$Diagnoses \
+#                     / ADS$Diagnosis \
 #                     \_______________/
 #
 #                      _______________
-#                     / ADS$Therapies \
+#                     / ADS$Therapy   \
 #                     \_______________/
+#
+#                      ___________________
+#                     / ADS$DiseaseCourse \
+#                     \___________________/
 #
 #                      ____________
 #                     / ADS$Events \
@@ -846,7 +855,7 @@ try(ProgressBar$terminate())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE C)  Generate ADS$DiseaseCourses
+# MODULE C)  Generate ADS$DiseaseCourse
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -867,21 +876,43 @@ AssignComparatorCodes <- function(ValueVector, FeatureName)
                          }
 
 
+ColumnNamesStaging <- ADS$Events %>%
+                          filter(EventSubclass == "Staging") %>%
+                          unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
+                          colnames()
+
+
 InitialDiseaseStatus <- ADS$Events %>%
-                            filter(EventSubclass == "Staging",
-                                   EventSubclassRank == 1) %>%
+                            filter(EventClass == "Therapy" | (EventSubclass == "Staging" & EventSubclassRank == 1)) %>%
                             unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
-                            mutate(PrimarySiteStatus_Initial = case_when(TNM_T == 0 ~ 0,
+                            mutate(HadTherapy = case_when(EventClass == "Therapy" ~ TRUE,
+                                                          .default = NA)) %>%
+                            group_by(PatientID, DiagnosisID) %>%
+                                fill(HadTherapy, .direction = "down") %>%
+                                mutate(HadTherapy = replace_na(HadTherapy, FALSE)) %>%
+                            ungroup() %>%
+                            filter(EventSubclass == "Staging") %>%
+                            mutate(IsLikelyInitialStaging = (HadTherapy == FALSE & EventDaysSinceDiagnosis < Settings$CutoffValues$DaysDiagnosisToInitialStaging),
+                                   PrimarySiteStatus_Initial = case_when(TNM_T == 0 ~ 0,
                                                                          .default = 1),
                                    LymphnodalStatus_Initial = case_when(str_starts(TNM_N, "0") ~ 0,
                                                                         .default = 1),
                                    MetastasisStatus_Initial = case_when(str_starts(TNM_M, "0") ~ 0,
-                                                                        .default = 1))
+                                                                        .default = 1)) %>%
+                            select(all_of(ColumnNamesStaging),
+                                   IsLikelyInitialStaging,
+                                   PrimarySiteStatus_Initial,
+                                   LymphnodalStatus_Initial,
+                                   MetastasisStatus_Initial)
 
 
+ColumnNamesDiseaseStatus <- ADS$Events %>%
+                                filter(EventSubclass == "DiseaseStatus") %>%
+                                unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
+                                colnames()
 
 
-ADS$DiseaseCourses <- ADS$Events %>%
+ADS$DiseaseCourse <- ADS$Events %>%
                           filter(EventSubclass == "DiseaseStatus") %>%
                           unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
                           bind_rows(InitialDiseaseStatus) %>%
@@ -932,47 +963,67 @@ ADS$DiseaseCourses <- ADS$Events %>%
                                                             .default = FALSE),
                                  IsStableRemission = case_when(IsInRemission == TRUE & (PrimarySiteChange == "Stable" & LymphnodalChange == "Stable" & MetastasisChange == "Stable") ~ TRUE,
                                                                .default = FALSE)) %>%
-                            filter(EventSubclass == "DiseaseStatus")
+                            filter(EventSubclass == "DiseaseStatus") %>%
+                            select(all_of(ColumnNamesDiseaseStatus),
+                                   PrimarySiteChange,
+                                   LymphnodalChange,
+                                   MetastasisChange,
+                                   IsProgression,
+                                   IsContradiction,
+                                   IsResponse,
+                                   IsStableDisease,
+                                   IsInRemission,
+                                   IsNewRemission,
+                                   IsStableRemission)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE D)  Generate ADS$Therapies
+# MODULE D)  Generate ADS$Therapy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ColNamesTherapy <- ADS$Events %>%
-                        filter(EventClass == "Therapy") %>%
-                        unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
-                        colnames()
-
-ADS$Therapies <- ADS$Events %>%
-                      filter(EventClass == "Therapy") %>%
-                      unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
-                      mutate(AssociatedTherapyID = EventClassRank,
-                             AssociatedTherapyDate = EventDate) %>%
-                      bind_rows(ADS$DiseaseCourses) %>%
-                      group_by(PatientID, DiagnosisID) %>%
-                          arrange(EventDate, SubclassOrder, .by_group = TRUE) %>%      # Sort again by EventDate and SubclassOrder
-                          fill(AssociatedTherapyID, .direction = "down") %>%
-                          fill(AssociatedTherapyDate, .direction = "down") %>%
-                          mutate(TimeSinceTherapy = round(as.numeric(difftime(EventDate, AssociatedTherapyDate, units = "days")), digits = 1)) %>%
-                      group_by(PatientID, DiagnosisID, AssociatedTherapyID) %>%
-                          mutate(HasResponse = any(IsResponse, na.rm = TRUE),
-                                 TimeToResponse = TimeSinceTherapy[which(IsResponse == TRUE)[1]],
-                                 TimeToRemission = TimeSinceTherapy[which(IsInRemission == TRUE)[1]],
-                                 TimeToRelapse = TimeSinceTherapy[which(IsProgression == TRUE)[1]]) %>%
-                      ungroup() %>%
-                      filter(EventClass == "Therapy") %>%
-                      select(all_of(ColNamesTherapy),
-                             HasResponse,
-                             TimeToResponse,
-                             TimeToRemission,
-                             TimeToRelapse)
+# TO DO:
+# - Group therapies (same chemotherapy, adjuvant/neoadjuvant therapy, time-wise distance, etc)
+# - Classify into lines of therapy
 
 
+ColumnNamesTherapy <- ADS$Events %>%
+                          filter(EventClass == "Therapy") %>%
+                          unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
+                          colnames()
+
+ADS$Therapy <- ADS$Events %>%
+                    filter(EventClass == "Therapy") %>%
+                    unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
+                    mutate(IsTherapyOfInterest = if_all(all_of(names(Settings$TherapyOfInterest)), ~ .x == Settings$TherapyOfInterest[[cur_column()]]),
+                           AssociatedTherapyID = EventClassRank,
+                           AssociatedTherapyDate = EventDate) %>%
+                    bind_rows(ADS$DiseaseCourse) %>%
+                    group_by(PatientID, DiagnosisID) %>%
+                        arrange(EventDate, SubclassOrder, .by_group = TRUE) %>%      # Sort again by EventDate and SubclassOrder
+                        fill(AssociatedTherapyID, .direction = "down") %>%
+                        fill(AssociatedTherapyDate, .direction = "down") %>%
+                        mutate(TimeSinceTherapy = round(as.numeric(difftime(EventDate, AssociatedTherapyDate, units = "days")), digits = 1)) %>%
+                    group_by(PatientID, DiagnosisID, AssociatedTherapyID) %>%
+                        mutate(HasResponse = any(IsResponse, na.rm = TRUE),
+                               TimeToResponse = TimeSinceTherapy[which(IsResponse == TRUE)[1]],
+                               TimeToRemission = TimeSinceTherapy[which(IsInRemission == TRUE)[1]],
+                               TimeToRelapse = TimeSinceTherapy[which(IsProgression == TRUE)[1]]) %>%
+                    ungroup() %>%
+                    filter(EventClass == "Therapy") %>%
+                    select(all_of(ColumnNamesTherapy),
+                           IsTherapyOfInterest,
+                           HasResponse,
+                           TimeToResponse,
+                           TimeToRemission,
+                           TimeToRelapse)
 
 
-# Features in ADS$Therapies
+# TherapySummary <- ADS$Therapy %>%
+#                       summarize()
+
+
+# Features in ADS$Therapy
 
 # FirstTherapyType
 # FirstTherapyLatency   (Abstand Diagnose - FirstTherapy)
@@ -980,7 +1031,7 @@ ADS$Therapies <- ADS$Events %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE E)  Generate ADS$Diagnoses
+# MODULE E)  Generate ADS$Diagnosis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -996,8 +1047,6 @@ df_Aux_DiagnosisSummary_Events <- ADS$Events %>%
                                           group_modify(~ SummarizeEventData(EventData = .x,
                                                                             ProgressBarObject = ProgressBar)) %>%
                                       ungroup()
-
-
 
 
 df_Aux_DiagnosisData <- CDS$Diagnosis %>%
@@ -1018,7 +1067,7 @@ df_Aux_DiagnosisData <- CDS$Diagnosis %>%
                             # try(ProgressBar$tick())
 
 
-ADS$Diagnoses <- df_Aux_DiagnosisData %>%
+ADS$Diagnosis <- df_Aux_DiagnosisData %>%
                       left_join(df_Aux_DiagnosisSummary_Events, by = join_by(PatientID, DiagnosisID)) %>%
                       #filter(is.na(TimeDiagnosisToDeath) | TimeDiagnosisToDeath >= 0) %>%
                       ungroup()
@@ -1081,13 +1130,13 @@ df_Aux_PatientSummary_Diagnosis <- CDS$Diagnosis %>%
 
 
 # !!! TEMPORARY !!! (For easier testing, slice is performed to filter for only one diagnosis per patient)
-ADS$Patients <- CDS$Patient %>%
+ADS$Patient <- CDS$Patient %>%
                     left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID)) %>%
-                    left_join(ADS$Diagnoses, by = join_by(PatientID)) %>%      # <--- TEMPORARY: Joining with ADS_Diagnoses
-                    group_by(PatientID) %>%
-                        arrange(DiagnosisDate) %>%
-                        slice_head() %>%      # <--- TEMPORARY: Slice performed
-                    ungroup()
+                    # left_join(ADS$Diagnoses, by = join_by(PatientID)) %>%      # <--- TEMPORARY: Joining with ADS_Diagnoses
+                    # group_by(PatientID) %>%
+                    #     arrange(DiagnosisDate) %>%
+                    #     slice_head() %>%      # <--- TEMPORARY: Slice performed
+                    # ungroup()
                     #--- Update PB ---
                     try(ProgressBar$tick())
 

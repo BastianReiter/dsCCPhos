@@ -25,7 +25,6 @@ SummarizeEventData <- function(EventData,
     #                     unnest(cols = c(EventDetails), keep_empty = TRUE)
 
 
-
     # Update progress bar object, if assigned in function call
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if (!is.null(ProgressBarObject)) { try(ProgressBarObject$tick()) }
