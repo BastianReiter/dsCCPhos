@@ -79,10 +79,17 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #     3)  Remove entries in RDS missing obligatory features (defined in meta data or passed as optional argument)
 #
 #   MODULE C)  Data Harmonization / Transformation
-#     1)  Transform feature names
-#     2)  Definition of features to monitor during value transformation (defined in meta data or passed as an optional argument)
-#     3)  Value transforming operations
-#     4)  Compilation of Curation Report
+#     1) Definition of features to monitor during Transformation
+#     2) Tracking of raw feature values
+#     3) Data harmonization (correctional transformation)
+#     4) Tracking of harmonized feature values
+#     5) Data recoding and formatting
+#     6) Tracking of recoded / formatted feature values
+#     7) Finalize transformation of data
+#         - Removing of ineligible values
+#         - Optional conversion to factor
+#     8) Tracking of finalized feature values
+#     9) Compilation of monitor objects for reporting
 #
 #   MODULE D)  Secondary entry exclusion
 #     1)  Remove duplicate entries

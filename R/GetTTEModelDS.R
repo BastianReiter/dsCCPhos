@@ -3,17 +3,17 @@
 #'
 #' Return Time-to-Event model implemented in the \code{survival} package
 #'
-#' @param TableName.S \code{string} | Name of the data frame that holds time and event features
-#' @param TimeFeature.S \code{string} | Name of time feature
-#' @param EventFeature.S \code{string} | Name of event feature
-#' @param ModelType.S \code{string} | Function name of different TTE models implemented in \code{survival} package:
+#' @param TableName.S \code{string} - Name of the data frame that holds time and event features
+#' @param TimeFeature.S \code{string} - Name of time feature
+#' @param EventFeature.S \code{string} - Name of event feature
+#' @param ModelType.S \code{string} - Function name of different TTE models implemented in \code{survival} package:
 #'                                    \itemize{\item 'survfit'
 #'                                             \item 'survdiff'
 #'                                             \item 'coxph'}
-#' @param CovariateA.S \code{string} | Name of optional Covariate A
-#' @param CovariateB.S \code{string} | Name of optional Covariate B
-#' @param CovariateC.S \code{string} | Name of optional Covariate C
-#' @param MinFollowUpTime.S \code{integer} | Optional minimum of observed follow up time
+#' @param CovariateA.S \code{string} - Name of optional Covariate A
+#' @param CovariateB.S \code{string} - Name of optional Covariate B
+#' @param CovariateC.S \code{string} - Name of optional Covariate C
+#' @param MinFollowUpTime.S \code{integer} - Optional minimum of observed follow up time
 #'
 #' @return A Time-to-Event model object
 #' @export

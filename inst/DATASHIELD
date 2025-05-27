@@ -13,4 +13,6 @@ AssignMethods:
     AugmentDataDS,
     CurateDataDS,
     DrawSampleDS,
-    ExtractFromListDS
+    ExtractFromListDS,
+    JoinTablesDS,
+    MatchDataDS

@@ -18,7 +18,7 @@
 \item{Label_Curated}{Label for coded feature values}
 \item{Label_Raw}{Label in original data}
 \item{FactorRank}{Used to determine order in values}
-\item{NumericCode}{Assignment of numeric value to certain non-numeric values, used in data processing}
+\item{ComparatorCode}{Assignment of numeric value to certain non-numeric values to enable comparison operations}
 }
 }
 }

@@ -11,7 +11,6 @@
 #' @return The object to be extracted
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 ExtractFromListDS <- function(ListName.S,
                               ObjectName.S)

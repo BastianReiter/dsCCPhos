@@ -133,15 +133,28 @@ AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CDS")
 
 ADS <- AugmentationOutput$AugmentedDataSet
 
-View(ADS$Patient)
-View(ADS$Events)
-View(ADS$Diagnosis)
+ADS_Patient <- ADS$Patient
+ADS_Diagnosis <- ADS$Diagnosis
+
+
+ADS_Patient <- FilterTableDS(TableName.S = "ADS_Patient",
+                             FilterStatement.S = "CountDiagnoses == 1")
+
+
+Analysis <- JoinTablesDS(TableNameA.S = "ADS_Patient",
+                         TableNameB.S = "ADS_Diagnosis",
+                         ByStatement.S = "PatientID")
 
 #
 #
 # SampleStatistics <- GetSampleStatisticsDS(TableName.S = "ADS$Patients",
 #                                           FeatureName.S = "LastVitalStatus")
 # SampleStatistics$Statistics
+
+
+
+
+
 
 
 

@@ -16,24 +16,24 @@ GetTTEModelDS(
 )
 }
 \arguments{
-\item{TableName.S}{\code{string} | Name of the data frame that holds time and event features}
+\item{TableName.S}{\code{string} - Name of the data frame that holds time and event features}
 
-\item{TimeFeature.S}{\code{string} | Name of time feature}
+\item{TimeFeature.S}{\code{string} - Name of time feature}
 
-\item{EventFeature.S}{\code{string} | Name of event feature}
+\item{EventFeature.S}{\code{string} - Name of event feature}
 
-\item{ModelType.S}{\code{string} | Function name of different TTE models implemented in \code{survival} package:
+\item{ModelType.S}{\code{string} - Function name of different TTE models implemented in \code{survival} package:
 \itemize{\item 'survfit'
 \item 'survdiff'
 \item 'coxph'}}
 
-\item{CovariateA.S}{\code{string} | Name of optional Covariate A}
+\item{CovariateA.S}{\code{string} - Name of optional Covariate A}
 
-\item{CovariateB.S}{\code{string} | Name of optional Covariate B}
+\item{CovariateB.S}{\code{string} - Name of optional Covariate B}
 
-\item{CovariateC.S}{\code{string} | Name of optional Covariate C}
+\item{CovariateC.S}{\code{string} - Name of optional Covariate C}
 
-\item{MinFollowUpTime.S}{\code{integer} | Optional minimum of observed follow up time}
+\item{MinFollowUpTime.S}{\code{integer} - Optional minimum of observed follow up time}
 }
 \value{
 A Time-to-Event model object
