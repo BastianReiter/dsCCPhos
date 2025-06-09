@@ -5,7 +5,7 @@
 #'
 #' Server-side AGGREGATE method
 #'
-#' @param RawDataSetName.S String | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
+#' @param RawDataSetName.S \code{string} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
 #'
 #' @return A list containing information about existence and completeness of RDS tables
 #' @export
@@ -35,6 +35,7 @@ else
 require(dplyr)
 require(purrr)
 require(stringr)
+require(tidyr)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Check existence and completeness of tables
@@ -45,43 +46,65 @@ TableCheckTemplate <- dsCCPhos::Meta_Tables$TableName_Curated %>%
                           map(function(tablename)
                               {
                                   RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Raw
-
-                                  FeatureExistence <- tibble(FeatureName = RequiredFeatureNames) %>%
-                                                          mutate(Exists = FALSE)
-
                                   MissingFeatures <- RequiredFeatureNames
+
+                                  FeatureCheck <- tibble(Feature = RequiredFeatureNames,
+                                                         Exists = FALSE,
+                                                         Type = NA,
+                                                         NonMissingValueRate = NA)
 
                                   return(list(TableExists = FALSE,
                                               TableComplete = FALSE,
-                                              FeatureExistence = FeatureExistence,
-                                              MissingFeatures = MissingFeatures))
+                                              FeatureCheck = FeatureCheck,
+                                              MissingFeatures = MissingFeatures,
+                                              RowCount = NA))
                               }) %>%
                           set_names(paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated))
 
 
-# Go through available data frames in RawDataSet and check for feature completeness
+# Go through available data frames in RawDataSet and check for feature completeness as well as feature types, row counts and rates of non-missing values
 TableCheckExisting <- RawDataSet %>%
-                          imap(function(Table, name)
+                          imap(function(Table, tablename)
                                {
-                                  if (!is_empty(Table))
+                                  if (!(is_empty(Table) | length(Table) == 0 | nrow(Table) == 0))
                                   {
-                                      RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == str_remove(name, "RDS_"))$FeatureName_Raw
+                                      RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == str_remove(tablename, "RDS_"))$FeatureName_Raw
                                       PresentFeatureNames <- names(Table)
-
-                                      FeatureExistence <- tibble(FeatureName = RequiredFeatureNames) %>%
-                                                                 mutate(Exists = case_when(FeatureName %in% PresentFeatureNames ~ TRUE,
-                                                                                           TRUE ~ FALSE))
-
                                       MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
-
                                       TableComplete <- (length(MissingFeatures) == 0)
 
-                                      #FeatureTypes <-
+                                      # Get table row count
+                                      RowCount <- nrow(Table)
+
+                                      # Get summarizing data.frame that contains info about existence of table features
+                                      FeatureExistence <- tibble(Feature = RequiredFeatureNames) %>%
+                                                               mutate(Exists = case_when(Feature %in% PresentFeatureNames ~ TRUE,
+                                                                                         .default = FALSE))
+
+                                      # Get types/classes of table features
+                                      FeatureTypes <- Table %>%
+                                                          summarize(across(everything(), ~ typeof(.x))) %>%
+                                                          pivot_longer(cols = everything(),
+                                                                       names_to = "Feature",
+                                                                       values_to = "Type")
+
+                                      # Get rate of non-missing values per table feature
+                                      NonMissingValueRates <- Table %>%
+                                                                  summarize(across(everything(), ~ sum(!(is.na(.x) | .x == "")) / n())) %>%
+                                                                  pivot_longer(cols = everything(),
+                                                                               names_to = "Feature",
+                                                                               values_to = "NonMissingValueRate")
+
+                                      # Consolidate feature meta data in one data.frame
+                                      FeatureCheck <- FeatureExistence %>%
+                                                          left_join(FeatureTypes, by = join_by(Feature)) %>%
+                                                          left_join(NonMissingValueRates, by = join_by(Feature))
 
                                       return(list(TableExists = TRUE,
                                                   TableComplete = TableComplete,
-                                                  FeatureExistence = FeatureExistence,
-                                                  MissingFeatures = MissingFeatures))
+                                                  FeatureCheck = FeatureCheck,
+                                                  MissingFeatures = MissingFeatures,
+                                                  RowCount = RowCount))
                                   }
                                   else { return(NULL) }
                                })

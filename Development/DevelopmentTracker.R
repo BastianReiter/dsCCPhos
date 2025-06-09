@@ -88,14 +88,15 @@ library(devtools)
 # dataSHIELD AGGREGATE functions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_r("GetCohortDescriptionDS")
+# use_r("GetDataSetOverviewDS")
 # use_r("GetFeatureInfoDS")
 # use_r("GetFrequencyTableDS")
 # use_r("GetObjectStatusDS")
 # use_r("GetObjectMetaDataDS")
 # use_r("GetOutcomeMeasuresDS")
+# use_r("GetRDSValidationReportDS")
 # use_r("GetReportingObjectDS")
 # use_r("GetSampleStatisticsDS")
-# use_r("GetValidationReportDS_RawData")
 
 
 # dataSHIELD ASSIGN functions
