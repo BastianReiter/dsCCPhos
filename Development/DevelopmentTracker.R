@@ -38,7 +38,6 @@ library(devtools)
 # use_package("readr", type = "Suggests")
 # use_package("readxl", type = "Suggests")
 # use_package("rlang")
-# use_package("slider")
 # use_package("stats")
 # use_package("stringr")
 # use_package("survival")
@@ -89,14 +88,15 @@ library(devtools)
 # dataSHIELD AGGREGATE functions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_r("GetCohortDescriptionDS")
+# use_r("GetDataSetOverviewDS")
 # use_r("GetFeatureInfoDS")
 # use_r("GetFrequencyTableDS")
 # use_r("GetObjectStatusDS")
 # use_r("GetObjectMetaDataDS")
 # use_r("GetOutcomeMeasuresDS")
+# use_r("GetRDSValidationReportDS")
 # use_r("GetReportingObjectDS")
 # use_r("GetSampleStatisticsDS")
-# use_r("GetValidationReportDS_RawData")
 
 
 # dataSHIELD ASSIGN functions
@@ -107,6 +107,7 @@ library(devtools)
 # use_r("ExcludeAugmentedDataDS")
 # use_r("ExcludeCuratedDataDS")
 # use_r("ExtractFromListDS")
+# use_r("JoinTablesDS")
 # use_r("MatchDataDS")
 
 

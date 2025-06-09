@@ -13,7 +13,6 @@
 #' @return A list of data frames
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 XMLToDataModel <- function(XMLSchemaFilePath,
                            TableNodeElement = "container",

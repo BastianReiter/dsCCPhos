@@ -16,7 +16,6 @@
 #'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_EventFeatures}
 #'                                         \item Profile \code{character} - Profile name defining rule set to be used for event feature engineering. Profile name must be stated in \code{EventFeatures$RuleSet} - Default: 'Default'}}
 #'
-#'
 #' @return A \code{list} containing the following objects:
 #'         \itemize{\item AugmentedDataSet \code{list}
 #'                      \itemize{\item Events
@@ -53,35 +52,41 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 #     - Evaluation and parsing of input
 #     - Loading of required package namespaces
 #
-#   MODULE A)  Creation of ADS$Events
+#
+#   MODULE A) Classify associations between diagnosis entries
+#
+#   MODULE B)  Creation of ADS$Events
 #       - Diagnosis-related
 #       - Patient-related
 #
-#   MODULE B)  Creation of ADS$Therapy
+#   MODULE C)  Creation of ADS$DiseaseCourse
+#       - On basis of ADS$Events
+#
+#   MODULE D)  Creation of ADS$Therapy
 #       - Consolidate information from ADS$Events
 #
-#   MODULE C)  Creation of ADS$Diagnosis
+#   MODULE E)  Creation of ADS$Diagnosis
 #       - Consolidate information from ADS$Events
 #
-#   MODULE D)  Creation of ADS$Patient
+#   MODULE F)  Creation of ADS$Patient
 #       - Consolidate information from ADS$Events, ADS$Therapy and ADS$Diagnosis
 #
 #   Return statement
 
 
 ### For testing purposes
-Settings.S <- list(CutoffValues = list(DaysDiagnosisToInitialStaging = 50),
-                   DiagnosisAssociation = list(Check = TRUE,
-                                               RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
-                                               Profile = "Default"),
-                   EventFeatures = list(RuleSet = dsCCPhos::Meta_EventFeatures,
-                                        Profile = "Default"),
-                   TherapyOfInterest = list(EventSubclass = "Surgery",
-                                            EventSubclassRank = 1),
-                   TimeToEvent = list(ReferenceEvent = c(EventClass = "Diagnosis",
-                                                         EventSubclass = "InitialDiagnosis"),
-                                      TargetEvent = c(EventClass = "VitalStatus",
-                                                      EventSubclass = "Deceased")))
+# Settings.S <- list(CutoffValues = list(DaysDiagnosisToInitialStaging = 50),
+#                    DiagnosisAssociation = list(Check = TRUE,
+#                                                RuleSet = dsCCPhos::Meta_DiagnosisAssociation,
+#                                                Profile = "Default"),
+#                    EventFeatures = list(RuleSet = dsCCPhos::Meta_EventFeatures,
+#                                         Profile = "Default"),
+#                    TherapyOfInterest = list(EventSubclass = "Surgery",
+#                                             EventSubclassRank = 1),
+#                    TimeToEvent = list(ReferenceEvent = c(EventClass = "Diagnosis",
+#                                                          EventSubclass = "InitialDiagnosis"),
+#                                       TargetEvent = c(EventClass = "VitalStatus",
+#                                                       EventSubclass = "Deceased")))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,7 +97,7 @@ Settings.S <- list(CutoffValues = list(DaysDiagnosisToInitialStaging = 50),
 require(dplyr)
 require(lubridate)
 require(purrr)
-require(slider)
+# require(slider)
 require(stringr)
 require(tidyr)
 
@@ -1043,6 +1048,7 @@ ProgressBar <- progress_bar$new(format = "Summarizing event data [:bar] :percent
 
 # Summarize diagnosis-specific event data using dsCCPhos::SummarizeEventData()
 df_Aux_DiagnosisSummary_Events <- ADS$Events %>%
+                                      unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
                                       group_by(PatientID, DiagnosisID) %>%
                                           group_modify(~ SummarizeEventData(EventData = .x,
                                                                             ProgressBarObject = ProgressBar)) %>%
@@ -1073,8 +1079,6 @@ ADS$Diagnosis <- df_Aux_DiagnosisData %>%
                       ungroup()
                       #--- Update PB ---
                       # try(ProgressBar$tick())
-
-
 
 
 
@@ -1110,14 +1114,12 @@ ADS$Diagnosis <- df_Aux_DiagnosisData %>%
 # MODULE F)  Generate ADS$Patients
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 #--- Set up progress bar -------------------------------------------------------
 CountProgressItems <- 3
 ProgressBar <- progress_bar$new(format = "Composing patient-specific data [:bar] :percent in :elapsed  :spin",
                                 total = CountProgressItems, clear = FALSE, width = 100)
 try(ProgressBar$tick())
 #-------------------------------------------------------------------------------
-
 
 
 df_Aux_PatientSummary_Diagnosis <- CDS$Diagnosis %>%
@@ -1128,15 +1130,8 @@ df_Aux_PatientSummary_Diagnosis <- CDS$Diagnosis %>%
                                         try(ProgressBar$tick())
 
 
-
-# !!! TEMPORARY !!! (For easier testing, slice is performed to filter for only one diagnosis per patient)
 ADS$Patient <- CDS$Patient %>%
-                    left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID)) %>%
-                    # left_join(ADS$Diagnoses, by = join_by(PatientID)) %>%      # <--- TEMPORARY: Joining with ADS_Diagnoses
-                    # group_by(PatientID) %>%
-                    #     arrange(DiagnosisDate) %>%
-                    #     slice_head() %>%      # <--- TEMPORARY: Slice performed
-                    # ungroup()
+                    left_join(df_Aux_PatientSummary_Diagnosis, by = join_by(PatientID))
                     #--- Update PB ---
                     try(ProgressBar$tick())
 
@@ -1145,6 +1140,9 @@ try(ProgressBar$terminate())
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Final modifications
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Conversion of ADS tables from tibble to data.frame, because DataSHIELD can handle data.frames better
 ADS <- ADS %>%

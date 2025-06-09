@@ -41,7 +41,7 @@ require(validate)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Rename features in tables to make sure R object naming rules are served (this renaming only extends to the scope of this function)
+# Rename features in tables to make sure R object naming rules are respected (this renaming only extends to the scope of this function)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 RawDataSet <- RawDataSet %>%

@@ -20,9 +20,9 @@ SummarizeEventData <- function(EventData,
 
 
     ### For function testing purposes
-    # EventData <- df_ADS_Events %>%
-    #                     filter(PatientID == "Pat_2063") %>%
-    #                     unnest(cols = c(EventDetails), keep_empty = TRUE)
+    # EventData <- ADS$Events %>%
+    #                   filter(PatientID == "Pat_10390") %>%
+    #                   unnest(cols = c(EventDetails), keep_empty = TRUE)
 
 
     # Update progress bar object, if assigned in function call
@@ -33,14 +33,14 @@ SummarizeEventData <- function(EventData,
     Output <- EventData %>%
                   summarize(PatientAgeAtDiagnosis = first(EventPatientAge[EventSubclass == "InitialDiagnosis"]),      # !!! TEMPORARY? !!! If multiple "InitialDiagnosis" entries occur (Which shouldn't be), select only the first
                             #---------------------------------------------------
-                            TimeDiagnosisToDeath = ifelse("Deceased" %in% EventData$EventSubclass,
-                                                          EventDaysSinceDiagnosis[EventSubclass == "Deceased"],
-                                                          NA_integer_),
+                            TimeDiagnosisToDeath = ifelse("Deceased" %in% LastVitalStatus,
+                                                           first(EventDaysSinceDiagnosis[LastVitalStatus == "Deceased"], na_rm = TRUE),
+                                                           NA_integer_),
                             TimeFollowUp = case_when(!is.na(TimeDiagnosisToDeath) ~ TimeDiagnosisToDeath,
                                                      !all(is.na(EventDaysSinceDiagnosis)) ~ max(EventDaysSinceDiagnosis, na.rm = TRUE),
-                                                     TRUE ~ NA_integer_),
+                                                     .default = NA_integer_),
                             IsDocumentedDeceased = case_when(!is.na(TimeDiagnosisToDeath) ~ TRUE,
-                                                             TRUE ~ FALSE))
+                                                             .default = FALSE))
                             #---------------------------------------------------
                             #HadChemotherapy = )
 

@@ -10,7 +10,6 @@
 #' @return A tibble containing information about a data frame's features
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 GetDFInfo <- function(DataFrame,
                       IncludeRandomExampleValues = FALSE,         # Boolean whether to include random values in the form of independent values (so not coming from the same row)

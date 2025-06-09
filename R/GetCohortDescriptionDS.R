@@ -10,7 +10,6 @@
 #' @return
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 GetCohortDescriptionDS <- function(Name_AugmentationOutput = "AugmentationOutput")
 {

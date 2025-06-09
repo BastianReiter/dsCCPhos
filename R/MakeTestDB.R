@@ -8,7 +8,6 @@
 #' @return A data bases connection object
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 MakeTestDB <- function(TestData)
 {

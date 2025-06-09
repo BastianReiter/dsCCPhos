@@ -6,15 +6,16 @@
 \usage{
 AugmentDataDS(
   CuratedDataSetName.S = "CuratedDataSet",
-  Settings.S = list(DiagnosisAssociation = list(Check = TRUE, RuleSet =
+  Settings.S = list(CutoffValues = list(DaysDiagnosisToInitialStaging = 30),
+    DiagnosisAssociation = list(Check = TRUE, RuleSet =
     dsCCPhos::Meta_DiagnosisAssociation, Profile = "Default"), EventFeatures =
     list(RuleSet = dsCCPhos::Meta_EventFeatures, Profile = "Default"), OverallSurvival =
     list(ReferenceEvent = c(EventClass = "Diagnosis", EventSubclass =
     "InitialDiagnosis")), TherapyOfInterest = list(EventSubclass = "Surgery",
     EventSubclassRank = 1), TimeToEvent = list(ReferenceEvent = list(EventClass =
-    "Diagnosis", EventSubclass = "InitialDiagnosis"), TargetEvent = list(EventClass =
-    "VitalStatus", 
-     EventSubclass = "Deceased")))
+    "Diagnosis", 
+     EventSubclass = "InitialDiagnosis"), TargetEvent = list(EventClass
+    = "VitalStatus", EventSubclass = "Deceased")))
 )
 }
 \arguments{
@@ -33,9 +34,10 @@ AugmentDataDS(
 A \code{list} containing the following objects:
 \itemize{\item AugmentedDataSet \code{list}
 \itemize{\item Events
-\item Therapies
-\item Diagnoses
-\item Patients}
+\item DiseaseCourse
+\item Therapy
+\item Diagnosis
+\item Patient}
 \item AugmentationReport \code{list}
 \item AugmentationMessages \code{list}}
 }
