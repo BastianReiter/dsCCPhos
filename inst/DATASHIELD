@@ -1,6 +1,6 @@
 AggregateMethods:
-    CheckRDSTablesDS,
     GetCohortDescriptionDS,
+    CheckDataSetDS,
     GetFeatureInfoDS,
     GetFrequencyTableDS,
     GetObjectMetaDataDS,
@@ -8,6 +8,7 @@ AggregateMethods:
     GetRDSValidationReportDS,
     GetReportingObjectDS,
     GetSampleStatisticsDS,
+    GetTableCheckDS,
     GetTTEModelDS
 AssignMethods:
     AugmentDataDS,

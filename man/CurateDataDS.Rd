@@ -6,10 +6,11 @@
 \usage{
 CurateDataDS(
   RawDataSetName.S = "RawDataSet",
-  Settings.S = list(DataHarmonization = list(RuleSet = dsCCPhos::Meta_DataHarmonization,
-    Profile = "Default"), FeatureObligations = list(RuleSet =
-    dsCCPhos::Meta_FeatureObligations, Profile = "Default"), FeatureTracking =
-    list(RuleSet = dsCCPhos::Meta_FeatureTracking, Profile = "Default"))
+  Settings.S = list(DataHarmonization = list(Run = TRUE, RuleSet =
+    dsCCPhos::Meta_DataHarmonization, Profile = "Default"), FeatureObligations =
+    list(RuleSet = dsCCPhos::Meta_FeatureObligations, Profile = "Default"),
+    FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking, Profile =
+    "Default"), TableCleaning = list(Run = TRUE))
 )
 }
 \arguments{
@@ -17,14 +18,17 @@ CurateDataDS(
 
 \item{Settings.S}{\code{list} - Settings passed to function
 \itemize{\item DataHarmonization \code{list}
-\itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
+\itemize{\item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
+\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
 \item Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
 \item FeatureObligations \code{list}
 \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
 \item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
 \item FeatureTracking \code{list}
 \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
-\item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}}}
+\item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
+\item TableCleaning \code{list}
+\itemize{\item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}}}
 }
 \value{
 A \code{list} containing the following objects:

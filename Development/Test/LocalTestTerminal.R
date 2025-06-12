@@ -85,7 +85,12 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 # Check Tables for existence and completeness
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# TableCheck <- CheckRDSTablesDS("RawDataSet")
+RDSTableCheck <- CheckDataSetDS(DataSetName.S = "RawDataSet",
+                                AssumeCCPDataSet.S = TRUE)
+                                # RequiredTableNames.S = paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated),
+                                # RequiredFeatureNames.S = RequiredTableNames.S %>%
+                                #                              map(\(tablename) filter(dsCCPhos::Meta_Features, TableName_Curated == str_remove(tablename, "RDS_"))$FeatureName_Raw) %>%
+                                #                              set_names(RequiredTableNames.S))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -110,9 +115,11 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 # Curate data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
-                                         Settings.S = list(DataHarmonization = list(Profile = "Default"),
+                                         Settings.S = list(DataHarmonization = list(Run = TRUE,
+                                                                                    Profile = "Default"),
                                                            FeatureObligations = list(Profile = "Default"),
-                                                           FeatureTracking = list(Profile = "Default")))
+                                                           FeatureTracking = list(Profile = "Default"),
+                                                           TableCleaning = list(Run = TRUE)))
 
 
 # CurationOutput$CurationReport$EntryCounts
@@ -122,12 +129,15 @@ CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
 # View(CurationOutput$CurationReport$Transformation$ValueSetOverviews$Staging$Harmonized)
 
 
+CuratedDataSet <- CurationOutput$CuratedDataSet
+
+CDSTableCheck <- CheckDataSetDS(DataSetName.S = "CuratedDataSet",
+                                AssumeCCPDataSet.S = TRUE)
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Augment data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-CDS <- CurationOutput$CuratedDataSet
 
 AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CDS")
 

@@ -9,14 +9,17 @@
 #' @param RawDataSetName.S \code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
 #' @param Settings.S \code{list} - Settings passed to function
 #'                   \itemize{\item DataHarmonization \code{list}
-#'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
+#'                                \itemize{\item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
+#'                                         \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
 #'                                         \item Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
 #'                            \item FeatureObligations \code{list}
 #'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
 #'                                         \item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
 #'                            \item FeatureTracking \code{list}
 #'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
-#'                                         \item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}}
+#'                                         \item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
+#'                            \item TableCleaning \code{list}
+#'                                \itemize{\item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}}
 #'
 #' @return A \code{list} containing the following objects:
 #'         \itemize{\item CuratedDataSet \code{list}
@@ -52,12 +55,14 @@
 #' @export
 #' @author Bastian Reiter
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
-                         Settings.S = list(DataHarmonization = list(RuleSet = dsCCPhos::Meta_DataHarmonization,
+                         Settings.S = list(DataHarmonization = list(Run = TRUE,
+                                                                    RuleSet = dsCCPhos::Meta_DataHarmonization,
                                                                     Profile = "Default"),
                                            FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
                                                                      Profile = "Default"),
                                            FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking,
-                                                                  Profile = "Default")))
+                                                                  Profile = "Default"),
+                                           TableCleaning = list(Run = TRUE)))
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # OVERVIEW
@@ -108,12 +113,14 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 ### For testing purposes
-# Settings.S <- list(DataHarmonization = list(RuleSet = dsCCPhos::Meta_DataHarmonization,
+# Settings.S <- list(DataHarmonization = list(Run = TRUE,
+#                                             RuleSet = dsCCPhos::Meta_DataHarmonization,
 #                                             Profile = "Default"),
 #                    FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
 #                                              Profile = "Default"),
 #                    FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking,
-#                                           Profile = "Default"))
+#                                           Profile = "Default"),
+#                    TableCleaning = list(Run = TRUE))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,12 +147,14 @@ require(tidyr)
 Settings <- Settings.S
 
 # If list of 'Settings' passed to function is incomplete, complete it with default values
+if (is.null(Settings$DataHarmonization$Run)) { Settings$DataHarmonization$Run <- TRUE }
 if (is.null(Settings$DataHarmonization$RuleSet)) { Settings$DataHarmonization$RuleSet <- dsCCPhos::Meta_DataHarmonization }
 if (is.null(Settings$DataHarmonization$Profile)) { Settings$DataHarmonization$Profile <- "Default" }
 if (is.null(Settings$FeatureObligations$RuleSet)) { Settings$FeatureObligations$RuleSet <- dsCCPhos::Meta_FeatureObligations }
 if (is.null(Settings$FeatureObligations$Profile)) { Settings$FeatureObligations$Profile <- "Default" }
 if (is.null(Settings$FeatureTracking$RuleSet)) { Settings$FeatureTracking$RuleSet <- dsCCPhos::Meta_FeatureTracking }
 if (is.null(Settings$FeatureTracking$Profile)) { Settings$FeatureTracking$Profile <- "Default" }
+if (is.null(Settings$TableCleaning$Run)) { Settings$TableCleaning$Run <- TRUE }
 
 
 
@@ -323,9 +332,14 @@ CountEntries_Initial <- DataSet %>%
 # Filter out any entry that has missings in features marked as obligatory in meta data (thereby also removing 'rogue'/unlinked patient or diagnosis entries because this way every patient needs to have at least one related diagnosis and vice versa)
 DataSetRoot <- DataSet$Patient %>%
                     left_join(DataSet$Diagnosis, by = join_by(PatientID)) %>%
-                    CleanTable(TableNameLookup = c("Diagnosis", "Patient"),
-                               RemoveRedundantEntries = FALSE,
-                               FeatureObligations = Settings$FeatureObligations) %>%
+                    {   if (Settings$TableCleaning$Run == TRUE)
+                        {
+                            CleanTable(Table = .,
+                                       TableNameLookup = c("Diagnosis", "Patient"),
+                                       RemoveRedundantEntries = FALSE,
+                                       FeatureObligations = Settings$FeatureObligations)
+                        } else {.}
+                    } %>%
                     select(PatientID, DiagnosisID) %>%
                     distinct()
 
@@ -363,12 +377,16 @@ DataSet <- DataSet %>%
                                             left_join(Table, by = join_by(PatientID))
                             }
 
-                            # Clean current table using auxiliary function dsCCPhos::CleanTable()
-                            CleanedTable <- Table %>%
-                                                CleanTable(TableNameLookup = tablename,
-                                                           RemoveRedundantEntries = TRUE,
-                                                           FeatureObligations = Settings$FeatureObligations)
-                            return(CleanedTable)
+                            # Clean current table using auxiliary function dsCCPhos::CleanTable() (Can be optionally omitted)
+                            if (Settings$TableCleaning$Run == TRUE)
+                            {
+                                Table <- Table %>%
+                                              CleanTable(TableNameLookup = tablename,
+                                                         RemoveRedundantEntries = TRUE,
+                                                         FeatureObligations = Settings$FeatureObligations)
+                            }
+
+                            return(Table)
 
                         } else {
 
@@ -521,13 +539,19 @@ ProgressBar <- progress_bar$new(format = "Harmonizing data... [:bar] :percent in
 DataSet <- DataSet %>%
                 imap(function(Table, tablename)
                      {
-                         try(ProgressBar$tick())
+                        try(ProgressBar$tick())
 
-                         Table %>%
-                              mutate(TrackID = row_number()) %>%      # Enables tracking of transformation (see above)
-                              HarmonizeData(TableName = tablename,
-                                            RuleSet = Settings$DataHarmonization$RuleSet,
-                                            Profile = Settings$DataHarmonization$Profile)
+                        Table <- Table %>% mutate(TrackID = row_number())      # Enables tracking of transformation (see above)
+
+                        if (Settings$DataHarmonization$Run == TRUE)
+                        {
+                            Table <- Table %>%
+                                        HarmonizeData(TableName = tablename,
+                                                      RuleSet = Settings$DataHarmonization$RuleSet,
+                                                      Profile = Settings$DataHarmonization$Profile)
+                        }
+
+                        return(Table)
                      })
 
 try(ProgressBar$terminate())
@@ -1089,9 +1113,14 @@ ProgressBar <- progress_bar$new(format = "Secondary exclusion: Excluding ineligi
 
 DataSetRoot <- DataSet$Patient %>%
                     left_join(DataSet$Diagnosis, by = join_by(PatientID)) %>%
-                    CleanTable(TableNameLookup = c("Diagnosis", "Patient"),
-                               RemoveRedundantEntries = FALSE,
-                               FeatureObligations = Settings$FeatureObligations) %>%
+                    {   if (Settings$TableCleaning$Run == TRUE)
+                        {
+                            CleanTable(Table = .,
+                                       TableNameLookup = c("Diagnosis", "Patient"),
+                                       RemoveRedundantEntries = FALSE,
+                                       FeatureObligations = Settings$FeatureObligations)
+                        } else {.}
+                    } %>%
                     select(PatientID, DiagnosisID) %>%
                     distinct()
 
@@ -1117,11 +1146,15 @@ DataSet <- DataSet %>%
                             }
 
                             # Clean current table using auxiliary function dsCCPhos::CleanTable()
-                            CleanedTable <- Table %>%
-                                                CleanTable(TableNameLookup = tablename,
-                                                           RemoveRedundantEntries = TRUE,
-                                                           FeatureObligations = Settings$FeatureObligations)
-                            return(CleanedTable)
+                            if (Settings$TableCleaning$Run == TRUE)
+                            {
+                                Table <- Table %>%
+                                              CleanTable(TableNameLookup = tablename,
+                                                         RemoveRedundantEntries = TRUE,
+                                                         FeatureObligations = Settings$FeatureObligations)
+                            }
+
+                            return(Table)
 
                         } else {
 

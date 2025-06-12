@@ -59,6 +59,7 @@ library(devtools)
 # use_r("AttritionTracker_Close")
 # use_r("AttritionTracker_Init")
 # use_r("AttritionTracker_Update")
+# use_r("CheckTable")
 # use_r("ClassifyDiagnosisAssociation")
 # use_r("ClassifyDiagnosisRedundancy")
 # use_r("CleanTable")
@@ -85,7 +86,7 @@ library(devtools)
 # use_r("XMLToDataModel")
 
 
-# dataSHIELD AGGREGATE functions
+# DataSHIELD AGGREGATE functions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_r("GetCohortDescriptionDS")
 # use_r("GetDataSetOverviewDS")
@@ -97,9 +98,10 @@ library(devtools)
 # use_r("GetRDSValidationReportDS")
 # use_r("GetReportingObjectDS")
 # use_r("GetSampleStatisticsDS")
+# use_r("GetTableCheckDS")
 
 
-# dataSHIELD ASSIGN functions
+# DataSHIELD ASSIGN functions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use_r("AugmentDataDS")
 # use_r("CurateDataDS")

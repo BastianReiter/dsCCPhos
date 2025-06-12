@@ -42,7 +42,7 @@ CleanTable <- function(Table,
 
     # Filter out entries that have NAs in any of strictly obligatory features
     CleanedTable <- Table %>%
-                        filter(if_all(all_of(ObligatoryFeatures), ~ !is.na(.)))
+                        filter(if_all(all_of(ObligatoryFeatures), ~ !(is.na(.x) | (is.character(.x) & .x == ""))))
 
 
     # 2) Remove duplicate entries (optional)
