@@ -139,9 +139,13 @@ CDSTableCheck <- CheckDataSetDS(DataSetName.S = "CuratedDataSet",
 # Augment data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CDS")
+AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 
-ADS <- AugmentationOutput$AugmentedDataSet
+AugmentedDataSet <- AugmentationOutput$AugmentedDataSet
+
+ADSTableCheck <- CheckDataSetDS(DataSetName.S = "AugmentedDataSet")
+
+
 
 ADS_Patient <- ADS$Patient
 ADS_Diagnosis <- ADS$Diagnosis
