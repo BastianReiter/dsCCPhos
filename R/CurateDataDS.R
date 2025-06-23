@@ -8,49 +8,49 @@
 #'
 #' @param RawDataSetName.S \code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
 #' @param Settings.S \code{list} - Settings passed to function
-#'                   \itemize{\item DataHarmonization \code{list}
-#'                                \itemize{\item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
-#'                                         \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
-#'                                         \item Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
-#'                            \item FeatureObligations \code{list}
-#'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
-#'                                         \item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
-#'                            \item FeatureTracking \code{list}
-#'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
-#'                                         \item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
-#'                            \item TableCleaning \code{list}
-#'                                \itemize{\item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}}
+#'                   \itemize{  \item DataHarmonization \code{list}
+#'                                  \itemize{ \item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
+#'                                            \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
+#'                                            \item Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
+#'                              \item FeatureObligations \code{list}
+#'                                  \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
+#'                                            \item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
+#'                              \item FeatureTracking \code{list}
+#'                                  \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
+#'                                            \item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
+#'                              \item TableCleaning \code{list}
+#'                                  \itemize{ \item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}}
 #'
 #' @return A \code{list} containing the following objects:
 #'         \itemize{\item CuratedDataSet \code{list}
-#'                      \itemize{\item BioSampling
-#'                               \item Diagnosis
-#'                               \item DiseaseStatus
-#'                               \item GeneralCondition
-#'                               \item Histology
-#'                               \item Metastasis
-#'                               \item MolecularDiagnostics
-#'                               \item OtherClassification
-#'                               \item Patient
-#'                               \item RadiationTherapy
-#'                               \item Staging
-#'                               \item Surgery
-#'                               \item SystemicTherapy
-#'                               \item TherapyRecommendation}
+#'                      \itemize{ \item BioSampling
+#'                                \item Diagnosis
+#'                                \item DiseaseStatus
+#'                                \item GeneralCondition
+#'                                \item Histology
+#'                                \item Metastasis
+#'                                \item MolecularDiagnostics
+#'                                \item OtherClassification
+#'                                \item Patient
+#'                                \item RadiationTherapy
+#'                                \item Staging
+#'                                \item Surgery
+#'                                \item SystemicTherapy
+#'                                \item TherapyRecommendation}
 #'                  \item CurationReport \code{list}
-#'                      \itemize{\item EntryCounts \code{tibble}
-#'                                    \itemize{\item Table
-#'                                             \item InitialCount
-#'                                             \item ExcludedPrimary
-#'                                             \item AfterPrimaryExclusion
-#'                                             \item ExcludedSecondary
-#'                                             \item AfterSecondaryExclusion
-#'                                             \item ExcludedSecondaryRedundancy
-#'                                             \item AfterSecondaryRedundancyExclusion}
-#'                               \item Transformation (list of lists)
-#'                                    \itemize{\item Monitors
-#'                                             \item EligibilityOverviews
-#'                                             \item ValueSetOverviews}}
+#'                      \itemize{ \item EntryCounts \code{tibble}
+#'                                    \itemize{ \item Table
+#'                                              \item InitialCount
+#'                                              \item ExcludedPrimary
+#'                                              \item AfterPrimaryExclusion
+#'                                              \item ExcludedSecondary
+#'                                              \item AfterSecondaryExclusion
+#'                                              \item ExcludedSecondaryRedundancy
+#'                                              \item AfterSecondaryRedundancyExclusion}
+#'                                \item Transformation (list of lists)
+#'                                    \itemize{ \item Monitors
+#'                                              \item EligibilityOverviews
+#'                                              \item ValueSetOverviews}}
 #'                  \item CurationMessages \code{list}}
 #' @export
 #' @author Bastian Reiter
