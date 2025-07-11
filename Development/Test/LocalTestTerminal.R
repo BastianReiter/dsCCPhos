@@ -141,9 +141,9 @@ CDSTableCheck <- CheckDataSetDS(DataSetName.S = "CuratedDataSet",
 
 AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 
-AugmentedDataSet <- AugmentationOutput$AugmentedDataSet
+ADS <- AugmentationOutput$AugmentedDataSet
 
-ADSTableCheck <- CheckDataSetDS(DataSetName.S = "AugmentedDataSet")
+ADSTableCheck <- CheckDataSetDS(DataSetName.S = "ADS")
 
 
 
@@ -151,8 +151,8 @@ ADS_Patient <- ADS$Patient
 ADS_Diagnosis <- ADS$Diagnosis
 
 
-ADS_Patient <- FilterTableDS(TableName.S = "ADS_Patient",
-                             FilterStatement.S = "CountDiagnoses == 1")
+ADS_Patient <- ADS_Patient %>%
+                    filter(CountDiagnoses == 1)
 
 
 Analysis <- JoinTablesDS(TableNameA.S = "ADS_Patient",

@@ -1,6 +1,6 @@
 Package: dsCCPhos
 Title: Enabling Data Science with the DKTK-CCP
-Version: 0.1.77
+Version: 0.1.78
 Authors@R: 
     person("Bastian", "Reiter", , "b.reiter@med.uni-frankfurt.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-1088-0502"))
@@ -30,5 +30,5 @@ Suggests:
     readr,
     readxl,
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5)
 LazyData: true

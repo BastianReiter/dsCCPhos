@@ -5,33 +5,115 @@
 #'
 #' Server-side AGGREGATE method
 #'
-#' @param Name_AugmentationOutput String | Name of object on server previously assigned by dsCCPhos::AugmentData() | Default: 'AugmentationOutput'
+#' @param DataSetName.S \code{string} - Name of Data Set object (list) on server, usually "RawDataSet", "CuratedDataSet" or "AugmentedDataSet"
+#' @param CCPDataSetType.S \code{string} - Indicating the type of CCP data set that should be described, one of "RDS" / "CDS" / "ADS" - Default: "ADS"
 #'
 #' @return
 #' @export
 #'
 #' @author Bastian Reiter
-GetCohortDescriptionDS <- function(Name_AugmentationOutput = "AugmentationOutput")
+GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
+                                   CCPDataSetType.S = "ADS")
 {
-    if (is.character(Name_AugmentationOutput))
-    {
-	      AugmentationOutput <- eval(parse(text = Name_AugmentationOutput), envir = parent.frame())
-    }
-    else
-    {
-        ClientMessage <- "ERROR: Name_AugmentationOutput must be specified as a character string"
-        stop(ClientMessage, call. = FALSE)
-    }
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# - Package requirements -
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+require(dplyr)
+require(tidyr)
 
 
-    AugmentedDataSet <- AugmentationOutput$AugmentedDataSet
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# - Evaluate and parse input -
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    require(dplyr)
-    require(TinkerLab)
+if (is.character(DataSetName.S))
+{
+    DataSet <- eval(parse(text = DataSetName.S), envir = parent.frame())
+}
+else
+{
+    ClientMessage <- "ERROR: DataSetName.S must be specified as a character string"
+    stop(ClientMessage, call. = FALSE)
+}
+
+
+### For testing purposes
+# DataSet <- AugmentedDataSet
+
+
+CohortData <- DataSet$Patient %>%
+                  left_join(DataSet$Diagnosis, by = join_by(PatientID))
+
+CohortDataSingleDiag <- CohortData %>%
+                            group_by(PatientID) %>%
+                                arrange(DiagnosisDate, .by_group = TRUE) %>%
+                                slice_head() %>%
+                            ungroup()
+
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# Cohort Size
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CohortSize <- CohortData %>%
+                  summarize(PatientCount = n_distinct(PatientID),
+                            DiagnosisCount = n_distinct(DiagnosisID)) %>%
+                  mutate(DiagnosesPerPatient = DiagnosisCount / PatientCount)
+
+# Cohort Size over time
+CohortSize_OverTime <- CohortData %>%
+                            mutate(DiagnosisYear = year(DiagnosisDate)) %>%
+                            group_by(DiagnosisYear) %>%
+                                summarize(PatientCount = n_distinct(PatientID),
+                                          DiagnosisCount = n_distinct(DiagnosisID)) %>%
+                                mutate(DiagnosesPerPatient = DiagnosisCount / PatientCount)
+
+# Gender
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Gender <- CohortDataSingleDiag %>%
+              group_by(Gender) %>%
+                  summarize(N = n()) %>%
+                  mutate(Proportion = N / sum(N))
+
+Gender_OverTime <- CohortDataSingleDiag %>%
+                        mutate(DiagnosisYear = year(DiagnosisDate)) %>%
+                        group_by(DiagnosisYear, Gender) %>%
+                            summarize(N = n()) %>%
+                        ungroup() %>%
+                        pivot_wider(names_from = Gender,
+                                    values_from = N)
+
+# Age Groups
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Age <- CohortDataSingleDiag %>%
+          select(PatientID, DiagnosisID, DiagnosisDate, PatientAgeAtDiagnosis) %>%
+          mutate(AgeGroup = case_when(PatientAgeAtDiagnosis < 18 ~ "< 18",
+                                      PatientAgeAtDiagnosis %>% between(18, 29) ~ "18 - 29",
+                                      PatientAgeAtDiagnosis %>% between(30, 39) ~ "30 - 39",
+                                      PatientAgeAtDiagnosis %>% between(40, 49) ~ "40 - 49",
+                                      PatientAgeAtDiagnosis %>% between(50, 59) ~ "50 - 59",
+                                      PatientAgeAtDiagnosis %>% between(60, 69) ~ "60 - 69",
+                                      PatientAgeAtDiagnosis %>% between(70, 79) ~ "70 - 79",
+                                      PatientAgeAtDiagnosis %>% between(80, 89) ~ "80 - 89",
+                                      PatientAgeAtDiagnosis > 89 ~ "> 89"),
+                 AgeGroup = factor(AgeGroup,
+                                   levels = c("< 18", "18 - 29", "30 - 39", "40 - 49", "50 - 59", "60 - 69", "70 - 79", "80 - 89", "> 89"),
+                                   ordered = TRUE)) %>%
+          group_by(AgeGroup) %>%
+              summarize(N = n()) %>%
+              mutate(Proportion = N / sum(N)) %>%
+          ungroup() %>%
+          arrange(AgeGroup)
 
 
 
-
-
+return(list(CohortSize = CohortSize,
+            CohortSize_OverTime = CohortSize_OverTime,
+            Gender = Gender,
+            Gender_OverTime = Gender_OverTime,
+            Age = Age))
 
 }
