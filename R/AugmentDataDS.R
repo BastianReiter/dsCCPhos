@@ -401,7 +401,7 @@ Messages$DiagnosisAssociation <- Message
 #///////////////////////////////////////////////////////////////////////////////
 } else {      # In case Diagnosis Association Check is skipped
 
-    # Add empty/trivial features to keep CDS output consistent
+    # Add empty/trivial features to keep ADS output consistent
     CDS$Diagnosis <- CDS$Diagnosis %>%
                               mutate(DiagnosisID = OriginalDiagnosisID,
                                      SubDiagnosisID = OriginalDiagnosisID,
@@ -607,6 +607,15 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                                                        "LymphnodalStatus",
                                                        "MetastasisStatus")
                           }
+                          if (tablename == "GeneralCondition")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "GeneralConditionDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Diagnostics"
+                              Val_EventSubclass <- "GeneralCondition"
+                              EventDetailsFeatures = c("ECOG")
+                          }
                           if (tablename == "Histology")
                           {
                               GroupingFeature <- c("PatientID", "DiagnosisID")
@@ -642,6 +651,16 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                               EventDetailsFeatures = c("MolecularMarker",
                                                        "MolecularMarkerStatus",
                                                        "Documentation")
+                          }
+                          if (tablename == "OtherClassification")
+                          {
+                              GroupingFeature <- c("PatientID", "DiagnosisID")
+                              DateFeature <- "OtherClassificationDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Diagnosis"
+                              Val_EventSubclass <- "Staging"
+                              EventDetailsFeatures = c("Classification",
+                                                       "Class")
                           }
                           if (tablename == "RadiationTherapy")
                           {
@@ -729,6 +748,16 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                                                        "CTCAEType",
                                                        "CTCAEVersion")
                           }
+                          if (tablename == "TherapyRecommendation")
+                          {
+                              GroupingFeature <- "PatientID"
+                              DateFeature <- "TherapyRecommendationDate"
+                              Val_EventType <- "Point"
+                              Val_EventClass <- "Diagnosis"
+                              Val_EventSubclass <- "TherapyRecommendation"
+                              EventDetailsFeatures = c("Type",
+                                                       "Deviation")
+                          }
 
                           # Create table of events for every CDS table, incorporating values / features defined above
                           if (!(is.null(Table) | length(Table) == 0 | nrow(Table) == 0))
@@ -768,6 +797,7 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
 # 3) Consolidate Event data from CDS tables in one coherent table
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Define order of events if they fall on the same date
 SubclassOrder <- c("BioSampling" = 1,
                    "Histology" = 2,
                    "MolecularDiagnostics" = 3,
@@ -775,10 +805,12 @@ SubclassOrder <- c("BioSampling" = 1,
                    "Staging" = 5,
                    "Metastasis" = 6,
                    "DiseaseStatus" = 7,
-                   "Surgery" = 8,
-                   "SystemicTherapy" = 9,
-                   "RadiationTherapy" = 10,
-                   "LastVitalStatus" = 11)
+                   "GeneralCondition" = 8,
+                   "TherapyRecommendation" = 9,
+                   "Surgery" = 10,
+                   "SystemicTherapy" = 11,
+                   "RadiationTherapy" = 12,
+                   "LastVitalStatus" = 13)
 
 ADS$Events <- ADS$Events %>%
                   bind_rows(EventData) %>%
@@ -1047,34 +1079,34 @@ ProgressBar <- progress_bar$new(format = "Summarizing event data [:bar] :percent
 #-------------------------------------------------------------------------------
 
 # Summarize diagnosis-specific event data using dsCCPhos::SummarizeEventData()
-df_Aux_DiagnosisSummary_Events <- ADS$Events %>%
-                                      unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
-                                      group_by(PatientID, DiagnosisID) %>%
-                                          group_modify(~ SummarizeEventData(EventData = .x,
-                                                                            ProgressBarObject = ProgressBar)) %>%
-                                      ungroup()
+DiagnosisEventSummary <- ADS$Events %>%
+                              unnest(cols = c(EventDetails), keep_empty = TRUE) %>%
+                              group_by(PatientID, DiagnosisID) %>%
+                                  group_modify(~ SummarizeEventData(EventData = .x,
+                                                                    ProgressBarObject = ProgressBar)) %>%
+                              ungroup()
 
 
-df_Aux_DiagnosisData <- CDS$Diagnosis %>%
-                            left_join(CDS$Staging, by = join_by(PatientID, DiagnosisID), relationship = "many-to-many") %>%
-                            group_by(DiagnosisID) %>%
-                                arrange(DiagnosisDate) %>%
-                                slice_head() %>%
-                            ungroup() %>%
-                            mutate(UICCStageCategory = case_match(UICCStage,
-                                                                  c("0", "0is", "0a") ~ "0",
-                                                                  c("I", "IA", "IA1", "IA2", "IA3", "IB", "IB1", "IB2", "IC", "IS") ~ "I",
-                                                                  c("II", "IIA", "IIA1", "IIA2", "IIB", "IIC") ~ "II",
-                                                                  c("III", "IIIA", "IIIB", "IIIC", "IIIC1", "IIIC2", "IIID") ~ "III",
-                                                                  c("IV", "IVA", "IVB", "IVC") ~ "IV",
-                                                                  .default = NA_character_),
-                                                       .after = UICCStage)
-                            #--- Update PB ---
-                            # try(ProgressBar$tick())
+DiagnosisDataAugmentation <- CDS$Diagnosis %>%
+                                  left_join(CDS$Staging, by = join_by(PatientID, DiagnosisID), relationship = "many-to-many") %>%
+                                  group_by(DiagnosisID) %>%
+                                      arrange(DiagnosisDate) %>%
+                                      slice_head() %>%
+                                  ungroup() %>%
+                                  mutate(UICCStageCategory = case_match(UICCStage,
+                                                                        c("0", "0is", "0a") ~ "0",
+                                                                        c("I", "IA", "IA1", "IA2", "IA3", "IB", "IB1", "IB2", "IC", "IS") ~ "I",
+                                                                        c("II", "IIA", "IIA1", "IIA2", "IIB", "IIC") ~ "II",
+                                                                        c("III", "IIIA", "IIIB", "IIIC", "IIIC1", "IIIC2", "IIID") ~ "III",
+                                                                        c("IV", "IVA", "IVB", "IVC") ~ "IV",
+                                                                        .default = NA_character_),
+                                         .after = UICCStage)
+                                  #--- Update PB ---
+                                  # try(ProgressBar$tick())
 
 
-ADS$Diagnosis <- df_Aux_DiagnosisData %>%
-                      left_join(df_Aux_DiagnosisSummary_Events, by = join_by(PatientID, DiagnosisID)) %>%
+ADS$Diagnosis <- DiagnosisDataAugmentation %>%
+                      left_join(DiagnosisEventSummary, by = join_by(PatientID, DiagnosisID)) %>%
                       #filter(is.na(TimeDiagnosisToDeath) | TimeDiagnosisToDeath >= 0) %>%
                       ungroup()
                       #--- Update PB ---
