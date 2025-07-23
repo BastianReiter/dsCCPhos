@@ -52,10 +52,8 @@ CohortDataSingleDiag <- CohortData %>%
                                 slice_head() %>%
                             ungroup()
 
-#
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 # Cohort Size
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CohortSize <- CohortData %>%
@@ -71,21 +69,8 @@ CohortSize_OverTime <- CohortData %>%
                                           DiagnosisCount = n_distinct(DiagnosisID)) %>%
                                 mutate(DiagnosesPerPatient = DiagnosisCount / PatientCount)
 
-# Gender
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Gender <- CohortDataSingleDiag %>%
-              group_by(Gender) %>%
-                  summarize(N = n()) %>%
-                  mutate(Proportion = N / sum(N))
-
-Gender_OverTime <- CohortDataSingleDiag %>%
-                        mutate(DiagnosisYear = year(DiagnosisDate)) %>%
-                        group_by(DiagnosisYear, Gender) %>%
-                            summarize(N = n()) %>%
-                        ungroup() %>%
-                        pivot_wider(names_from = Gender,
-                                    values_from = N)
-
 # Age Groups
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Age <- CohortDataSingleDiag %>%
@@ -109,11 +94,30 @@ Age <- CohortDataSingleDiag %>%
           arrange(AgeGroup)
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Gender Distribution
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Gender <- CohortDataSingleDiag %>%
+              group_by(Gender) %>%
+                  summarize(N = n()) %>%
+                  mutate(Proportion = N / sum(N))
+
+Gender_OverTime <- CohortDataSingleDiag %>%
+                        mutate(DiagnosisYear = year(DiagnosisDate)) %>%
+                        group_by(DiagnosisYear, Gender) %>%
+                            summarize(N = n()) %>%
+                        ungroup() %>%
+                        pivot_wider(names_from = Gender,
+                                    values_from = N)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Return
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 return(list(CohortSize = CohortSize,
             CohortSize_OverTime = CohortSize_OverTime,
             Gender = Gender,
             Gender_OverTime = Gender_OverTime,
             Age = Age))
-
 }

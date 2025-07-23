@@ -5,19 +5,22 @@
 #'
 #' Uses dplyr::mutate() to transform data based on harmonization rules defined in a given rule set (Default: dsCCPhos::RuleSet_RawDataHarmonization)
 #'
-#' @param DataFrame data frame containing data to be transformed
-#' @param TableName String | Name of the table (to enable mapping to harmonization rules)
-#' @param RuleSet Data frame | Contains predefined set of harmonization rules
-#' @param Profile String | Profile name stated in rule set data frame
+#' @param DataFrame \code{data.frame} containing data to be transformed
+#' @param TableName \code{string} - Name of the table (to enable mapping to harmonization rules)
+#' @param Methods \code{data.frame}
+#' @param RuleSet \code{data.frame} - Contains predefined set of harmonization rules
+#' @param RuleSet.Profile \code{string} - Profile name stated in 'RuleSet'
 #'
-#' @return The input data frame with transformed data values
+#' @return The input \code{data.frame} with transformed data values
 #' @export
 #'
 #' @author Bastian Reiter
 HarmonizeData <- function(DataFrame,
                           TableName,
+                          Methods = NULL,
                           RuleSet,
-                          Profile)
+                          RuleSet.Profile)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     require(dplyr)
     require(dsCCPhos)
@@ -26,17 +29,17 @@ HarmonizeData <- function(DataFrame,
     # DataFrame <- df_Staging
     # TableName <- "Staging"
     # RuleSet <- dsCCPhos::RuleSet_RawDataHarmonization
-    # RuleProfile <- "Default"
+    # RuleSet.Profile <- "Default"
 
     # Compile general harmonization rules with dsCCPhos::CompileHarmonizationRules
     HarmonizationRules <- CompileHarmonizationRules(TableName,
                                                     RuleSet,
-                                                    Profile)
+                                                    RuleSet.Profile)
 
     # Compile hash tables for direct value replacement
     HashTables <- CompileHashTables(TableName,
                                     RuleSet,
-                                    Profile)
+                                    RuleSet.Profile)
 
     if (is.na(HarmonizationRules) & is.null(HashTables))
     {

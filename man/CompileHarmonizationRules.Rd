@@ -4,17 +4,17 @@
 \alias{CompileHarmonizationRules}
 \title{CompileHarmonizationRules}
 \usage{
-CompileHarmonizationRules(TableName, RuleSet, RuleProfile)
+CompileHarmonizationRules(TableName, RuleSet, RuleSet.Profile)
 }
 \arguments{
-\item{TableName}{String | Name of table that contains features to be transformed}
+\item{TableName}{\code{string} - Name of table that contains features to be transformed}
 
-\item{RuleSet}{Data frame | Contains predefined set of harmonization rules}
+\item{RuleSet}{\code{data.frame} - Contains predefined set of harmonization rules}
 
-\item{RuleProfile}{String | Profile name stated in rule set data frame}
+\item{RuleSet.Profile}{\code{string} - Profile name stated in rule set data frame}
 }
 \value{
-String containing arguments for dplyr::mutate()
+\code{string} containing arguments for \code{dplyr::mutate()}
 }
 \description{
 Auxiliary function within \code{\link{CurateDataDS}} or \code{\link{HarmonizeData}} respectively

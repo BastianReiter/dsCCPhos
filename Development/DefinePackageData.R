@@ -82,12 +82,12 @@ use_data(Meta_FeatureTracking, overwrite = TRUE)
 # Settings: Raw Data Harmonization rule set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_DataHarmonization <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                     sheet = "DataHarmonization",
-                                     skip = 1)
+Meta_DataHarmonizationRules <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                          sheet = "DataHarmonizationRules",
+                                          skip = 1)
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_DataHarmonization, overwrite = TRUE)
+use_data(Meta_DataHarmonizationRules, overwrite = TRUE)
 
 
 

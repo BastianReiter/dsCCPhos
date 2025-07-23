@@ -1,28 +1,28 @@
 
 #' CompileHashTables
 #'
-#' Auxiliary function within \code{\link{CurateDataDS}} or \code{\link{TransformData}} respectively
+#' Auxiliary function within \code{\link{CurateDataDS}} or \code{\link{HarmonizeData}} respectively
 #'
 #' Based on a predefined rule set data frame, compile hash tables for direct value transformation
 #'
-#' @param TableName String | Name of table that contains features to be transformed
-#' @param RuleSet Data frame | Contains predefined set of transformation rules
-#' @param RuleProfile String | Profile name stated in rule set data frame
+#' @param TableName \code{string} - Name of table that contains features to be transformed
+#' @param RuleSet \code{data.frame} - Contains predefined set of transformation rules
+#' @param RuleSet.Profile \code{string} - Profile name stated in 'RuleSet'
 #'
-#' @return List of named vectors (serving as hash tables)
+#' @return \code{list} of named vectors (serving as hash tables)
 #' @export
 #'
 #' @author Bastian Reiter
 CompileHashTables <- function(TableName,
                               RuleSet,
-                              RuleProfile)
+                              RuleSet.Profile)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     require(dplyr)
     require(purrr)
     require(stringr)
 
-    # For testing purposes
+    #--- For testing purposes ---
     # TableName <- "Staging"
     # RuleSet <- dsCCPhos::RuleSet_RawDataTransformation
     # RuleProfile <- "Default"
@@ -30,7 +30,7 @@ CompileHashTables <- function(TableName,
 
     # Filter relevant rules from given rule set
     RelevantRules <- RuleSet %>%
-                          filter(Profile == RuleProfile
+                          filter(Profile == RuleSet.Profile
                                   & Table == TableName
                                   & Operation == "HashTable") %>%
                           arrange(EvaluationOrder)

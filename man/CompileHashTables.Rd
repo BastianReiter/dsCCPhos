@@ -4,20 +4,20 @@
 \alias{CompileHashTables}
 \title{CompileHashTables}
 \usage{
-CompileHashTables(TableName, RuleSet, RuleProfile)
+CompileHashTables(TableName, RuleSet, RuleSet.Profile)
 }
 \arguments{
-\item{TableName}{String | Name of table that contains features to be transformed}
+\item{TableName}{\code{string} - Name of table that contains features to be transformed}
 
-\item{RuleSet}{Data frame | Contains predefined set of transformation rules}
+\item{RuleSet}{\code{data.frame} - Contains predefined set of transformation rules}
 
-\item{RuleProfile}{String | Profile name stated in rule set data frame}
+\item{RuleSet.Profile}{\code{string} - Profile name stated in 'RuleSet'}
 }
 \value{
-List of named vectors (serving as hash tables)
+\code{list} of named vectors (serving as hash tables)
 }
 \description{
-Auxiliary function within \code{\link{CurateDataDS}} or \code{\link{TransformData}} respectively
+Auxiliary function within \code{\link{CurateDataDS}} or \code{\link{HarmonizeData}} respectively
 }
 \details{
 Based on a predefined rule set data frame, compile hash tables for direct value transformation

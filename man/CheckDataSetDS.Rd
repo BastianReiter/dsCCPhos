@@ -5,9 +5,10 @@
 \title{CheckDataSetDS}
 \usage{
 CheckDataSetDS(
-  DataSetName.S = "RawDataSet",
-  RequiredTableNames.S,
-  RequiredFeatureNames.S
+  DataSetName.S,
+  RequiredTableNames.S = NULL,
+  RequiredFeatureNames.S = NULL,
+  AssumeCCPDataSet.S = FALSE
 )
 }
 \arguments{
@@ -16,12 +17,14 @@ CheckDataSetDS(
 \item{RequiredTableNames.S}{\code{character vector} - Names of tables that are expected/required to be in the data set - Default: Names of elements in list evaluated from \code{DataSetName.S}}
 
 \item{RequiredFeatureNames.S}{\code{list} of \code{character vectors} - Features that are expected/required in each table of the data set - Default: Names of features in respective table}
+
+\item{AssumeCCPDataSet.S}{\code{logical} - Whether or not the data set to be checked out is one of the main data sets used in CCPhos}
 }
 \value{
-A list containing information about Data Set tables
+A list containing meta data about tables in a data set
 }
 \description{
-Checks existence and details of tables in a given DataSet (RDS / CDS / ADS) and returns an informative list object.
+Checks out a given data set (list of data.frames) and returns an informative list object.
 }
 \details{
 Server-side AGGREGATE method

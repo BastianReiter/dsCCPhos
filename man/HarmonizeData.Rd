@@ -4,19 +4,21 @@
 \alias{HarmonizeData}
 \title{HarmonizeData}
 \usage{
-HarmonizeData(DataFrame, TableName, RuleSet, Profile)
+HarmonizeData(DataFrame, TableName, Methods = NULL, RuleSet, RuleSet.Profile)
 }
 \arguments{
-\item{DataFrame}{data frame containing data to be transformed}
+\item{DataFrame}{\code{data.frame} containing data to be transformed}
 
-\item{TableName}{String | Name of the table (to enable mapping to harmonization rules)}
+\item{TableName}{\code{string} - Name of the table (to enable mapping to harmonization rules)}
 
-\item{RuleSet}{Data frame | Contains predefined set of harmonization rules}
+\item{Methods}{\code{data.frame}}
 
-\item{Profile}{String | Profile name stated in rule set data frame}
+\item{RuleSet}{\code{data.frame} - Contains predefined set of harmonization rules}
+
+\item{RuleSet.Profile}{\code{string} - Profile name stated in 'RuleSet'}
 }
 \value{
-The input data frame with transformed data values
+The input \code{data.frame} with transformed data values
 }
 \description{
 Harmonizes data based on a given rule set. First, general harmonizing transformations are performed using regular expression based rules. Second, for direct replacement of values hash tables are being compiled and applied.
