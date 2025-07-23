@@ -5,17 +5,17 @@
 #'
 #' Based on a predefined rule set data frame, compile argument expressions for dplyr::mutate()
 #'
-#' @param TableName String | Name of table that contains features to be transformed
-#' @param RuleSet Data frame | Contains predefined set of harmonization rules
-#' @param RuleProfile String | Profile name stated in rule set data frame
+#' @param TableName \code{string} - Name of table that contains features to be transformed
+#' @param RuleSet \code{data.frame} - Contains predefined set of harmonization rules
+#' @param RuleSet.Profile \code{string} - Profile name stated in rule set data frame
 #'
-#' @return String containing arguments for dplyr::mutate()
+#' @return \code{string} containing arguments for \code{dplyr::mutate()}
 #' @export
 #'
 #' @author Bastian Reiter
 CompileHarmonizationRules <- function(TableName,
                                       RuleSet,
-                                      RuleProfile)
+                                      RuleSet.Profile)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     require(dplyr)
@@ -25,12 +25,12 @@ CompileHarmonizationRules <- function(TableName,
     # For testing purposes
     # TableName <- "Staging"
     # RuleSet <- dsCCPhos::RuleSet_RawDataHarmonization
-    # RuleProfile <- "Default"
+    # RuleSet.Profile <- "Default"
 
 
     # Filter relevant rules from given rule set
     RelevantRules <- RuleSet %>%
-                          filter(Profile == RuleProfile
+                          filter(Profile == RuleSet.Profile
                                   & Table == TableName
                                   & Operation != "HashTable") %>%
                           arrange(EvaluationOrder)

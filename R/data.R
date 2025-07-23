@@ -30,14 +30,14 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_DataHarmonization.rda
+# Meta_DataHarmonizationRules.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #' Meta data on rule-based transformation of raw data
 #'
 #' A tibble containing rules
 #'
-#' @format ## `Meta_DataHarmonization`
+#' @format ## `Meta_DataHarmonizationRules`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
@@ -51,7 +51,7 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_DataHarmonization"
+"Meta_DataHarmonizationRules"
 
 
 

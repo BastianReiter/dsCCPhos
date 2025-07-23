@@ -10,14 +10,15 @@
 #' @param Settings.S \code{list} - Settings passed to function
 #'                   \itemize{  \item DataHarmonization \code{list}
 #'                                  \itemize{ \item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
-#'                                            \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
-#'                                            \item Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
+#'                                            \item Methods \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureHarmonizationMethods}
+#'                                            \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonizationRules}
+#'                                            \item RuleSet.Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
 #'                              \item FeatureObligations \code{list}
 #'                                  \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
-#'                                            \item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
+#'                                            \item RuleSet.Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
 #'                              \item FeatureTracking \code{list}
 #'                                  \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
-#'                                            \item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
+#'                                            \item RuleSet.Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
 #'                              \item TableCleaning \code{list}
 #'                                  \itemize{ \item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}}
 #'
@@ -56,12 +57,13 @@
 #' @author Bastian Reiter
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                          Settings.S = list(DataHarmonization = list(Run = TRUE,
-                                                                    RuleSet = dsCCPhos::Meta_DataHarmonization,
-                                                                    Profile = "Default"),
+                                                                    #Methods = dsCCPhos::Meta_FeatureHarmonizationMethods,
+                                                                    RuleSet = dsCCPhos::Meta_DataHarmonizationRules,
+                                                                    RuleSet.Profile = "Default"),
                                            FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
-                                                                     Profile = "Default"),
+                                                                     RuleSet.Profile = "Default"),
                                            FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking,
-                                                                  Profile = "Default"),
+                                                                  RuleSet.Profile = "Default"),
                                            TableCleaning = list(Run = TRUE)))
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,12 +116,13 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 ### For testing purposes
 # Settings.S <- list(DataHarmonization = list(Run = TRUE,
-#                                             RuleSet = dsCCPhos::Meta_DataHarmonization,
-#                                             Profile = "Default"),
+#                                             Methods = dsCCPhos::Meta_FeatureHarmonizationMethods,
+#                                             RuleSet = dsCCPhos::Meta_DataHarmonizationRules,
+#                                             RuleSet.Profile = "Default"),
 #                    FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
-#                                              Profile = "Default"),
+#                                              RuleSet.Profile = "Default"),
 #                    FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking,
-#                                           Profile = "Default"),
+#                                           RuleSet.Profile = "Default"),
 #                    TableCleaning = list(Run = TRUE))
 
 
@@ -148,12 +151,13 @@ Settings <- Settings.S
 
 # If list of 'Settings' passed to function is incomplete, complete it with default values
 if (is.null(Settings$DataHarmonization$Run)) { Settings$DataHarmonization$Run <- TRUE }
-if (is.null(Settings$DataHarmonization$RuleSet)) { Settings$DataHarmonization$RuleSet <- dsCCPhos::Meta_DataHarmonization }
-if (is.null(Settings$DataHarmonization$Profile)) { Settings$DataHarmonization$Profile <- "Default" }
+#if (is.null(Settings$DataHarmonization$Methods)) { Settings$DataHarmonization$Methods <- dsCCPhos::Meta_FeatureHarmonizationMethods }
+if (is.null(Settings$DataHarmonization$RuleSet)) { Settings$DataHarmonization$RuleSet <- dsCCPhos::Meta_DataHarmonizationRules }
+if (is.null(Settings$DataHarmonization$RuleSet.Profile)) { Settings$DataHarmonization$RuleSet.Profile <- "Default" }
 if (is.null(Settings$FeatureObligations$RuleSet)) { Settings$FeatureObligations$RuleSet <- dsCCPhos::Meta_FeatureObligations }
-if (is.null(Settings$FeatureObligations$Profile)) { Settings$FeatureObligations$Profile <- "Default" }
+if (is.null(Settings$FeatureObligations$RuleSet.Profile)) { Settings$FeatureObligations$RuleSet.Profile <- "Default" }
 if (is.null(Settings$FeatureTracking$RuleSet)) { Settings$FeatureTracking$RuleSet <- dsCCPhos::Meta_FeatureTracking }
-if (is.null(Settings$FeatureTracking$Profile)) { Settings$FeatureTracking$Profile <- "Default" }
+if (is.null(Settings$FeatureTracking$RuleSet.Profile)) { Settings$FeatureTracking$RuleSet.Profile <- "Default" }
 if (is.null(Settings$TableCleaning$Run)) { Settings$TableCleaning$Run <- TRUE }
 
 
@@ -173,14 +177,14 @@ if (is.character(RawDataSetName.S))
 }
 
 
-if (Settings$FeatureObligations$Profile %in% names(Settings$FeatureObligations$RuleSet) == FALSE)
+if (Settings$FeatureObligations$RuleSet.Profile %in% names(Settings$FeatureObligations$RuleSet) == FALSE)
 {
-    ClientMessage <- "ERROR: Value of settings argument 'FeatureObligations$Profile' must be column name of data.frame passed in settings argument 'FeatureObligations$RuleSet'."
+    ClientMessage <- "ERROR: Value of settings argument 'FeatureObligations$RuleSet.Profile' must be column name of data.frame passed in settings argument 'FeatureObligations$RuleSet'."
     stop(ClientMessage, call. = FALSE)
 }
-if (Settings$FeatureTracking$Profile %in% names(Settings$FeatureTracking$RuleSet) == FALSE)
+if (Settings$FeatureTracking$RuleSet.Profile %in% names(Settings$FeatureTracking$RuleSet) == FALSE)
 {
-    ClientMessage <- "ERROR: Value of settings argument 'FeatureTracking$Profile' must be column name of data.frame passed in settings argument 'FeatureTracking$RuleSet'."
+    ClientMessage <- "ERROR: Value of settings argument 'FeatureTracking$RuleSet.Profile' must be column name of data.frame passed in settings argument 'FeatureTracking$RuleSet'."
     stop(ClientMessage, call. = FALSE)
 }
 
@@ -456,7 +460,7 @@ ls_MonitorMetaData <- names(DataSet) %>%
                           map(function(tablename)
                               {
                                   vc_FeaturesToTrack <- Settings$FeatureTracking$RuleSet %>%
-                                                            rename(IsTracked = all_of(Settings$FeatureTracking$Profile)) %>%      # Renaming feature based on passed argument
+                                                            rename(IsTracked = all_of(Settings$FeatureTracking$RuleSet.Profile)) %>%      # Renaming feature based on passed argument
                                                             filter(Table == tablename,
                                                                    IsTracked == TRUE) %>%
                                                             pull(Feature)
@@ -548,7 +552,7 @@ DataSet <- DataSet %>%
                             Table <- Table %>%
                                         HarmonizeData(TableName = tablename,
                                                       RuleSet = Settings$DataHarmonization$RuleSet,
-                                                      Profile = Settings$DataHarmonization$Profile)
+                                                      RuleSet.Profile = Settings$DataHarmonization$RuleSet.Profile)
                         }
 
                         return(Table)

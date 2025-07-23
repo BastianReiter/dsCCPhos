@@ -7,33 +7,35 @@
 CurateDataDS(
   RawDataSetName.S = "RawDataSet",
   Settings.S = list(DataHarmonization = list(Run = TRUE, RuleSet =
-    dsCCPhos::Meta_DataHarmonization, Profile = "Default"), FeatureObligations =
-    list(RuleSet = dsCCPhos::Meta_FeatureObligations, Profile = "Default"),
-    FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking, Profile =
-    "Default"), TableCleaning = list(Run = TRUE))
+    dsCCPhos::Meta_DataHarmonizationRules, RuleSet.Profile = "Default"),
+    FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
+    RuleSet.Profile = "Default"), FeatureTracking = list(RuleSet =
+    dsCCPhos::Meta_FeatureTracking, RuleSet.Profile = "Default"), TableCleaning =
+    list(Run = TRUE))
 )
 }
 \arguments{
 \item{RawDataSetName.S}{\code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'}
 
 \item{Settings.S}{\code{list} - Settings passed to function
-\itemize{\item DataHarmonization \code{list}
-\itemize{\item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
-\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonization}
-\item Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
+\itemize{  \item DataHarmonization \code{list}
+\itemize{ \item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
+\item Methods \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureHarmonizationMethods}
+\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonizationRules}
+\item RuleSet.Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
 \item FeatureObligations \code{list}
-\itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
-\item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
+\itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
+\item RuleSet.Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
 \item FeatureTracking \code{list}
-\itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
-\item Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
+\itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
+\item RuleSet.Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
 \item TableCleaning \code{list}
-\itemize{\item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}}}
+\itemize{ \item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}}}
 }
 \value{
 A \code{list} containing the following objects:
 \itemize{\item CuratedDataSet \code{list}
-\itemize{\item BioSampling
+\itemize{ \item BioSampling
 \item Diagnosis
 \item DiseaseStatus
 \item GeneralCondition
@@ -48,8 +50,8 @@ A \code{list} containing the following objects:
 \item SystemicTherapy
 \item TherapyRecommendation}
 \item CurationReport \code{list}
-\itemize{\item EntryCounts \code{tibble}
-\itemize{\item Table
+\itemize{ \item EntryCounts \code{tibble}
+\itemize{ \item Table
 \item InitialCount
 \item ExcludedPrimary
 \item AfterPrimaryExclusion
@@ -58,7 +60,7 @@ A \code{list} containing the following objects:
 \item ExcludedSecondaryRedundancy
 \item AfterSecondaryRedundancyExclusion}
 \item Transformation (list of lists)
-\itemize{\item Monitors
+\itemize{ \item Monitors
 \item EligibilityOverviews
 \item ValueSetOverviews}}
 \item CurationMessages \code{list}}

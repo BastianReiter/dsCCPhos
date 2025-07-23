@@ -4,10 +4,15 @@
 \alias{GetCohortDescriptionDS}
 \title{GetCohortDescriptionDS}
 \usage{
-GetCohortDescriptionDS(Name_AugmentationOutput = "AugmentationOutput")
+GetCohortDescriptionDS(
+  DataSetName.S = "AugmentedDataSet",
+  CCPDataSetType.S = "ADS"
+)
 }
 \arguments{
-\item{Name_AugmentationOutput}{String | Name of object on server previously assigned by dsCCPhos::AugmentData() | Default: 'AugmentationOutput'}
+\item{DataSetName.S}{\code{string} - Name of Data Set object (list) on server, usually "RawDataSet", "CuratedDataSet" or "AugmentedDataSet"}
+
+\item{CCPDataSetType.S}{\code{string} - Indicating the type of CCP data set that should be described, one of "RDS" / "CDS" / "ADS" - Default: "ADS"}
 }
 \description{
 What it does
