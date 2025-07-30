@@ -8,7 +8,7 @@
 #' @param DataSetName.S \code{string} - Name of Data Set object (list) on server, usually "RawDataSet", "CuratedDataSet" or "AugmentedDataSet"
 #' @param RequiredTableNames.S \code{character vector} - Names of tables that are expected/required to be in the data set - Default: Names of elements in list evaluated from \code{DataSetName.S}
 #' @param RequiredFeatureNames.S \code{list} of \code{character vectors} - Features that are expected/required in each table of the data set - Default: Names of features in respective table
-#' @param AssumeCCPDataSet.S \code{logical} - Whether or not the data set to be checked out is one of the main data sets used in CCPhos
+#' @param AssumeCCPDataSet.S \code{logical} - Whether or not the data set to be checked out is one of the main data sets used in CCPhos - Default: FALSE
 #'
 #' @return A list containing meta data about tables in a data set
 #' @export
@@ -37,7 +37,7 @@ else
 # - Start of function proceedings -
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-### For testing purposes
+#--- For testing purposes ---
 # DataSetName.S <- "CuratedDataSet"
 # DataSet <- CuratedDataSet
 # RequiredTableNames.S <- NULL
@@ -100,7 +100,7 @@ TableCheckTemplate <- RequiredTableNames.S %>%
 TableCheckExisting <- DataSet %>%
                           imap(function(Table, tablename)
                                {
-                                  if (!(is_empty(Table) | length(Table) == 0 | nrow(Table) == 0))
+                                  if (!(is.null(Table) | is_empty(Table) | length(Table) == 0 | nrow(Table) == 0))
                                   {
                                       CheckTable(Table = Table,
                                                  RequiredFeatureNames = RequiredFeatureNames.S[[tablename]])

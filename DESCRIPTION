@@ -1,10 +1,10 @@
 Package: dsCCPhos
 Title: Enabling Data Science with the DKTK-CCP
-Version: 0.1.79
+Version: 0.1.80
 Authors@R: 
     person("Bastian", "Reiter", , "b.reiter@med.uni-frankfurt.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-1088-0502"))
-Description: Server-side dataSHIELD R package to enable Data Science with the German Cancer Consortium's Clinical Communication Platform (CCP)
+Description: Server-side DataSHIELD R package to enable Data Science with the German Cancer Consortium's Clinical Communication Platform (CCP)
 URL: https://ccphos.netlify.app/, https://github.com/BastianReiter/dsCCPhos
 License: CC BY 4.0
 Encoding: UTF-8
