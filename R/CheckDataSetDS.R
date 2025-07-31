@@ -100,7 +100,7 @@ TableCheckTemplate <- RequiredTableNames.S %>%
 TableCheckExisting <- DataSet %>%
                           imap(function(Table, tablename)
                                {
-                                  if (!(is.null(Table) | is_empty(Table) | length(Table) == 0))
+                                  if (length(Table) > 0 && !is.null(Table) && !is_empty(Table) && nrow(Table) > 0)
                                   {
                                       CheckTable(Table = Table,
                                                  RequiredFeatureNames = RequiredFeatureNames.S[[tablename]])
