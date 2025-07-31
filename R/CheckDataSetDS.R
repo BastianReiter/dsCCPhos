@@ -38,8 +38,8 @@ else
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #--- For testing purposes ---
-# DataSetName.S <- "CuratedDataSet"
-# DataSet <- CuratedDataSet
+# DataSetName.S <- "RawDataSet"
+# DataSet <- RawDataSet
 # RequiredTableNames.S <- NULL
 # RequiredFeatureNames.S <- NULL
 # AssumeCCPDataSet.S <- TRUE
@@ -100,7 +100,7 @@ TableCheckTemplate <- RequiredTableNames.S %>%
 TableCheckExisting <- DataSet %>%
                           imap(function(Table, tablename)
                                {
-                                  if (!(is.null(Table) | is_empty(Table) | length(Table) == 0 | nrow(Table) == 0))
+                                  if (!(is.null(Table) | is_empty(Table) | length(Table) == 0))
                                   {
                                       CheckTable(Table = Table,
                                                  RequiredFeatureNames = RequiredFeatureNames.S[[tablename]])
