@@ -20,7 +20,7 @@ CleanTable(
 
 \item{FeatureObligations}{\code{list}
 \itemize{\item RuleSet \code{data.frame}
-\item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet}}}
+\item RuleSet.Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet}}}
 }
 \value{
 \code{tibble} - Clean table

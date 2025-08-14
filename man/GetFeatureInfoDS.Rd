@@ -7,13 +7,16 @@
 GetFeatureInfoDS(TableName.S, FeatureName.S)
 }
 \arguments{
-\item{TableName.S}{\code{string} | Name of the data frame that contains the feature}
+\item{TableName.S}{\code{string} - Name of the data frame that contains the feature}
 
-\item{FeatureName.S}{\code{string} | Name of feature}
+\item{FeatureName.S}{\code{string} - Name of feature}
 }
 \value{
-A \code{tibble}
+A \code{list}
 }
 \description{
 Obtain data about feature type and sample size.
+}
+\author{
+Bastian Reiter
 }

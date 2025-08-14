@@ -18,7 +18,7 @@ CheckDataSetDS(
 
 \item{RequiredFeatureNames.S}{\code{list} of \code{character vectors} - Features that are expected/required in each table of the data set - Default: Names of features in respective table}
 
-\item{AssumeCCPDataSet.S}{\code{logical} - Whether or not the data set to be checked out is one of the main data sets used in CCPhos}
+\item{AssumeCCPDataSet.S}{\code{logical} - Whether or not the data set to be checked out is one of the main data sets used in CCPhos - Default: FALSE}
 }
 \value{
 A list containing meta data about tables in a data set

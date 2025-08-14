@@ -18,54 +18,56 @@
 #' @export
 #'
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 JoinTablesDS <- function(TableNameA.S,
                          TableNameB.S,
                          ByStatement.S,
                          JoinType.S = "left_join")
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
+  require(dplyr)
 
-### For testing purposes
-# TableNameA.S <- "ADS_Patient"
-# TableNameB.S <- "ADS_Diagnosis"
-# ByStatement.S <- "PatientID"
-# JoinType.S <- "left_join"
+  # --- For Testing Purposes ---
+  # TableNameA.S <- "ADS_Patient"
+  # TableNameB.S <- "ADS_Diagnosis"
+  # ByStatement.S <- "PatientID"
+  # JoinType.S <- "left_join"
 
-
-require(dplyr)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # - Check input types -
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    InputTypes <- c(TableNameA.S = "character",
-                    TableNameB.S = "character",
-                    ByStatement.S = "character",
-                    JoinType.S = "character")
+  InputTypes <- c(TableNameA.S = "character",
+                  TableNameB.S = "character",
+                  ByStatement.S = "character",
+                  JoinType.S = "character")
 
-    for (i in 1:length(InputTypes))
-    {
-        if (eval(parse(text = paste0("!is.", InputTypes[[i]], "(", names(InputTypes)[i], ")"))))
-        {
-            stop(paste0("ERROR: '", names(InputTypes)[i], "' must be of type ", InputTypes[[i]], "!"))
-        }
-    }
+  for (i in 1:length(InputTypes))
+  {
+      if (eval(parse(text = paste0("!is.", InputTypes[[i]], "(", names(InputTypes)[i], ")"))))
+      {
+          stop(paste0("ERROR: '", names(InputTypes)[i], "' must be of type ", InputTypes[[i]], "!"))
+      }
+  }
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # - Function proceedings -
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    TableA <- eval(parse(text = TableNameA.S), envir = parent.frame())
-    TableB <- eval(parse(text = TableNameB.S), envir = parent.frame())
+  TableA <- eval(parse(text = TableNameA.S), envir = parent.frame())
+  TableB <- eval(parse(text = TableNameB.S), envir = parent.frame())
 
-    if (JoinType.S %in% c("left_join", "right_join", "full_join", "inner_join"))
-    {
-        Output <- eval(parse(text = paste0(JoinType.S, "(TableA, TableB, by = join_by(", ByStatement.S, "))")))
+  if (JoinType.S %in% c("left_join", "right_join", "full_join", "inner_join"))
+  {
+      Output <- eval(parse(text = paste0(JoinType.S, "(TableA, TableB, by = join_by(", ByStatement.S, "))")))
 
-    } else {
-        stop(paste0("ERROR: 'JoinType.S' does not provide a valid join operation!"))
-    }
+  } else {
+      stop(paste0("ERROR: 'JoinType.S' does not provide a valid join operation!"))
+  }
 
-    return(as.data.frame(Output))
+  return(as.data.frame(Output))
 }

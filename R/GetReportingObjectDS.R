@@ -5,14 +5,15 @@
 #'
 #' Server-side AGGREGATE method
 #'
-#' @param ObjectName.S String | Name of reporting object on server
+#' @param ObjectName.S \code{string} - Name of reporting object on server
 #'
 #' @return The reporting object
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GetReportingObjectDS <- function(ObjectName.S)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
     if (is.character(ObjectName.S))
     {

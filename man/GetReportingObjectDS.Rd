@@ -7,7 +7,7 @@
 GetReportingObjectDS(ObjectName.S)
 }
 \arguments{
-\item{ObjectName.S}{String | Name of reporting object on server}
+\item{ObjectName.S}{\code{string} - Name of reporting object on server}
 }
 \value{
 The reporting object

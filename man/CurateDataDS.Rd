@@ -6,31 +6,60 @@
 \usage{
 CurateDataDS(
   RawDataSetName.S = "RawDataSet",
-  Settings.S = list(DataHarmonization = list(Run = TRUE, RuleSet =
-    dsCCPhos::Meta_DataHarmonizationRules, RuleSet.Profile = "Default"),
-    FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
+  Settings.S = list(DataHarmonization = list(Run = TRUE, Methods =
+    dsCCPhos::Meta_DataHarmonizationMethods, TransformativeExpressions =
+    dsCCPhos::Meta_TransformativeExpressions, TransformativeExpressions.Profile =
+    "Default", Dictionary = dsCCPhos::Meta_Dictionary, Dictionary.Profile = "Default",
+    FuzzyStringMatching = dsCCPhos::Meta_FuzzyStringMatching, FuzzyStringMatching.Profile
+    = "Default"), FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
     RuleSet.Profile = "Default"), FeatureTracking = list(RuleSet =
-    dsCCPhos::Meta_FeatureTracking, RuleSet.Profile = "Default"), TableCleaning =
-    list(Run = TRUE))
+    dsCCPhos::Meta_FeatureTracking, 
+     RuleSet.Profile = "Default"), TableCleaning =
+    list(Run = TRUE), TableNormalization = list(Run = TRUE, RuleSet =
+    dsCCPhos::Meta_TableNormalization, RuleSet.Profile = "Default")),
+  DataHarmonization.Run = NULL,
+  DataHarmonization.Methods = NULL,
+  DataHarmonization.TransformativeExpressions = NULL,
+  DataHarmonization.TransformativeExpressions.Profile = NULL,
+  DataHarmonization.Dictionary = NULL,
+  DataHarmonization.Dictionary.Profile = NULL,
+  DataHarmonization.FuzzyStringMatching = NULL,
+  DataHarmonization.FuzzyStringMatching.Profile = NULL,
+  FeatureObligations.RuleSet = NULL,
+  FeatureObligations.RuleSet.Profile = NULL,
+  FeatureTracking.RuleSet = NULL,
+  FeatureTracking.RuleSet.Profile = NULL,
+  TableCleaning.Run = NULL,
+  TableNormalization.Run = NULL,
+  TableNormalization.RuleSet = NULL,
+  TableNormalization.RuleSet.Profile = NULL
 )
 }
 \arguments{
 \item{RawDataSetName.S}{\code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'}
 
 \item{Settings.S}{\code{list} - Settings passed to function
-\itemize{  \item DataHarmonization \code{list}
+\itemize{  \item \emph{DataHarmonization} - \code{list}
 \itemize{ \item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
-\item Methods \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureHarmonizationMethods}
-\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonizationRules}
-\item RuleSet.Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
-\item FeatureObligations \code{list}
+\item Methods \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonizationMethods}
+\item TransformativeExpressions \code{data.frame} - Default: \code{dsCCPhos::Meta_TransformativeExpressions}
+\item TransformativeExpressions.Profile \code{string} - Profile used in \emph{TransformativeExpressions} - Default: 'Default'
+\item Dictionary \code{data.frame} - Default: \code{dsCCPhos::Meta_Dictionary}
+\item Dictionary.Profile \code{string} - Profile used in \emph{Dictionary} - Default: 'Default'
+\item FuzzyStringMatching \code{data.frame} - Default: \code{dsCCPhos::Meta_FuzzyStringMatching}
+\item FuzzyStringMatching.Profile \code{string} - Profile used in \emph{FuzzyStringMatching} - Default: 'Default'}
+\item \emph{FeatureObligations} - \code{list}
 \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
-\item RuleSet.Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
-\item FeatureTracking \code{list}
+\item RuleSet.Profile \code{string} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
+\item \emph{FeatureTracking} - \code{list}
 \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
-\item RuleSet.Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
-\item TableCleaning \code{list}
-\itemize{ \item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}}}
+\item RuleSet.Profile \code{string} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
+\item \emph{TableCleaning} - \code{list}
+\itemize{ \item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}
+\item \emph{TableNormalization} - \code{list}
+\itemize{ \item Run \code{logical} - Whether or not to perform table normalization - Default: \code{TRUE}
+\item RuleSet \code{data.frame} - Deault: \code{dsCCPhos::Meta_TableNormalization}
+\item RuleSet.Profile \code{string} - Profile name defining rule set to be used for table normalization. Profile name must be stated in \code{TableNormalization$RuleSet} - Default: 'Default'}}}
 }
 \value{
 A \code{list} containing the following objects:
