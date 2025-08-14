@@ -7,12 +7,12 @@
 DrawSampleDS(RawDataSetName.S = "RawDataSet", SampleSize.S = "100")
 }
 \arguments{
-\item{RawDataSetName.S}{\code{string} | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'}
+\item{RawDataSetName.S}{\code{string} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'}
 
-\item{SampleSize}{\code{string} | Number of patients in sample}
+\item{SampleSize}{\code{string} - Number of patients in sample}
 }
 \value{
-A list containing a subset of Raw Data Set
+A \code{list} containing a subset of Raw Data Set
 }
 \description{
 Draws a sample (subset) from Raw Data Set

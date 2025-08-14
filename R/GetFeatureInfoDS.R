@@ -3,15 +3,17 @@
 #'
 #' Obtain data about feature type and sample size.
 #'
-#' @param TableName.S \code{string} | Name of the data frame that contains the feature
-#' @param FeatureName.S \code{string} | Name of feature
+#' @param TableName.S \code{string} - Name of the data frame that contains the feature
+#' @param FeatureName.S \code{string} - Name of feature
 #'
-#' @return A \code{tibble}
+#' @return A \code{list}
 #' @export
 #'
-#' @examples
+#' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GetFeatureInfoDS <- function(TableName.S,
                              FeatureName.S)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Check, evaluate and parse input before proceeding
@@ -43,7 +45,7 @@ require(tibble)
 # FeatureName.S <- "TNM_T"
 
 
-# Evaluate feature in question
+# Evaluate feature in question / Get vector
 Feature <- Table[[FeatureName.S]]
 
 # Tibble containing useful meta data

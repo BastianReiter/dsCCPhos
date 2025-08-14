@@ -17,46 +17,49 @@
 #' @export
 #'
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 FinalizeDataTransformation <- function(TargetVector,
                                        EligibleValueSet,
                                        ExcludeIneligibleValues = TRUE,
                                        ConvertToFactor = FALSE,
                                        AssignFactorLabels = FALSE)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-    require(dplyr)
+  require(dplyr)
 
-    ### For testing purposes
-    # TargetVector <- DataSet$RadiationTherapy$ApplicationType
-    # EligibleValueSet
-    # ExcludeIneligibleValues = TRUE
-    # ConvertToFactor = FALSE
-    # AssignFactorLabels = FALSE
+  # --- For Testing Purposes ---
+  # TargetVector <- DataSet$RadiationTherapy$ApplicationType
+  # EligibleValueSet
+  # ExcludeIneligibleValues = TRUE
+  # ConvertToFactor = FALSE
+  # AssignFactorLabels = FALSE
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    EligibleValueSet <- EligibleValueSet %>%
-                            arrange(FactorRank)
+  EligibleValueSet <- EligibleValueSet %>%
+                          arrange(FactorRank)
 
-    vc_EligibleValues <- EligibleValueSet$Value_Curated
-    vc_EligibleValueLabels <- EligibleValueSet$Label_Curated
+  vc_EligibleValues <- EligibleValueSet$Value_Curated
+  vc_EligibleValueLabels <- EligibleValueSet$Label_Curated
 
-    if (AssignFactorLabels == TRUE) { ConvertToFactor <- TRUE }
+  if (AssignFactorLabels == TRUE) { ConvertToFactor <- TRUE }
 
-    if (ExcludeIneligibleValues == TRUE)
-    {
-        vc_IsEligible <- TargetVector %in% vc_EligibleValues
-        vc_IsEligible[vc_IsEligible == FALSE] <- NA      # Replace all "FALSE" entries with NA
+  if (ExcludeIneligibleValues == TRUE)
+  {
+      vc_IsEligible <- TargetVector %in% vc_EligibleValues
+      vc_IsEligible[vc_IsEligible == FALSE] <- NA      # Replace all "FALSE" entries with NA
 
-        TargetVector <- TargetVector[vc_IsEligible]
-    }
+      TargetVector <- TargetVector[vc_IsEligible]
+  }
 
-    if (ConvertToFactor == TRUE)
-    {
-        TargetVector <- factor(TargetVector,
-                               levels = vc_EligibleValues,
-                               labels = ifelse(AssignFactorLabels == TRUE,
-                                               vc_EligibleValueLabels,
-                                               vc_EligibleValues))
-    }
+  if (ConvertToFactor == TRUE)
+  {
+      TargetVector <- factor(TargetVector,
+                             levels = vc_EligibleValues,
+                             labels = ifelse(AssignFactorLabels == TRUE,
+                                             vc_EligibleValueLabels,
+                                             vc_EligibleValues))
+  }
 
-    return(TargetVector)
+  return(TargetVector)
 }

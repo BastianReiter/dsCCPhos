@@ -8,12 +8,13 @@
 #' @param RemoveRedundantEntries \code{logical} - Whether redundant entries should be removed
 #' @param FeatureObligations \code{list}
 #'        \itemize{\item RuleSet \code{data.frame}
-#'                 \item Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet}}
+#'                 \item RuleSet.Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet}}
 #'
 #' @return \code{tibble} - Clean table
 #' @export
 #'
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CleanTable <- function(Table,
                        TableNameLookup,
                        RemoveRedundantEntries = TRUE,
@@ -23,12 +24,12 @@ CleanTable <- function(Table,
     require(dplyr)
     require(rlang)
 
-    ### For testing purposes
+    # --- For testing purposes ---
     # Table <- DataSet$BioSampling
     # TableNameLookup <- "BioSampling"
     # RemoveRedundantEntries <- TRUE
     # FeatureObligations$RuleSet <- Meta_FeatureObligations
-    # FeatureObligations$Profile <- "Default"
+    # FeatureObligations$RuleSet.Profile <- "Default"
 
 
     # 1) Remove entries that have missing values in strictly obligatory features
@@ -36,7 +37,7 @@ CleanTable <- function(Table,
 
     # Get table's set of (strictly) obligatory features from meta data passed to function
     ObligatoryFeatures <- FeatureObligations$RuleSet %>%
-                              rename(Rule = all_of(FeatureObligations$Profile)) %>%      # Renaming feature based on passed argument
+                              rename(Rule = all_of(FeatureObligations$RuleSet.Profile)) %>%      # Renaming feature based on passed argument
                               filter(Table %in% TableNameLookup, Rule == "Obligatory") %>%
                               pull(Feature)
 
@@ -65,7 +66,7 @@ CleanTable <- function(Table,
 
     # Get current table's set of trans-feature obligation rules (stated as pseudo-code), if there are any defined in meta data passed to function
     TransFeatureRules <- FeatureObligations$RuleSet %>%
-                              rename(Rule = all_of(FeatureObligations$Profile)) %>%
+                              rename(Rule = all_of(FeatureObligations$RuleSet.Profile)) %>%
                               filter(Table %in% TableNameLookup, !is.na(Rule), Rule != "NA", Rule != "Obligatory") %>%
                               distinct(Rule) %>%
                               pull()

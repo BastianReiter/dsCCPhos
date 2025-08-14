@@ -30,28 +30,29 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_DataHarmonizationRules.rda
+# Meta_DataHarmonizationMethods.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Meta data on rule-based transformation of raw data
+#' Meta data on which methods to use for each feature during data harmonization
 #'
-#' A tibble containing rules
+#' A tibble
 #'
-#' @format ## `Meta_DataHarmonizationRules`
+#' @format ## `Meta_DataHarmonizationMethods`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
+#'   \item{FeatureID}{}
 #'   \item{Table}{}
 #'   \item{Feature}{}
-#'   \item{EvaluationOrder}{}
-#'   \item{Operation}{}
-#'   \item{LookupValue}{}
-#'   \item{NewValue}{}
-#'   \item{Comment}{}
+#'   \item{HasEligibleValueSet}{}
+#'   \item{TransformationRules}{}
+#'   \item{HashTable}{}
+#'   \item{FuzzyStringMatching}{}
+#'   \item{Classification}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_DataHarmonizationRules"
+"Meta_DataHarmonizationMethods"
 
 
 
@@ -100,6 +101,31 @@
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
 "Meta_DiagnosisRedundancy"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_Dictionary.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Dictionary data used in Data Harmonization
+#'
+#' A tibble containing look-up values and corresponding replacements
+#'
+#' @format ## `Meta_Dictionary`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{FeatureID}{}
+#'   \item{Table}{}
+#'   \item{Feature}{}
+#'   \item{LookupValue}{}
+#'   \item{NewValue}{}
+#'   \item{Comment}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_Dictionary"
 
 
 
@@ -201,6 +227,43 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_FuzzyStringMatching.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Meta_FuzzyStringMatching
+#'
+#' Feature-specific settings for Fuzzy String Matching
+#'
+#' @format ## `Meta_FuzzyStringMatching`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{FeatureID}{}
+#'   \item{Table}{}
+#'   \item{Feature}{}
+#'   \item{HasEligibleValueSet}{}
+#'   \item{PreferredMethod}{}
+#'   \item{FindBestMethod}{}
+#'   \item{Tolerance}{}
+#'   \item{Preprocessing.FlattenCase}{}
+#'   \item{Preprocessing.RemoveAllWhiteSpace}{}
+#'   \item{Preprocessing.SquishWhiteSpace}{}
+#'   \item{Stringdist.useBytes}{}
+#'   \item{Stringdist.weight.d}{}
+#'   \item{Stringdist.weight.i}{}
+#'   \item{Stringdist.weight.s}{}
+#'   \item{Stringdist.weight.t}{}
+#'   \item{Stringdist.q}{}
+#'   \item{Stringdist.p}{}
+#'   \item{Stringdist.bt}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_FuzzyStringMatching"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Meta_Tables.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -217,6 +280,56 @@
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
 "Meta_Tables"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_TableNormalization.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Containing preferences on table normalization operations
+#'
+#' A tibble
+#'
+#' @format ## `Meta_TableNormalization`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{FeatureID}{}
+#'   \item{Table}{}
+#'   \item{Feature}{}
+#'   \item{EvaluationOrder}{}
+#'   \item{Operation}{}
+#'   \item{Comment}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_TableNormalization"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta_TransformativeExpressions.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Transformative expressions used in Data Harmonization
+#'
+#' A tibble
+#'
+#' @format ## `Meta_TransformativeExpressions`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{FeatureID}{}
+#'   \item{Table}{}
+#'   \item{Feature}{}
+#'   \item{EvaluationOrder}{}
+#'   \item{Expression}{}
+#'   \item{Comment}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta_TransformativeExpressions"
 
 
 

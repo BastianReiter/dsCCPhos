@@ -741,7 +741,7 @@ EventData <- CDS[names(CDS) %in% c("Patient", "Diagnosis") == FALSE] %>%      # 
                                                        "IsBoneMarrowTransplant",
                                                        "IsObservantStrategy",
                                                        "Protocol",
-                                                       "Substances",
+                                                       "Substance",
                                                        "ATC",
                                                        "ATCVersion",
                                                        "CTCAEGrade",

@@ -8,19 +8,27 @@
 #'
 #' @param RawDataSetName.S \code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
 #' @param Settings.S \code{list} - Settings passed to function
-#'                   \itemize{  \item DataHarmonization \code{list}
+#'                   \itemize{  \item \emph{DataHarmonization} - \code{list}
 #'                                  \itemize{ \item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
-#'                                            \item Methods \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureHarmonizationMethods}
-#'                                            \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonizationRules}
-#'                                            \item RuleSet.Profile \code{character} - Profile name defining rule set to be used for data harmonization. Profile name must be stated in \code{DataHarmonization$RuleSet} - Default: 'Default'}
-#'                              \item FeatureObligations \code{list}
+#'                                            \item Methods \code{data.frame} - Default: \code{dsCCPhos::Meta_DataHarmonizationMethods}
+#'                                            \item TransformativeExpressions \code{data.frame} - Default: \code{dsCCPhos::Meta_TransformativeExpressions}
+#'                                            \item TransformativeExpressions.Profile \code{string} - Profile used in \emph{TransformativeExpressions} - Default: 'Default'
+#'                                            \item Dictionary \code{data.frame} - Default: \code{dsCCPhos::Meta_Dictionary}
+#'                                            \item Dictionary.Profile \code{string} - Profile used in \emph{Dictionary} - Default: 'Default'
+#'                                            \item FuzzyStringMatching \code{data.frame} - Default: \code{dsCCPhos::Meta_FuzzyStringMatching}
+#'                                            \item FuzzyStringMatching.Profile \code{string} - Profile used in \emph{FuzzyStringMatching} - Default: 'Default'}
+#'                              \item \emph{FeatureObligations} - \code{list}
 #'                                  \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureObligations}
-#'                                            \item RuleSet.Profile \code{character} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
-#'                              \item FeatureTracking \code{list}
+#'                                            \item RuleSet.Profile \code{string} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
+#'                              \item \emph{FeatureTracking} - \code{list}
 #'                                  \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_FeatureTracking}
-#'                                            \item RuleSet.Profile \code{character} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
-#'                              \item TableCleaning \code{list}
-#'                                  \itemize{ \item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}}
+#'                                            \item RuleSet.Profile \code{string} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
+#'                              \item \emph{TableCleaning} - \code{list}
+#'                                  \itemize{ \item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}
+#'                              \item \emph{TableNormalization} - \code{list}
+#'                                  \itemize{ \item Run \code{logical} - Whether or not to perform table normalization - Default: \code{TRUE}
+#'                                            \item RuleSet \code{data.frame} - Deault: \code{dsCCPhos::Meta_TableNormalization}
+#'                                            \item RuleSet.Profile \code{string} - Profile name defining rule set to be used for table normalization. Profile name must be stated in \code{TableNormalization$RuleSet} - Default: 'Default'}}
 #'
 #' @return A \code{list} containing the following objects:
 #'         \itemize{\item CuratedDataSet \code{list}
@@ -55,22 +63,48 @@
 #'                  \item CurationMessages \code{list}}
 #' @export
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                          Settings.S = list(DataHarmonization = list(Run = TRUE,
-                                                                    #Methods = dsCCPhos::Meta_FeatureHarmonizationMethods,
-                                                                    RuleSet = dsCCPhos::Meta_DataHarmonizationRules,
-                                                                    RuleSet.Profile = "Default"),
+                                                                    Methods = dsCCPhos::Meta_DataHarmonizationMethods,
+                                                                    TransformativeExpressions = dsCCPhos::Meta_TransformativeExpressions,
+                                                                    TransformativeExpressions.Profile = "Default",
+                                                                    Dictionary = dsCCPhos::Meta_Dictionary,
+                                                                    Dictionary.Profile = "Default",
+                                                                    FuzzyStringMatching = dsCCPhos::Meta_FuzzyStringMatching,
+                                                                    FuzzyStringMatching.Profile = "Default"),
                                            FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
                                                                      RuleSet.Profile = "Default"),
                                            FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking,
                                                                   RuleSet.Profile = "Default"),
-                                           TableCleaning = list(Run = TRUE)))
+                                           TableCleaning = list(Run = TRUE),
+                                           TableNormalization = list(Run = TRUE,
+                                                                     RuleSet = dsCCPhos::Meta_TableNormalization,
+                                                                     RuleSet.Profile = "Default")),
+                         DataHarmonization.Run = NULL,
+                         DataHarmonization.Methods = NULL,
+                         DataHarmonization.TransformativeExpressions = NULL,
+                         DataHarmonization.TransformativeExpressions.Profile = NULL,
+                         DataHarmonization.Dictionary = NULL,
+                         DataHarmonization.Dictionary.Profile = NULL,
+                         DataHarmonization.FuzzyStringMatching = NULL,
+                         DataHarmonization.FuzzyStringMatching.Profile = NULL,
+                         FeatureObligations.RuleSet = NULL,
+                         FeatureObligations.RuleSet.Profile = NULL,
+                         FeatureTracking.RuleSet = NULL,
+                         FeatureTracking.RuleSet.Profile = NULL,
+                         TableCleaning.Run = NULL,
+                         TableNormalization.Run = NULL,
+                         TableNormalization.RuleSet = NULL,
+                         TableNormalization.RuleSet.Profile = NULL)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # OVERVIEW
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #   SETUP
+#     - Processing of setting arguments
 #     - Evaluation and parsing of input
 #     - Loading of required package namespaces
 #
@@ -85,10 +119,16 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #     2)  Remove duplicate entries
 #     3)  Remove entries in RDS missing obligatory features (defined in meta data or passed as optional argument)
 #
-#   MODULE C)  Data Harmonization / Transformation
+#   MODULE C)  Table normalization
+#     1)  'Split and expand' where necessary (as determined by arguments / meta data)
+#
+#   MODULE D)  Data Harmonization / Transformation
 #     1) Definition of features to monitor during Transformation
 #     2) Tracking of raw feature values
-#     3) Data harmonization (correctional transformation)
+#     3) Data Harmonization with
+#        3.1) Transformative Expressions
+#        3.2) Dictionary
+#        3.3) Fuzzy String Matching
 #     4) Tracking of harmonized feature values
 #     5) Data recoding and formatting
 #     6) Tracking of recoded / formatted feature values
@@ -98,11 +138,11 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #     8) Tracking of finalized feature values
 #     9) Compilation of monitor objects for reporting
 #
-#   MODULE D)  Secondary entry exclusion
+#   MODULE E)  Secondary entry exclusion
 #     1)  Remove duplicate entries
 #     2)  Remove entries in CDS missing obligatory features (defined in meta data or passed as optional argument)
 #
-#   MODULE E)  Finding and removing secondary redundancies
+#   MODULE F)  Finding and removing secondary redundancies
 #     1)  Process table 'Diagnosis' first, since other tables hold primary key 'DiagnosisID'.
 #         Any DiagnosisIDs that are removed due to redundancy need to be replaced in dependent tables.
 #     2)  Proceed with all other tables (excluding 'Patient')
@@ -114,16 +154,23 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 
-### For testing purposes
+# --- For testing purposes ---
 # Settings.S <- list(DataHarmonization = list(Run = TRUE,
-#                                             Methods = dsCCPhos::Meta_FeatureHarmonizationMethods,
-#                                             RuleSet = dsCCPhos::Meta_DataHarmonizationRules,
-#                                             RuleSet.Profile = "Default"),
+#                                             Methods = dsCCPhos::Meta_DataHarmonizationMethods,
+#                                             TransformativeExpressions = dsCCPhos::Meta_TransformativeExpressions,
+#                                             TransformativeExpressions.Profile = "Default",
+#                                             Dictionary = dsCCPhos::Meta_Dictionary,
+#                                             Dictionary.Profile = "Default",
+#                                             FuzzyStringMatching = dsCCPhos::Meta_FuzzyStringMatching,
+#                                             FuzzyStringMatching.Profile = "Default"),
 #                    FeatureObligations = list(RuleSet = dsCCPhos::Meta_FeatureObligations,
 #                                              RuleSet.Profile = "Default"),
 #                    FeatureTracking = list(RuleSet = dsCCPhos::Meta_FeatureTracking,
 #                                           RuleSet.Profile = "Default"),
-#                    TableCleaning = list(Run = TRUE))
+#                    TableCleaning = list(Run = TRUE),
+#                    TableNormalization = list(Run = TRUE,
+#                                              RuleSet = dsCCPhos::Meta_TableNormalization,
+#                                              RuleSet.Profile = "Default"))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,14 +198,21 @@ Settings <- Settings.S
 
 # If list of 'Settings' passed to function is incomplete, complete it with default values
 if (is.null(Settings$DataHarmonization$Run)) { Settings$DataHarmonization$Run <- TRUE }
-#if (is.null(Settings$DataHarmonization$Methods)) { Settings$DataHarmonization$Methods <- dsCCPhos::Meta_FeatureHarmonizationMethods }
-if (is.null(Settings$DataHarmonization$RuleSet)) { Settings$DataHarmonization$RuleSet <- dsCCPhos::Meta_DataHarmonizationRules }
-if (is.null(Settings$DataHarmonization$RuleSet.Profile)) { Settings$DataHarmonization$RuleSet.Profile <- "Default" }
+if (is.null(Settings$DataHarmonization$Methods)) { Settings$DataHarmonization$Methods <- dsCCPhos::Meta_DataHarmonizationMethods }
+if (is.null(Settings$DataHarmonization$TransformativeExpressions)) { Settings$DataHarmonization$TransformativeExpressions <- dsCCPhos::Meta_TransformativeExpressions }
+if (is.null(Settings$DataHarmonization$TransformativeExpressions.Profile)) { Settings$DataHarmonization$TransformativeExpressions.Profile <- "Default" }
+if (is.null(Settings$DataHarmonization$Dictionary)) { Settings$DataHarmonization$Dictionary <- dsCCPhos::Meta_Dictionary }
+if (is.null(Settings$DataHarmonization$Dictionary.Profile)) { Settings$DataHarmonization$Dictionary.Profile <- "Default" }
+if (is.null(Settings$DataHarmonization$FuzzyStringMatching)) { Settings$DataHarmonization$FuzzyStringMatching <- dsCCPhos::Meta_FuzzyStringMatching }
+if (is.null(Settings$DataHarmonization$FuzzyStringMatching.Profile)) { Settings$DataHarmonization$FuzzyStringMatching.Profile <- "Default" }
 if (is.null(Settings$FeatureObligations$RuleSet)) { Settings$FeatureObligations$RuleSet <- dsCCPhos::Meta_FeatureObligations }
 if (is.null(Settings$FeatureObligations$RuleSet.Profile)) { Settings$FeatureObligations$RuleSet.Profile <- "Default" }
 if (is.null(Settings$FeatureTracking$RuleSet)) { Settings$FeatureTracking$RuleSet <- dsCCPhos::Meta_FeatureTracking }
 if (is.null(Settings$FeatureTracking$RuleSet.Profile)) { Settings$FeatureTracking$RuleSet.Profile <- "Default" }
 if (is.null(Settings$TableCleaning$Run)) { Settings$TableCleaning$Run <- TRUE }
+if (is.null(Settings$TableNormalization$Run)) { Settings$TableNormalization$Run <- TRUE }
+if (is.null(Settings$TableNormalization$RuleSet)) { Settings$TableNormalization$RuleSet <- dsCCPhos::Meta_TableNormalization }
+if (is.null(Settings$TableNormalization$RuleSet.Profile)) { Settings$TableNormalization$RuleSet.Profile <- "Default" }
 
 
 
@@ -265,13 +319,13 @@ DataSet <- DataSet %>%
                 imap(function(Table, tablename)
                      {
                         # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
-                        vc_Lookup <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Raw
-                        names(vc_Lookup) <- dplyr::filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Curated
+                        vc_Lookup <- filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Raw
+                        names(vc_Lookup) <- filter(dsCCPhos::Meta_Features, TableName_Curated == tablename)$FeatureName_Curated
 
                         if (!is_empty(Table))
                         {
                             # Rename feature names according to look-up vector
-                            dplyr::rename(Table, any_of(vc_Lookup))      # Returns a tibble
+                            Table %>% rename(any_of(vc_Lookup))      # Returns a tibble
                         }
                         else
                         {
@@ -317,7 +371,7 @@ DataSet <- DataSet %>%
 # MODULE B)  Primary entry exclusion
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   1) Remove entries that are not linked to related tables
-#   2) Remove entries in RDS with missing strictly obligatory features (defined in meta data / passed through Settings)
+#   2) Remove entries in RDS with missing strictly obligatory features (determined in meta data / passed through Settings)
 #   3) Remove duplicate entries
 #   4) Remove entries that are not consistent with special trans-feature obligation rules (defined in meta data / passed through Settings)
 #-------------------------------------------------------------------------------
@@ -430,7 +484,39 @@ cat("\n")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE C)  Data Harmonization / Transformation
+# MODULE C)  Table Normalization
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   - Perform procedures like 'split and expand' where necessary (as determined by settings / meta data)
+#-------------------------------------------------------------------------------
+
+if (Settings$TableNormalization$Run == TRUE)
+{
+  #-----------------------------------------------------------------------------
+  ProgressBar <- progress_bar$new(format = "Table Normalization... [:bar] :percent in :elapsed  :spin",
+                                  total = length(DataSet), clear = FALSE, width = 100)
+  #-----------------------------------------------------------------------------
+
+  DataSet <- DataSet %>%
+                  imap(function(Table, tablename)
+                       {
+                          try(ProgressBar$tick())
+
+                          Table <- Table %>%
+                                      NormalizeTable(TableName = tablename,
+                                                     RuleSet = Settings$TableNormalization$RuleSet,
+                                                     RuleSet.Profile = Settings$TableNormalization$RuleSet.Profile)
+
+                          return(Table)
+                       })
+
+  try(ProgressBar$terminate())
+}
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MODULE D)  Data Harmonization / Transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   1) Definition of features to monitor during Transformation
 #   2) Tracking of raw feature values
@@ -447,7 +533,7 @@ cat("\n")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module C 1)  Definition of tracked features and their sets of eligible values
+# Module D 1)  Definition of tracked features and their sets of eligible values
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #     - Create meta data on eligible value sets of features to be tracked / monitored during curation process
 #     - Element object syntax: List of vectors
@@ -483,7 +569,7 @@ ls_MonitorMetaData <- names(DataSet) %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module C 2)  Track feature values of raw data
+# Module D 2)  Track feature values of raw data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Get unique raw values and their frequencies for monitoring
 #   - Copy values of monitored features and mark them with TrackID that has correspondent in actually processed data frames
@@ -529,10 +615,12 @@ if (all(names(DataSet) == names(ls_MonitorMetaData)))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module C 3)  Data harmonization (correctional transformation)
+# Module D 3)  Data Harmonization (correctional transformation)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#   - General rules using regular expressions and functions defined in rule set
-#   - Direct value replacement using hash tables defined in rule set
+#   Step-wise approach incorporating the following methods (controlled by meta data / arguments)
+#   1. Transformative expressions
+#   2. Dictionary look-up
+#   3. Fuzzy String Matching
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -547,12 +635,31 @@ DataSet <- DataSet %>%
 
                         Table <- Table %>% mutate(TrackID = row_number())      # Enables tracking of transformation (see above)
 
-                        if (Settings$DataHarmonization$Run == TRUE)
+                        if (Settings$DataHarmonization$Run == TRUE)      # The check is placed here and not before the mapping function so that the 'TrackID' is appended regardless (see above)
                         {
+                            # Get a list of vectors containing the eligible values of corresponding features
+                            EligibleValueSets <- dsCCPhos::Meta_Values %>%
+                                                      filter(Table == tablename) %>%
+                                                      select(Feature, Value_Raw) %>%
+                                                      split(.$Feature) %>%      # 'split' is a base function and needs '.$' to address 'Feature'
+                                                      map(\(Set) Set$Value_Raw)
+
+                            # Filter meta data with current table name
+                            Methods <- Settings$DataHarmonization$Methods %>% filter(Table == tablename)
+                            TransformativeExpressions = Settings$DataHarmonization$TransformativeExpressions %>% filter(Table == tablename)
+                            Dictionary <- Settings$DataHarmonization$Dictionary %>% filter(Table == tablename)
+                            FuzzyStringMatching <- Settings$DataHarmonization$FuzzyStringMatching %>% filter(Table == tablename)
+
+                            # Perform Data Harmonization with table-specific settings
                             Table <- Table %>%
-                                        HarmonizeData(TableName = tablename,
-                                                      RuleSet = Settings$DataHarmonization$RuleSet,
-                                                      RuleSet.Profile = Settings$DataHarmonization$RuleSet.Profile)
+                                        HarmonizeData(EligibleValueSets = EligibleValueSets,
+                                                      Methods = Methods,
+                                                      TransformativeExpressions = TransformativeExpressions,
+                                                      TransformativeExpressions.Profile = Settings$DataHarmonization$TransformativeExpressions.Profile,
+                                                      Dictionary = Dictionary,
+                                                      Dictionary.Profile = Settings$DataHarmonization$Dictionary.Profile,
+                                                      FuzzyStringMatching = FuzzyStringMatching,
+                                                      FuzzyStringMatching.Profile = Settings$DataHarmonization$FuzzyStringMatching.Profile)
                         }
 
                         return(Table)
@@ -563,7 +670,7 @@ try(ProgressBar$terminate())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module C 4)  Track feature values after Harmonization
+# Module D 4)  Track feature values after Harmonization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Map raw values to their harmonized state to get transformation tracks
@@ -621,7 +728,7 @@ if (all(names(DataSet) == names(ls_MonitorMetaData)))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module C 5)  Data recoding and formatting
+# Module D 5)  Data recoding and formatting
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Recoding data using dsCCPhos::RecodeData() based on specifications in dsCCPhos::Meta_Values
 #   - RecodeData() uses a dictionary in the form of a named vector to perform recoding on a target vector
@@ -648,22 +755,18 @@ DataSet <- DataSet %>%
                                                           pull(Feature) %>%
                                                           unique()
 
-                            # ValueSets <- dsCCPhos::Meta_Values %>%
-                            #                   filter(Table == tablename)
-                            #
-                            # Dictionaries <- ValueSets %>%
-                            #                     split(ValueSets$Feature) %>%
-                            #                     map(\(Values) with(Values, set_names(Value_Curated, Value_Raw)))
-
                             if (length(FeaturesWithValueSets) > 0)
                             {
+                                RecodingDictionaries <- dsCCPhos::Meta_Values %>%
+                                                            filter(Table == tablename) %>%
+                                                            split(.$Feature) %>%      # 'split' is a base function and needs '.$' to address 'Feature'
+                                                            map(\(Values) with(Values, set_names(Value_Curated, Value_Raw)))
+
                                 for (i in 1:length(FeaturesWithValueSets))
                                 {
-                                    Dictionary <- with(dsCCPhos::Meta_Values %>% filter(Table == tablename, Feature == FeaturesWithValueSets[i]),
-                                                       set_names(Value_Curated, Value_Raw))
-
                                     Table <- Table %>%
-                                                  mutate(across(all_of(FeaturesWithValueSets[i]), ~ RecodeData(.x, Dictionary)))
+                                                  mutate(across(all_of(FeaturesWithValueSets[i]),
+                                                                ~ RecodeData(.x, RecodingDictionaries[[FeaturesWithValueSets[i]]])))
                                 }
                             }
 
@@ -681,7 +784,8 @@ DataSet <- DataSet %>%
                                 for (i in 1:nrow(FeatureTypes))
                                 {
                                     Table <- Table %>%
-                                                  mutate(across(all_of(FeatureTypes$Feature[i]), ~ FormatData(.x, FeatureTypes$Type[i])))
+                                                  mutate(across(all_of(FeatureTypes$Feature[i]),
+                                                                ~ FormatData(.x, FeatureTypes$Type[i])))
                                 }
                             }
                         }
@@ -694,7 +798,7 @@ try(ProgressBar$terminate())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module C 6)  Track feature values after Recoding
+# Module D 6)  Track feature values after Recoding
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Map raw values to their recoded state to get transformation tracks
@@ -753,7 +857,7 @@ if (all(names(DataSet) == names(ls_MonitorMetaData)))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module C 7)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
+# Module D 7)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - (Optional / Default) Exclusion of ineligible data (including data that could not be transformed)
 #   - (Optional) Conversion to ordered factor
@@ -801,7 +905,7 @@ try(ProgressBar$terminate())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module C 8)  Track Feature Values after Finalized Transformation
+# Module D 8)  Track Feature Values after Finalized Transformation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Map raw values to their finalized state to get transformation tracks
@@ -860,7 +964,7 @@ if (all(names(DataSet) == names(ls_MonitorMetaData)))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Module C 9)  Merge monitor objects into coherent summaries
+# Module D 9)  Merge monitor objects into coherent summaries
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Summarize Transformation Tracks
@@ -1104,7 +1208,7 @@ cat("\n")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE D)  Secondary entry exclusion
+# MODULE E)  Secondary entry exclusion
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #   - Remove ineligible entries that may have been introduced during processing
 #   - Same proceedings as in primary table cleaning (Module B))
@@ -1197,7 +1301,7 @@ cat("\n")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MODULE E)  Find and remove secondary redundancies (table entries that can be considered redundant when they provide no additional informational value compared to a previous entry)
+# MODULE F)  Find and remove secondary redundancies (table entries that can be considered redundant when they provide no additional informational value compared to a previous entry)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 1)  Process table 'Diagnosis' first, since other tables hold primary key 'DiagnosisID'.
 #     Any DiagnosisIDs that are removed due to redundancy need to be replaced in dependent tables.

@@ -4,39 +4,63 @@ library(usethis)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta Data: CCP Tables
+# Meta Data from TinkerLab
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_Tables <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                          sheet = "Tables")
+Meta_CancerGrouping <- TinkerLab::CancerGrouping
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_Tables, overwrite = TRUE)
+use_data(Meta_CancerGrouping, overwrite = TRUE)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta Data: CCP Features
+# Settings: Raw Data Harmonization Methods
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_Features <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                            sheet = "Features")
+Meta_DataHarmonizationMethods <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                            sheet = "DataHarmonizationMethods",
+                                            skip = 1)
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_Features, overwrite = TRUE)
+use_data(Meta_DataHarmonizationMethods, overwrite = TRUE)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta Data: Feature values
+# Settings: Diagnosis Association Rule Set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_Values <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                          sheet = "Values",
-                          skip = 1)
+Meta_DiagnosisAssociation <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                        sheet = "DiagnosisAssociation")
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_Values, overwrite = TRUE)
+use_data(Meta_DiagnosisAssociation, overwrite = TRUE)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Settings: Diagnosis Redundancy Rule Set
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Meta_DiagnosisRedundancy <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                       sheet = "DiagnosisRedundancy")
+
+# Save data in .rda-file and make it part of package
+use_data(Meta_DiagnosisRedundancy, overwrite = TRUE)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Settings: Dictionary (used in Data Harmonization)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Meta_Dictionary <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                              sheet = "Dictionary",
+                              skip = 1)
+
+# Save data in .rda-file and make it part of package
+use_data(Meta_Dictionary, overwrite = TRUE)
 
 
 
@@ -53,7 +77,7 @@ use_data(Meta_EventFeatures, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Settings: Feature obligations
+# Settings: Feature Obligations
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Meta_FeatureObligations <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
@@ -66,7 +90,19 @@ use_data(Meta_FeatureObligations, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Settings: Feature tracking
+# Meta Data: Features
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Meta_Features <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                            sheet = "Features")
+
+# Save data in .rda-file and make it part of package
+use_data(Meta_Features, overwrite = TRUE)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Settings: Feature Tracking
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Meta_FeatureTracking <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
@@ -79,47 +115,64 @@ use_data(Meta_FeatureTracking, overwrite = TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Settings: Raw Data Harmonization rule set
+# Settings: Raw Data Harmonization Methods
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_DataHarmonizationRules <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                          sheet = "DataHarmonizationRules",
-                                          skip = 1)
+Meta_FuzzyStringMatching <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                       sheet = "FuzzyStringMatching",
+                                       skip = 1)
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_DataHarmonizationRules, overwrite = TRUE)
+use_data(Meta_FuzzyStringMatching, overwrite = TRUE)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Settings: Diagnosis association rule set
+# Settings: Table Normalization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_DiagnosisAssociation <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                        sheet = "DiagnosisAssociation")
+Meta_TableNormalization <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                      sheet = "TableNormalization",
+                                      skip = 1)
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_DiagnosisAssociation, overwrite = TRUE)
+use_data(Meta_TableNormalization, overwrite = TRUE)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Settings: Diagnosis redundancy rule set
+# Meta Data: Tables
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_DiagnosisRedundancy <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
-                                       sheet = "DiagnosisRedundancy")
+Meta_Tables <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                          sheet = "Tables")
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_DiagnosisRedundancy, overwrite = TRUE)
+use_data(Meta_Tables, overwrite = TRUE)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta Data from TinkerLab
+# Settings: TransformativeExpressions (used in Data Harmonization)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Meta_CancerGrouping <- TinkerLab::CancerGrouping
+Meta_TransformativeExpressions <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                                             sheet = "TransformativeExpressions",
+                                             skip = 1)
 
 # Save data in .rda-file and make it part of package
-use_data(Meta_CancerGrouping, overwrite = TRUE)
+use_data(Meta_TransformativeExpressions, overwrite = TRUE)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta Data: Values
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Meta_Values <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xlsx",
+                          sheet = "Values",
+                          skip = 1)
+
+# Save data in .rda-file and make it part of package
+use_data(Meta_Values, overwrite = TRUE)
+

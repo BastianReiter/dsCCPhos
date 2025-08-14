@@ -14,6 +14,9 @@ GetCohortDescriptionDS(
 
 \item{CCPDataSetType.S}{\code{string} - Indicating the type of CCP data set that should be described, one of "RDS" / "CDS" / "ADS" - Default: "ADS"}
 }
+\value{
+\code{list}
+}
 \description{
 What it does
 }

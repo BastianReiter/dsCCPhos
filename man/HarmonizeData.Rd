@@ -4,27 +4,46 @@
 \alias{HarmonizeData}
 \title{HarmonizeData}
 \usage{
-HarmonizeData(DataFrame, TableName, Methods = NULL, RuleSet, RuleSet.Profile)
+HarmonizeData(
+  DataFrame,
+  EligibleValueSets,
+  Methods,
+  TransformativeExpressions,
+  TransformativeExpressions.Profile,
+  Dictionary,
+  Dictionary.Profile,
+  FuzzyStringMatching,
+  FuzzyStringMatching.Profile
+)
 }
 \arguments{
 \item{DataFrame}{\code{data.frame} containing data to be transformed}
 
-\item{TableName}{\code{string} - Name of the table (to enable mapping to harmonization rules)}
+\item{EligibleValueSets}{\code{list} of character vectors containing sets of eligible values for corresponding feature}
 
-\item{Methods}{\code{data.frame}}
+\item{Methods}{\code{data.frame} - Contains data on the selection of methods to use for each feature}
 
-\item{RuleSet}{\code{data.frame} - Contains predefined set of harmonization rules}
+\item{TransformativeExpressions}{\code{data.frame} - Contains set of expressions like functions used to transform data values}
 
-\item{RuleSet.Profile}{\code{string} - Profile name stated in 'RuleSet'}
+\item{TransformativeExpressions.Profile}{\code{string} - Profile selected in \emph{TransformativeExpressions}}
+
+\item{Dictionary}{\code{data.frame} - Contains dictionary data used to look up and replace data values}
+
+\item{Dictionary.Profile}{\code{string} - Profile selected in \emph{Dictionary}}
+
+\item{FuzzyStringMatching}{\code{data.frame} - Contains settings for Fuzzy String Matching}
+
+\item{FuzzyStringMatching.Profile}{\code{string} - Profile selected in \emph{FuzzyStringMatching}}
 }
 \value{
 The input \code{data.frame} with transformed data values
 }
 \description{
-Harmonizes data based on a given rule set. First, general harmonizing transformations are performed using regular expression based rules. Second, for direct replacement of values hash tables are being compiled and applied.
-}
-\details{
-Uses dplyr::mutate() to transform data based on harmonization rules defined in a given rule set (Default: dsCCPhos::RuleSet_RawDataHarmonization)
+This function addresses harmonizing data transformation for features of a \code{data.frame} based on passed settings / meta data.
+Harmonization is attempted in a step-wise approach, incorporating various methods in a defined order:
+\enumerate{\item Transformative expressions (e.g. functions like \code{str_to_upper()})
+\item Dictionary look-up
+\item Fuzzy String Matching}
 }
 \author{
 Bastian Reiter

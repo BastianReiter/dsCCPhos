@@ -5,15 +5,17 @@
 #'
 #' Server-side ASSIGN method
 #'
-#' @param RawDataSetName.S \code{string} | Name of Raw Data Set object (list) on server | Default: 'RawDataSet'
-#' @param SampleSize \code{string} | Number of patients in sample
+#' @param RawDataSetName.S \code{string} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
+#' @param SampleSize \code{string} - Number of patients in sample
 #'
-#' @return A list containing a subset of Raw Data Set
+#' @return A \code{list} containing a subset of Raw Data Set
 #' @export
 #'
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
                          SampleSize.S = "100")
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Evaluate and parse input before proceeding
