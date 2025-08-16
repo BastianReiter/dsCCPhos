@@ -4,12 +4,14 @@
 \alias{FilterTableDS}
 \title{FilterTableDS}
 \usage{
-FilterTableDS(TableName, FilterExpressions)
+FilterTableDS(TableName.S, FilterExpression.S, GroupBy.S)
 }
 \arguments{
-\item{FilterExpressions}{}
+\item{TableName.S}{\code{string} - Name of \code{data.frame}}
 
-\item{TableName.S}{\code{string} - Name of Table A on server}
+\item{FilterExpression.S}{\code{string} - \code{dplyr::filter} expression as string}
+
+\item{GroupBy.S}{\code{string} - Optional \code{dplyr::group_by} expression as string}
 }
 \value{
 A \code{data.frame} resulting from filter operation

@@ -40,7 +40,7 @@ require(tibble)
 # Function proceedings
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# For function testing purposes
+# --- For Testing Purposes ---
 # TableName.S <- ADS$Patients
 # FeatureName.S <- "TNM_T"
 
@@ -48,17 +48,18 @@ require(tibble)
 # Evaluate feature in question / Get vector
 Feature <- Table[[FeatureName.S]]
 
-# Tibble containing useful meta data
-MetaData <- tibble(DataType = class(Feature),
-                   N_Total = length(Feature),
-                   N_Valid = sum(!is.na(Feature)),
-                   ValidProportion = N_Valid / N_Total,
-                   N_Missing = sum(is.na(Feature)),
-                   MissingProportion = N_Missing / N_Total,
-                   CountUniqueValues = length(unique(Feature[!is.na(Feature)])))      # Count only non-NA unique values
+# Tibble containing useful properties
+Properties <- tibble(DataType = class(Feature),
+                     N.Total = length(Feature),
+                     N.Valid = sum(!is.na(Feature)),
+                     ValidProportion = N.Valid / N.Total,
+                     N.Missing = sum(is.na(Feature)),
+                     MissingProportion = N.Missing / N.Total,
+                     CountUniqueValues = length(unique(Feature[!is.na(Feature)])))      # Count only non-NA unique values
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Return statement
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-return(MetaData)
+return(Properties)
 }

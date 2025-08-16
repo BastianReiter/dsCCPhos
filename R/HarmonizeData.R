@@ -37,8 +37,8 @@ HarmonizeData <- function(DataFrame,
   require(dsCCPhos)
 
   # --- For Testing Purposes ---
-  # DataFrame <- DataSet$Staging
-  # tablename <- "Staging"
+  # DataFrame <- DataSet$SystemicTherapy
+  # tablename <- "SystemicTherapy"
   # EligibleValueSets <- dsCCPhos::Meta_Values %>%
   #                           filter(Table == tablename) %>%
   #                           select(Feature, Value_Raw) %>%
