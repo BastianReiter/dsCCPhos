@@ -10,9 +10,11 @@
 #' @return A \code{tibble} containing absolute and relative frequencies
 #' @export
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GetFrequencyTableDS <- function(TableName.S,
                                 FeatureName.S,
                                 GroupingFeatureName.S = NULL)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Check, evaluate and parse input before proceeding
@@ -43,7 +45,7 @@ require(stats)
 # Function proceedings
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# For function testing purposes
+# --- For Testing Purposes ---
 # Table <- ADS$Patients
 # FeatureName.S <- "TNM_T"
 # GroupingFeatureName.S <- "LastVitalStatus"

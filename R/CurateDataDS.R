@@ -154,7 +154,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 
-# --- For testing purposes ---
+# --- For Testing Purposes ---
 # Settings.S <- list(DataHarmonization = list(Run = TRUE,
 #                                             Methods = dsCCPhos::Meta_DataHarmonizationMethods,
 #                                             TransformativeExpressions = dsCCPhos::Meta_TransformativeExpressions,
