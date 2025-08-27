@@ -85,12 +85,12 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 # Check Tables for existence and completeness
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RDSTableCheck <- CheckDataSetDS(DataSetName.S = "RawDataSet",
-                                AssumeCCPDataSet.S = TRUE)
-                                # RequiredTableNames.S = paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated),
-                                # RequiredFeatureNames.S = RequiredTableNames.S %>%
-                                #                              map(\(tablename) filter(dsCCPhos::Meta_Features, TableName_Curated == str_remove(tablename, "RDS_"))$FeatureName_Raw) %>%
-                                #                              set_names(RequiredTableNames.S))
+RDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "RawDataSet",
+                                   AssumeCCPDataSet.S = TRUE)
+                                   # RequiredTableNames.S = paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated),
+                                   # RequiredFeatureNames.S = RequiredTableNames.S %>%
+                                   #                              map(\(tablename) filter(dsCCPhos::Meta_Features, TableName_Curated == str_remove(tablename, "RDS_"))$FeatureName_Raw) %>%
+                                   #                              set_names(RequiredTableNames.S))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,7 +131,7 @@ CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
 
 CuratedDataSet <- CurationOutput$CuratedDataSet
 
-CDSTableCheck <- CheckDataSetDS(DataSetName.S = "CuratedDataSet",
+CDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
                                 AssumeCCPDataSet.S = TRUE)
 
 
@@ -143,7 +143,7 @@ AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CuratedDat
 
 ADS <- AugmentationOutput$AugmentedDataSet
 
-ADSTableCheck <- CheckDataSetDS(DataSetName.S = "ADS")
+ADSTableCheck <- GetDataSetCheckDS(DataSetName.S = "ADS")
 
 
 

@@ -1,6 +1,6 @@
 AggregateMethods:
     GetCohortDescriptionDS,
-    CheckDataSetDS,
+    GetDataSetCheckDS,
     GetFeatureInfoDS,
     GetFrequencyTableDS,
     GetObjectMetaDataDS,

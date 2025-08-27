@@ -17,7 +17,7 @@ FilterTableDS(TableName.S, FilterExpression.S, GroupBy.S)
 A \code{data.frame} resulting from filter operation
 }
 \description{
-Filter a table on server, making use of \code{dplyr} and \code{stringr}.
+Filter a table (\code{data.frame}) making use of \code{dplyr} and \code{stringr}.
 }
 \details{
 Server-side ASSIGN method

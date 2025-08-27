@@ -4,10 +4,14 @@
 \alias{GetTableCheckDS}
 \title{GetTableCheckDS}
 \usage{
-GetTableCheckDS(TableName.S, RequiredFeatureNames.S, GetTemplate.S = FALSE)
+GetTableCheckDS(
+  TableName.S,
+  RequiredFeatureNames.S = NULL,
+  GetTemplate.S = FALSE
+)
 }
 \arguments{
-\item{TableName.S}{\code{string} - Name of \code{data.frame} or \code{tibble} on server}
+\item{TableName.S}{\code{string} - Name of \code{data.frame} or \code{tibble}}
 
 \item{RequiredFeatureNames.S}{\code{character vector} - Optional names of required features - Default: \code{names()} applied to Table evaluated from \code{TableName.S}}
 
@@ -17,7 +21,7 @@ GetTableCheckDS(TableName.S, RequiredFeatureNames.S, GetTemplate.S = FALSE)
 A list containing informative meta data about a \code{data.frame}
 }
 \description{
-Checks out a data.frame and returns an informative list object. Makes use of internal function \code{dsCCPhos::CheckTable()}.
+Wrapper function for \code{dsCCPhos::CheckTable()}. Checks out a data.frame and returns an informative list object.
 }
 \details{
 Server-side AGGREGATE method

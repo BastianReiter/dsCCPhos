@@ -137,7 +137,8 @@ FindRedundantEntries <- function(Table,
 
       Table <- Table %>%
                     mutate(IsRedundant = FALSE,
-                           ReferenceID = NA)
+                           ReferenceID = NA) %>%
+                    select(-AuxID)
   }
 
 

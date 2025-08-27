@@ -12,7 +12,7 @@ CheckTable(Table, RequiredFeatureNames = NULL)
 \item{RequiredFeatureNames}{\code{character vector} - Optional names of required features - Default: \code{names(Table)}}
 }
 \value{
-A list containing informative meta data about a \code{data.frame}
+A \code{list} containing informative meta data about a \code{data.frame}
 }
 \description{
 Checks out a data.frame and returns an informative list object.
