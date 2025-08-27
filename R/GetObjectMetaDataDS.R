@@ -5,9 +5,9 @@
 #'
 #' Server-side AGGREGATE method
 #'
-#' @param ObjectName.S String | Name of object on server
+#' @param ObjectName.S \code{string} - Name of object on server
 #'
-#' @return A list containing meta data
+#' @return A \code{list} containing meta data
 #' @export
 #'
 #' @author Bastian Reiter
@@ -15,48 +15,64 @@
 GetObjectMetaDataDS <- function(ObjectName.S)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Check input type
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  require(dplyr)
 
-    if (!is.character(ObjectName.S))
-    {
-        ClientMessage <- "ERROR: 'ObjectName.S' must be specified as a character string"
-        stop(ClientMessage, call. = FALSE)
-    }
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Check input type
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# - Start of function proceedings -
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (!is.character(ObjectName.S))
+  {
+      ClientMessage <- "ERROR: 'ObjectName.S' must be specified as a character string"
+      stop(ClientMessage, call. = FALSE)
+  }
 
-    ### For testing purposes
-    # ObjectName.S <- "CurationReport"
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # - Start of function proceedings -
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    # Initiate output list
-    MetaData <- list()
+  # --- For Testing Purposes ---
+  # ObjectName.S <- "CDS_Diagnosis"
 
-    if (exists(ObjectName.S, envir = parent.frame()))
-    {
-        Object <- get(ObjectName.S, envir = parent.frame())
+  # Initiate output list
+  MetaData <- list()
 
-        MetaData$ObjectExists <- TRUE
-        MetaData$Class <- class(Object)[1]      # Some objects return more than one string as class info (e.g. ResourceClient objects). Take only first string for these cases.
-        MetaData$Length <- length(Object)
-        MetaData$RowCount <- nrow(Object)
-        MetaData$Names <- names(Object)
+  if (exists(ObjectName.S, envir = parent.frame()))
+  {
+      Object <- get(ObjectName.S, envir = parent.frame())
 
-        # If 'Object' is a list or a data.frame, get 1) data types of contained elements and 2) structural overview
-        if (MetaData$Class %in% c("list", "data.frame"))
-        {
-            DataTypesList <- lapply(Object, class)      # Get class/type of every element in 'Object'. This call returns a list...
-            MetaData$DataTypes <- sapply(DataTypesList, paste, collapse = "/")      # ... and in case the 'class' of an element of 'Object' returns more than one string, these are concatenated to get one string per element, thus obtaining a character vector for MetaData$DataTypes
+      MetaData$ObjectExists <- TRUE
+      MetaData$Class <- class(Object)[1]      # Some objects return more than one string as class info (e.g. ResourceClient objects). Take only first string for these cases.
+      MetaData$Length <- length(Object)
+      MetaData$RowCount <- nrow(Object)
+      MetaData$Names <- names(Object)
 
-            MetaData$Structure <- data.frame(Element = MetaData$Names,
-                                             Type = MetaData$DataTypes,
-                                             row.names = NULL)
-        }
+      # If 'Object' is a list or a data.frame, get 1) data types of contained elements and 2) structural overview
+      if (MetaData$Class %in% c("list", "data.frame"))
+      {
+          DataTypesList <- lapply(Object, class)      # Get class/type of every element in 'Object'. This call returns a list...
+          MetaData$DataTypes <- sapply(DataTypesList, paste, collapse = "/")      # ... and in case the 'class' of an element of 'Object' returns more than one string, these are concatenated to get one string per element, thus obtaining a character vector for MetaData$DataTypes
 
-    } else { MetaData$ObjectExists <- FALSE }
+          # if (MetaData$Class == "list")
+          # {
+              MetaData$Structure <- data.frame(Element = MetaData$Names,
+                                               Type = MetaData$DataTypes,
+                                               row.names = NULL)
+          # }
+          #
+          # if (MetaData$Class == "data.frame")
+          # {
+          #     MetaData$Structure <- CheckTable(Table = Object)$FeatureCheck %>%
+          #                               select(Feature,
+          #                                      Type,
+          #                                      NonMissingValueCount,
+          #                                      NonMissingValueRate) %>%
+          #                               rename(Element = "Feature") %>%
+          #                               as.data.frame()
+          # }
+      }
 
-    return(MetaData)
+  } else { MetaData$ObjectExists <- FALSE }
+
+  return(MetaData)
 }

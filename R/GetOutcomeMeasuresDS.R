@@ -10,7 +10,6 @@
 #' @return ABC
 #' @export
 #'
-#' @examples
 #' @author Bastian Reiter
 GetOutcomeMeasuresDS <- function(Name_AugmentationOutput = "AugmentationOutput")
 {

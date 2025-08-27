@@ -52,7 +52,7 @@ HarmonizeData <- function(DataFrame,
   # Dictionary.Profile <- "Default"
   # FuzzyStringMatching.Profile <- "Default"
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#-------------------------------------------------------------------------------
 
   # Get names of features where different harmonization methods are supposed to be performed
   Features.TransformativeExpressions <- Methods %>% filter(TransformativeExpressions == TRUE) %>% pull(Feature)
