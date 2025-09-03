@@ -21,7 +21,7 @@ GetDataSetCheckDS(
 \item{AssumeCCPDataSet.S}{\code{logical} - Whether or not the data set to be checked out is one of the main data sets used in CCPhos - Default: FALSE}
 }
 \value{
-A list containing meta data about tables in a data set
+A \code{list} containing meta data about tables in a data set
 }
 \description{
 Checks out a given data set (list of data.frames) and returns an informative list object.

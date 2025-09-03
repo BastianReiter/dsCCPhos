@@ -7,10 +7,10 @@
 GetObjectMetaDataDS(ObjectName.S)
 }
 \arguments{
-\item{ObjectName.S}{String | Name of object on server}
+\item{ObjectName.S}{\code{string} - Name of object on server}
 }
 \value{
-A list containing meta data
+A \code{list} containing meta data
 }
 \description{
 Collect meta data about an R object and return it as a list.
