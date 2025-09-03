@@ -1,5 +1,6 @@
 AggregateMethods:
     GetCohortDescriptionDS,
+    GetCrossTabDS,
     GetDataSetCheckDS,
     GetFeatureInfoDS,
     GetFrequencyTableDS,

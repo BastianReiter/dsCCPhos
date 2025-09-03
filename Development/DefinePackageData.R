@@ -176,3 +176,14 @@ Meta_Values <- read_excel(path = "./Development/Data/MetaData/MetaDataCCPhos.xls
 # Save data in .rda-file and make it part of package
 use_data(Meta_Values, overwrite = TRUE)
 
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Settings
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DisclosureSettings <- list(Profile = "loose",     # Optional: 'strict', 'loose'
+                           NThreshold = 5)
+
+# Save data in .rda-file and make it part of package
+use_data(DisclosureSettings, overwrite = TRUE)
