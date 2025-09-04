@@ -1,12 +1,13 @@
 
 #' GetCrossTabDS
 #'
-#' Create cross tab (contingency table) with arbitrary number of table features.
+#' Perform cross tabulation with arbitrary number of table features.
 #'
 #' Server-side AGGREGATE method
 #'
 #' @param TableName.S \code{string} - Name of \code{data.frame}
 #' @param FeatureNames.S \code{string} - Names of features separated by ','
+#' @param RemoveNA.S \code{logical} - Indicating whether missing values should be removed prior to cross tabulation - Default: \code{FALSE}
 #'
 #' @return A \code{list} containing
 #'            \itemize{ \item CrossTab (\code{data.frame})
@@ -16,20 +17,23 @@
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GetCrossTabDS <- function(TableName.S,
-                          FeatureNames.S)
+                          FeatureNames.S,
+                          RemoveNA.S = FALSE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
   require(assertthat)
   require(dplyr)
   require(purrr)
+  require(stringr)
 
   # --- For Testing Purposes ---
-  # TableName.S <- "ADS_Patient"
-  # Features <- c("Gender", "CountDiagnoses")
+  # Table <- AugmentationOutput$AugmentedDataSet$Patient
+  # Features <- c("Sex", "CountDiagnoses")
 
-  # Argument assertions
+  # --- Argument Assertions ---
   assert_that(is.string(TableName.S),
-              is.string(FeatureNames.S))
+              is.string(FeatureNames.S),
+              is.logical(RemoveNA.S))
 
   #-----------------------------------------------------------------------------
 
@@ -44,21 +48,52 @@ GetCrossTabDS <- function(TableName.S,
   DisclosureProfile = dsCCPhos::DisclosureSettings$Profile
   NThreshold <- dsCCPhos::DisclosureSettings$NThreshold
 
-  # Get cross tab with option 'useNA' set to 'ifany' and turn counts below 'NThreshold' into NA
-  CrossTab <- do.call(table, c(Table[Features], list(useNA = "ifany")))
+  # Depending on argument 'RemoveNA.S' define option that will control removal of NAs in cross tabulation
+  OptionUseNA <- "ifany"
+  if (RemoveNA.S == TRUE) { OptionUseNA <- "no" }
 
-  # Calculate all marginal absolute frequencies (needed in client-side calculation of relative frequencies)
-  MarginalCounts <- lapply(1:length(Features), \(marginnumber) c(margin.table(CrossTab, margin = marginnumber))) %>%
-                        setNames(nm = Features)
+  # Get cross tab with joint counts
+  CrossTab <- do.call(table, c(Table[Features], list(useNA = OptionUseNA))) %>%
+                  as.data.frame() %>%
+                  rename(JointCount = "Freq")
 
-  # Turn 'CrossTab' into a data.frame and mask all Counts that are below 'NThreshold'
+  # Calculate marginal counts and add them to 'CrossTab'
+  for (featurename in Features)
+  {
+      MarginalCounts <- CrossTab %>%
+                            group_by(across(all_of(featurename))) %>%
+                                summarize(!!sym(paste0("MargCount.", featurename)) := sum(JointCount, na.rm = TRUE)) %>%
+                            ungroup()
+
+      CrossTab <- CrossTab %>%
+                      left_join(MarginalCounts,
+                                by = join_by(!!sym(featurename)))
+  }
+
+
+  # If 'DisclosureProfile' is 'loose' lower NThreshold to -1 which effectively prevents subsequent masking
+  if (DisclosureProfile == "loose") { NThreshold <- -1 }
+
+  # Mask all Counts that are below 'NThreshold'
   CrossTab <- CrossTab %>%
-                    as.data.frame() %>%
-                    rename(Count = "Freq") %>%
-                    mutate(NBelowThreshold = case_when(Count <= NThreshold ~ TRUE,
-                                                       .default = FALSE),
-                           Count = case_when(NBelowThreshold == TRUE ~ NA,
-                                             .default = Count))
+                  mutate(across(c("JointCount", starts_with("MargCount.")),
+                                ~ case_when(.x <= NThreshold ~ TRUE,
+                                            .default = FALSE),
+                                .names = "IsMasked.{.col}")) %>%
+                  mutate(across(c("JointCount", starts_with("MargCount.")),
+                                ~ case_when(.x <= NThreshold ~ NA,
+                                            .default = .x)))
+
+
+  # Add relative frequencies (including marginal frequencies)
+  # CrossTab <- CrossTab %>%
+  #                 mutate(JointRelFreq = JointCount / sum(JointCount, na.rm = TRUE), .after = JointCount) %>%
+  #                 mutate(across(starts_with("MargCount."),
+  #                               ~ .x / sum(JointCount, na.rm = TRUE),
+  #                               .names = "MargRelFreq.{.col}")) %>%
+  #                 rename_with(.cols = starts_with("MargRelFreq.MargCount."),
+  #                             .fn = ~ str_remove(.x, "MargCount."))
+
 
   # Perform Chi-Squared-Test and retrieve p-value
   ChiSq.PValue <- do.call(table, c(Table[Features])) %>%      # The cross tab used for test ignores NA values
@@ -72,10 +107,9 @@ GetCrossTabDS <- function(TableName.S,
   {
       # Return list with CrossTab and ChiSq.PValue
       return(list(CrossTab = as.data.frame(CrossTab),
-                  MarginalCounts = MarginalCounts,
                   ChiSq.PValue = ChiSq.PValue))
   } else {
-      # !!! TO DO: Modification of 'CrossTab' when DisclosureProfile 'strict'
+      # !!! TO DO: Implement cases for other Disclosure profiles
       return(list(ChiSq.PValue = ChiSq.PValue))
   }
 }

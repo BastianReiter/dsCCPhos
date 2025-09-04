@@ -114,12 +114,12 @@ RDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "RawDataSet",
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Curate data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CurationOutput <- dsCCPhos::CurateDataDS(RawDataSetName.S = "RawDataSet",
-                                         Settings.S = list(DataHarmonization = list(Run = TRUE,
-                                                                                    Profile = "Default"),
-                                                           FeatureObligations = list(Profile = "Default"),
-                                                           FeatureTracking = list(Profile = "Default"),
-                                                           TableCleaning = list(Run = TRUE)))
+CurationOutput <- CurateDataDS(RawDataSetName.S = "RawDataSet",
+                               Settings.S = list(DataHarmonization = list(Run = TRUE,
+                                                                          Profile = "Default"),
+                                                 FeatureObligations = list(Profile = "Default"),
+                                                 FeatureTracking = list(Profile = "Default"),
+                                                 TableCleaning = list(Run = TRUE)))
 
 
 # CurationOutput$CurationReport$EntryCounts
@@ -135,11 +135,12 @@ CDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
                                 AssumeCCPDataSet.S = TRUE)
 
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Augment data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AugmentationOutput <- dsCCPhos::AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
+AugmentationOutput <- AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 
 ADS <- AugmentationOutput$AugmentedDataSet
 
