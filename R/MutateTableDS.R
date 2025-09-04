@@ -21,7 +21,6 @@ MutateTableDS <- function(TableName.S,
 {
   require(assertthat)
   require(dplyr)
-  require(stringr)
 
   # --- For Testing Purposes ---
   # TableName.S <- "CDS$Patient"
@@ -46,6 +45,10 @@ MutateTableDS <- function(TableName.S,
 
   # Decode 'MutateExpression.S'
   MutateExpression.S <- .decode_tidy_eval(MutateExpression.S, .get_encode_dictionary())
+
+  # Make additional namespaces available for evaluated mutate expressions
+  require(lubridate)
+  require(stringr)
 
   # Perform mutate operation
   Table <- eval(parse(text = paste0("dplyr::mutate(Table, ", MutateExpression.S, ")")))
