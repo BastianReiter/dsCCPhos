@@ -18,4 +18,5 @@ AssignMethods:
     ExtractFromListDS,
     FilterTableDS,
     JoinTablesDS,
-    MatchDataDS
+    MatchDataDS,
+    MutateTableDS

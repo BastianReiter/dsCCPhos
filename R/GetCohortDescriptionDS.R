@@ -97,20 +97,21 @@ Age <- CohortDataSingleDiag %>%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Gender Distribution
+# Sex Distribution
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Gender <- CohortDataSingleDiag %>%
-              group_by(Gender) %>%
-                  summarize(N = n()) %>%
-                  mutate(Proportion = N / sum(N))
 
-Gender_OverTime <- CohortDataSingleDiag %>%
-                        mutate(DiagnosisYear = year(DiagnosisDate)) %>%
-                        group_by(DiagnosisYear, Gender) %>%
-                            summarize(N = n()) %>%
-                        ungroup() %>%
-                        pivot_wider(names_from = Gender,
-                                    values_from = N)
+Sex <- CohortDataSingleDiag %>%
+            group_by(Sex) %>%
+                summarize(N = n()) %>%
+                mutate(Proportion = N / sum(N))
+
+Sex_OverTime <- CohortDataSingleDiag %>%
+                    mutate(DiagnosisYear = year(DiagnosisDate)) %>%
+                    group_by(DiagnosisYear, Sex) %>%
+                        summarize(N = n()) %>%
+                    ungroup() %>%
+                    pivot_wider(names_from = Sex,
+                                values_from = N)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,7 +120,7 @@ Gender_OverTime <- CohortDataSingleDiag %>%
 
 return(list(CohortSize = CohortSize,
             CohortSize_OverTime = CohortSize_OverTime,
-            Gender = Gender,
-            Gender_OverTime = Gender_OverTime,
+            Sex = Sex,
+            Sex_OverTime = Sex_OverTime,
             Age = Age))
 }

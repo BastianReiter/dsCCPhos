@@ -4,12 +4,14 @@
 \alias{GetCrossTabDS}
 \title{GetCrossTabDS}
 \usage{
-GetCrossTabDS(TableName.S, FeatureNames.S)
+GetCrossTabDS(TableName.S, FeatureNames.S, RemoveNA.S = FALSE)
 }
 \arguments{
 \item{TableName.S}{\code{string} - Name of \code{data.frame}}
 
 \item{FeatureNames.S}{\code{string} - Names of features separated by ','}
+
+\item{RemoveNA.S}{\code{logical} - Indicating whether missing values should be removed prior to cross tabulation - Default: \code{FALSE}}
 }
 \value{
 A \code{list} containing
@@ -17,7 +19,7 @@ A \code{list} containing
 \item ChiSq.PValue (\code{numeric}) }
 }
 \description{
-Create cross tab (contingency table) with arbitrary number of table features.
+Perform cross tabulation with arbitrary number of table features.
 }
 \details{
 Server-side AGGREGATE method

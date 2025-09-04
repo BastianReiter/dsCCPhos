@@ -4,7 +4,7 @@
 \alias{FilterTableDS}
 \title{FilterTableDS}
 \usage{
-FilterTableDS(TableName.S, FilterExpression.S, GroupBy.S)
+FilterTableDS(TableName.S, FilterExpression.S, GroupBy.S = NULL)
 }
 \arguments{
 \item{TableName.S}{\code{string} - Name of \code{data.frame}}

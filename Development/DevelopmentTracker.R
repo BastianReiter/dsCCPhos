@@ -75,7 +75,6 @@ library(devtools)
 # use_r("DataListToDataModel")
 # use_r("DataModelToCSV")
 # use_r("DataModelToDB")
-# use_r("FilterTable")
 # use_r("FinalizeDataTransformation")
 # use_r("FindRedundantEntries")
 # use_r("FormatData")
@@ -117,8 +116,10 @@ library(devtools)
 # use_r("ExcludeAugmentedDataDS")
 # use_r("ExcludeCuratedDataDS")
 # use_r("ExtractFromListDS")
+# use_r("FilterTableDS")
 # use_r("JoinTablesDS")
 # use_r("MatchDataDS")
+# use_r("MutateTableDS")
 
 
 
