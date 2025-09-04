@@ -16,88 +16,88 @@ GetFrequencyTableDS <- function(TableName.S,
                                 GroupingFeatureName.S = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Check, evaluate and parse input before proceeding
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Check, evaluate and parse input before proceeding
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if (is.character(TableName.S)
-      & is.character(FeatureName.S)
-      & (is.null(GroupingFeatureName.S) | (!is.null(GroupingFeatureName.S) & is.character(GroupingFeatureName.S))))
-{
-    Table <- eval(parse(text = TableName.S), envir = parent.frame())
-}
-else
-{
-    ClientMessage <- "Error: 'TableName.S', 'FeatureName.S' and (optionally) 'GroupingFeatureName.S' must be specified as a character string"
-    stop(ClientMessage, call. = FALSE)
-}
+  if (is.character(TableName.S)
+        & is.character(FeatureName.S)
+        & (is.null(GroupingFeatureName.S) | (!is.null(GroupingFeatureName.S) & is.character(GroupingFeatureName.S))))
+  {
+      Table <- eval(parse(text = TableName.S), envir = parent.frame())
+  }
+  else
+  {
+      ClientMessage <- "Error: 'TableName.S', 'FeatureName.S' and (optionally) 'GroupingFeatureName.S' must be specified as a character string"
+      stop(ClientMessage, call. = FALSE)
+  }
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Package requirements
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Package requirements
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-require(dplyr)
-require(rlang)
-require(stats)
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Function proceedings
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# --- For Testing Purposes ---
-# Table <- ADS$Patients
-# FeatureName.S <- "TNM_T"
-# GroupingFeatureName.S <- "LastVitalStatus"
+  require(dplyr)
+  require(rlang)
+  require(stats)
 
 
-# Evaluate feature in question
-Feature <- Table[[FeatureName.S]]
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Function proceedings
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Stop if Feature is of class 'numeric' or similar
-if (class(Feature) %in% c("double", "integer", "numeric")) { stop(paste0("The specified feature '", FeatureName.S, "' is of class '", class(Feature), "' and therefore not suitable."), call. = FALSE) }
-
-
-# Initiate FrequencyTable object
-FrequencyTable <- tibble()
-
-# Get count of valid (non-missing) values in Feature
-N_Valid <- sum(!is.na(Feature))
+  # --- For Testing Purposes ---
+  # Table <- ADS$Patients
+  # FeatureName.S <- "TNM_T"
+  # GroupingFeatureName.S <- "LastVitalStatus"
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CHARACTER feature
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Evaluate feature in question
+  Feature <- Table[[FeatureName.S]]
 
-if (class(Feature) == "character" & N_Valid > 0)
-{
-    # Tibble containing absolute and relative frequencies
-    FrequencyTable <- as_tibble(table(Feature, useNA = "no")) %>%
-                          rename(c(AbsoluteFrequency = "n",
-                                   Value = "Feature")) %>%
-                          arrange(desc(AbsoluteFrequency)) %>%
-                          mutate(RelativeFrequency = AbsoluteFrequency / N_Valid)
-}
+  # Stop if Feature is of class 'numeric' or similar
+  if (class(Feature) %in% c("double", "integer", "numeric")) { stop(paste0("The specified feature '", FeatureName.S, "' is of class '", class(Feature), "' and therefore not suitable."), call. = FALSE) }
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# LOGICAL feature
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Initiate FrequencyTable object
+  FrequencyTable <- tibble()
 
-if (class(Feature) == "logical" & N_Valid > 0)
-{
-    # Tibble containing absolute and relative frequencies
-    FrequencyTable <- as_tibble(table(Feature, useNA = "no")) %>%
-                          rename(c(AbsoluteFrequency = "n",
-                                   Value = "Feature")) %>%
-                          mutate(RelativeFrequency = AbsoluteFrequency / N_Valid)
-}
+  # Get count of valid (non-missing) values in Feature
+  N_Valid <- sum(!is.na(Feature))
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Return statement
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-return(FrequencyTable)
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # CHARACTER feature
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if (class(Feature) == "character" & N_Valid > 0)
+  {
+      # Tibble containing absolute and relative frequencies
+      FrequencyTable <- as_tibble(table(Feature, useNA = "no")) %>%
+                            rename(c(AbsoluteFrequency = "n",
+                                     Value = "Feature")) %>%
+                            arrange(desc(AbsoluteFrequency)) %>%
+                            mutate(RelativeFrequency = AbsoluteFrequency / N_Valid)
+  }
+
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # LOGICAL feature
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if (class(Feature) == "logical" & N_Valid > 0)
+  {
+      # Tibble containing absolute and relative frequencies
+      FrequencyTable <- as_tibble(table(Feature, useNA = "no")) %>%
+                            rename(c(AbsoluteFrequency = "n",
+                                     Value = "Feature")) %>%
+                            mutate(RelativeFrequency = AbsoluteFrequency / N_Valid)
+  }
+
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Return statement
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  return(FrequencyTable)
 }
 
 
