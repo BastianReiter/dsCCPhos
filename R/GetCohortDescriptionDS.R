@@ -17,110 +17,107 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
                                    CCPDataSetType.S = "ADS")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
+  require(assertthat)
+  require(dplyr)
+  require(tidyr)
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# - Package requirements -
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # --- For Testing Purposes ---
+  # DataSet <- AugmentedDataSet
 
-require(dplyr)
-require(tidyr)
+  # --- Argument Assertions ---
+  assert_that(is.string(DataSetName.S),
+              is.string(CCPDataSetType.S))
 
+#-------------------------------------------------------------------------------
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# - Evaluate and parse input -
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Get local object: Parse expression and evaluate
+  DataSet <- eval(parse(text = DataSetName.S), envir = parent.frame())
 
-if (is.character(DataSetName.S))
-{
-    DataSet <- eval(parse(text = DataSetName.S), envir = parent.frame())
-}
-else
-{
-    ClientMessage <- "ERROR: DataSetName.S must be specified as a character string"
-    stop(ClientMessage, call. = FALSE)
-}
+#-------------------------------------------------------------------------------
 
+  CohortData <- DataSet$Patient %>%
+                    left_join(DataSet$Diagnosis, by = join_by(PatientID))
 
-### For testing purposes
-# DataSet <- AugmentedDataSet
-
-
-CohortData <- DataSet$Patient %>%
-                  left_join(DataSet$Diagnosis, by = join_by(PatientID))
-
-CohortDataSingleDiag <- CohortData %>%
-                            group_by(PatientID) %>%
-                                arrange(DiagnosisDate, .by_group = TRUE) %>%
-                                slice_head() %>%
-                            ungroup()
+  CohortDataSingleDiag <- CohortData %>%
+                              group_by(PatientID) %>%
+                                  arrange(DiagnosisDate, .by_group = TRUE) %>%
+                                  slice_head() %>%
+                              ungroup()
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Cohort Size
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CohortSize <- CohortData %>%
-                  summarize(PatientCount = n_distinct(PatientID),
-                            DiagnosisCount = n_distinct(DiagnosisID)) %>%
-                  mutate(DiagnosesPerPatient = DiagnosisCount / PatientCount)
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Cohort Size
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  CohortSize <- CohortData %>%
+                    summarize(PatientCount = n_distinct(PatientID),
+                              DiagnosisCount = n_distinct(DiagnosisID)) %>%
+                    mutate(DiagnosesPerPatient = DiagnosisCount / PatientCount)
 
-# Cohort Size over time
-CohortSize_OverTime <- CohortData %>%
-                            mutate(DiagnosisYear = year(DiagnosisDate)) %>%
-                            group_by(DiagnosisYear) %>%
-                                summarize(PatientCount = n_distinct(PatientID),
-                                          DiagnosisCount = n_distinct(DiagnosisID)) %>%
-                                mutate(DiagnosesPerPatient = DiagnosisCount / PatientCount)
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Age Groups
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Age <- CohortDataSingleDiag %>%
-          select(PatientID, DiagnosisID, DiagnosisDate, PatientAgeAtDiagnosis) %>%
-          mutate(AgeGroup = case_when(PatientAgeAtDiagnosis < 18 ~ "< 18",
-                                      PatientAgeAtDiagnosis %>% between(18, 29) ~ "18 - 29",
-                                      PatientAgeAtDiagnosis %>% between(30, 39) ~ "30 - 39",
-                                      PatientAgeAtDiagnosis %>% between(40, 49) ~ "40 - 49",
-                                      PatientAgeAtDiagnosis %>% between(50, 59) ~ "50 - 59",
-                                      PatientAgeAtDiagnosis %>% between(60, 69) ~ "60 - 69",
-                                      PatientAgeAtDiagnosis %>% between(70, 79) ~ "70 - 79",
-                                      PatientAgeAtDiagnosis %>% between(80, 89) ~ "80 - 89",
-                                      PatientAgeAtDiagnosis > 89 ~ "> 89"),
-                 AgeGroup = factor(AgeGroup,
-                                   levels = c("< 18", "18 - 29", "30 - 39", "40 - 49", "50 - 59", "60 - 69", "70 - 79", "80 - 89", "> 89"),
-                                   ordered = TRUE)) %>%
-          group_by(AgeGroup) %>%
-              summarize(N = n()) %>%
-              mutate(Proportion = N / sum(N)) %>%
-          ungroup() %>%
-          arrange(AgeGroup)
+  # Cohort Size over time
+  CohortSize_OverTime <- CohortData %>%
+                              mutate(DiagnosisYear = year(DiagnosisDate)) %>%
+                              group_by(DiagnosisYear) %>%
+                                  summarize(PatientCount = n_distinct(PatientID),
+                                            DiagnosisCount = n_distinct(DiagnosisID)) %>%
+                                  mutate(DiagnosesPerPatient = DiagnosisCount / PatientCount)
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Sex Distribution
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Sex <- CohortDataSingleDiag %>%
-            group_by(Sex) %>%
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Age Groups
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Age <- CohortDataSingleDiag %>%
+            select(PatientID, DiagnosisID, DiagnosisDate, PatientAgeAtDiagnosis) %>%
+            mutate(AgeGroup = case_when(PatientAgeAtDiagnosis < 18 ~ "< 18",
+                                        PatientAgeAtDiagnosis %>% between(18, 24) ~ "18 - 24",
+                                        PatientAgeAtDiagnosis %>% between(25, 29) ~ "25 - 29",
+                                        PatientAgeAtDiagnosis %>% between(30, 34) ~ "30 - 34",
+                                        PatientAgeAtDiagnosis %>% between(35, 39) ~ "35 - 39",
+                                        PatientAgeAtDiagnosis %>% between(40, 44) ~ "40 - 44",
+                                        PatientAgeAtDiagnosis %>% between(45, 49) ~ "45 - 49",
+                                        PatientAgeAtDiagnosis %>% between(50, 54) ~ "50 - 54",
+                                        PatientAgeAtDiagnosis %>% between(55, 59) ~ "55 - 59",
+                                        PatientAgeAtDiagnosis %>% between(60, 64) ~ "60 - 64",
+                                        PatientAgeAtDiagnosis %>% between(65, 69) ~ "65 - 69",
+                                        PatientAgeAtDiagnosis %>% between(70, 74) ~ "70 - 74",
+                                        PatientAgeAtDiagnosis %>% between(75, 79) ~ "75 - 79",
+                                        PatientAgeAtDiagnosis %>% between(80, 84) ~ "80 - 84",
+                                        PatientAgeAtDiagnosis %>% between(85, 89) ~ "85 - 89",
+                                        PatientAgeAtDiagnosis > 89 ~ "> 89"),
+                   AgeGroup = factor(AgeGroup,
+                                     levels = c("< 18", "18 - 24", "25 - 29", "30 - 34", "35 - 39", "40 - 44", "45 - 49", "50 - 54", "55 - 59", "60 - 64", "65 - 69", "70 - 74", "75 - 79", "80 - 84", "85 - 89", "> 89"),
+                                     ordered = TRUE)) %>%
+            group_by(AgeGroup) %>%
                 summarize(N = n()) %>%
-                mutate(Proportion = N / sum(N))
-
-Sex_OverTime <- CohortDataSingleDiag %>%
-                    mutate(DiagnosisYear = year(DiagnosisDate)) %>%
-                    group_by(DiagnosisYear, Sex) %>%
-                        summarize(N = n()) %>%
-                    ungroup() %>%
-                    pivot_wider(names_from = Sex,
-                                values_from = N)
+                mutate(Proportion = N / sum(N)) %>%
+            ungroup() %>%
+            arrange(AgeGroup)
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Return
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Sex Distribution
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-return(list(CohortSize = CohortSize,
-            CohortSize_OverTime = CohortSize_OverTime,
-            Sex = Sex,
-            Sex_OverTime = Sex_OverTime,
-            Age = Age))
+  Sex <- CohortDataSingleDiag %>%
+              group_by(Sex) %>%
+                  summarize(N = n()) %>%
+                  mutate(Proportion = N / sum(N))
+
+  Sex_OverTime <- CohortDataSingleDiag %>%
+                      mutate(DiagnosisYear = year(DiagnosisDate)) %>%
+                      group_by(DiagnosisYear, Sex) %>%
+                          summarize(N = n()) %>%
+                      ungroup() %>%
+                      pivot_wider(names_from = Sex,
+                                  values_from = N)
+
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Return
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  return(list(CohortSize = CohortSize,
+              CohortSize_OverTime = CohortSize_OverTime,
+              Sex = Sex,
+              Sex_OverTime = Sex_OverTime,
+              Age = Age))
 }

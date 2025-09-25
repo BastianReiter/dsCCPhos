@@ -8,7 +8,7 @@
 #' @param TargetFeature \code{string} - Name of feature that is being engineered
 #' @param RuleSet \code{data.frame} - Contains predefined set of rules
 #' @param RuleProfile \code{string} - Profile name stated in rule set data frame
-#' @param ValueIfNoRuleMet \code{string} - Value (as string) of TargetFeature if no rules are fulfilled | Default = "NA"
+#' @param ValueIfNoRuleMet \code{string} - Value (NA or string) of TargetFeature if no rules are fulfilled - Default = NA
 #'
 #' @return \code{string} containing an unevaluated dplyr::case_when() expression
 #' @export
@@ -20,65 +20,73 @@ CompileClassificationCall <- function(TargetFeature,
                                       ValueIfNoRuleMet = NA)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-    require(dplyr)
-    require(stringr)
+  require(assertthat)
+  require(dplyr)
+  require(stringr)
 
-    # For testing purposes
-    # TargetFeature <- "IsLikelyRedundant"
-    # RuleSet <- RuleSet_DiagnosisRedundancy
-    # RuleProfile <- RuleProfile_DiagnosisRedundancy.S
-    # ValueIfNoRuleMet <- FALSE
+  # --- For Testing Purposes ---
+  # TargetFeature <- "IsLikelyRedundant"
+  # RuleSet <- RuleSet_DiagnosisRedundancy
+  # RuleProfile <- RuleProfile_DiagnosisRedundancy.S
+  # ValueIfNoRuleMet <- FALSE
 
+  # --- Argument Assertions ---
+  assert_that(is.string(TargetFeature),
+              is.data.frame(RuleSet),
+              is.string(RuleProfile))
 
-    # Filter relevant rules from given rule set
-    RelevantRules <- RuleSet %>%
-                          filter(Profile == RuleProfile,
-                                 Feature == TargetFeature) %>%
-                          arrange(EvaluationOrder)
+#-------------------------------------------------------------------------------
 
-    if (is.null(ValueIfNoRuleMet))
-    {
-        stop("ERROR: 'ValueIfNoRuleMet' can not be NULL. NA would be a valid alternative.")
-    }
+  # Filter relevant rules from given rule set
+  RelevantRules <- RuleSet %>%
+                        filter(Profile == RuleProfile,
+                               Feature == TargetFeature) %>%
+                        arrange(EvaluationOrder)
 
-    # Process ValueIfNoRuleMet to turn it into valid string
-    ValueIfNoRuleMet <- case_when(is.character(ValueIfNoRuleMet) ~ paste0("'", ValueIfNoRuleMet, "'"),
-                                  is.na(ValueIfNoRuleMet) ~ "NA",
-                                  TRUE ~ as.character(ValueIfNoRuleMet))
+  if (is.null(ValueIfNoRuleMet))
+  {
+      stop("ERROR: 'ValueIfNoRuleMet' can not be NULL. NA would be a valid alternative.")
+  }
 
-    vc_Rules <- NULL
+  # Process ValueIfNoRuleMet to turn it into valid string
+  ValueIfNoRuleMet <- case_when(is.character(ValueIfNoRuleMet) ~ paste0("'", ValueIfNoRuleMet, "'"),
+                                is.na(ValueIfNoRuleMet) ~ "NA",
+                                TRUE ~ as.character(ValueIfNoRuleMet))
 
-    for (i in 1:nrow(RelevantRules))
-    {
-        # Clean Condition string of '\r\n' string induced by line breaks in excel
-        Condition <- str_replace_all(RelevantRules$Condition[i], "\r\n", " ")
+  vc_Rules <- NULL
 
-        # Using regular expressions, compile compatible code for 'Reference' ...
-        Condition <- str_replace_all(string = Condition,
-                                     pattern = "<#Ref:(.*?)#>",
-                                     replacement = paste0("Reference$", "\\1"))      # Ex. '<#Ref:ICD10Code#>' --> 'Reference$ICD10Code'
+  for (i in 1:nrow(RelevantRules))
+  {
+      # Clean Condition string of '\r\n' string induced by line breaks in excel
+      Condition <- str_replace_all(RelevantRules$Condition[i], "\r\n", " ")
 
-        # ... and for 'Candidate' values
-        Condition <- str_replace_all(string = Condition,
-                                     pattern = "<#Cand:(.*?)#>",
-                                     replacement = paste0("\\1", "[row_number()]"))      # Ex. '<#Cand:ICD10Code#>' --> 'ICD10Code[row_number()]'
+      # Using regular expressions, compile compatible code for 'Reference' ...
+      Condition <- str_replace_all(string = Condition,
+                                   pattern = "<#Ref:(.*?)#>",
+                                   replacement = paste0("Reference$", "\\1"))      # Ex. '<#Ref:ICD10Code#>' --> 'Reference$ICD10Code'
 
-        # Map Conditions with resulting value for target feature
-        Rule <- paste0(Condition, " ~ ", RelevantRules$Value[i], ", " , collapse = "")
+      # ... and for 'Candidate' values
+      Condition <- str_replace_all(string = Condition,
+                                   pattern = "<#Cand:(.*?)#>",
+                                   replacement = paste0("\\1", "[row_number()]"))      # Ex. '<#Cand:ICD10Code#>' --> 'ICD10Code[row_number()]'
 
-        # Add current rule to set of rules in a vector
-        vc_Rules <- c(vc_Rules, Rule)
-    }
+      # Map Conditions with resulting value for target feature
+      Rule <- paste0(Condition, " ~ ", RelevantRules$Value[i], ", " , collapse = "")
 
-    # Concatenate rules from rule vector
-    Rules <- paste0(vc_Rules, collapse = "")
+      # Add current rule to set of rules in a vector
+      vc_Rules <- c(vc_Rules, Rule)
+  }
 
-    # Compile complete 'case_when()' call
-    CallString <- paste0("case_when(",
-                         Rules,
-                         "TRUE ~ ", ValueIfNoRuleMet,
-                         ")",
-                         collapse = "")
+  # Concatenate rules from rule vector
+  Rules <- paste0(vc_Rules, collapse = "")
 
-    return(CallString)
+  # Compile complete 'case_when()' call
+  CallString <- paste0("case_when(",
+                       Rules,
+                       "TRUE ~ ", ValueIfNoRuleMet,
+                       ")",
+                       collapse = "")
+
+#-------------------------------------------------------------------------------
+  return(CallString)
 }

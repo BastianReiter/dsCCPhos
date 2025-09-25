@@ -1,7 +1,7 @@
 
-
-library(dsCCPhos)
 library(dplyr)
+library(dsCCPhos)
+library(dsFreda)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load CCP test data as raw data set
@@ -74,8 +74,8 @@ RawDataSet <- list(sample = sample,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rename tables of RawDataSet (the names are also changed when tables are being loaded into R server sessions)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-vc_Lookup <- paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated)
-names(vc_Lookup) <- dsCCPhos::Meta_Tables$TableName_Raw
+vc_Lookup <- paste0("RDS.", dsCCPhos::Meta.Tables$TableName.Curated)
+names(vc_Lookup) <- dsCCPhos::Meta.Tables$TableName.Raw
 
 names(RawDataSet) <- sapply(names(RawDataSet),
                             function(TableName) { vc_Lookup[TableName] })
@@ -114,7 +114,7 @@ RDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "RawDataSet",
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Curate data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CurationOutput <- CurateDataDS(RawDataSetName.S = "RawDataSet",
+CurationOutput <- CCP.CurateDS(RawDataSetName.S = "RawDataSet",
                                Settings.S = list(DataHarmonization = list(Run = TRUE,
                                                                           Profile = "Default"),
                                                  FeatureObligations = list(Profile = "Default"),
@@ -132,7 +132,7 @@ CurationOutput <- CurateDataDS(RawDataSetName.S = "RawDataSet",
 CuratedDataSet <- CurationOutput$CuratedDataSet
 
 CDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
-                                AssumeCCPDataSet.S = TRUE)
+                                   AssumeCCPDataSet.S = TRUE)
 
 
 
@@ -140,7 +140,7 @@ CDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
 # Augment data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AugmentationOutput <- AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
+AugmentationOutput <- CCP.AugmentDS(CuratedDataSetName.S = "CuratedDataSet")
 
 ADS <- AugmentationOutput$AugmentedDataSet
 

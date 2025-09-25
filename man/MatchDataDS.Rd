@@ -13,20 +13,18 @@ MatchDataDS(
 )
 }
 \arguments{
-\item{DataFrame.S}{\code{character} - Name of \code{data.frame} containing source data}
+\item{DataFrame.S}{\code{string} - Name of \code{data.frame} containing source data}
 
-\item{GroupingVariable.S}{\code{character} - A character string containing the \code{formula} used in \code{MatchIt::matchit()}. Example: 'Treatment ~ CovA + CovB + CovC + ...'. Note: The 'treatment variable' that is stated in the formula must be a binary variable.}
+\item{GroupingVariable.S}{\code{string} - A character string containing the \code{formula} used in \code{MatchIt::matchit()}. Example: 'Treatment ~ CovA + CovB + CovC + ...'. Note: The 'treatment variable' that is stated in the formula must be a binary variable.}
 
-\item{CustomGroupingVariable.S}{\code{vector} -}
+\item{CustomGroupingVariable.S}{\code{character} -}
 
-\item{MatchingVariables.S}{\code{vector} -}
+\item{MatchingVariables.S}{\code{character} -}
 
 \item{MatchItArguments.S}{\code{list} - Elements correspond to arguments of \code{MatchIt::matchit()}}
 }
 \value{
-A \code{list} containing the following objects:
-\itemize{\item CuratedDataSet \code{list}
-\item CurationMessages \code{list}}
+A ...
 }
 \description{
 Obtain matched subsets from a given source \code{data.frame}, usually \code{ADS$Patients} from the Augmented Data Set (ADS).
