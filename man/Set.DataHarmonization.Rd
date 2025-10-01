@@ -15,7 +15,7 @@
 \item{Feature}{}
 \item{HasEligibleValueSet}{}
 \item{RunHarmonization}{}
-\item{HarmonizationOrder}
+\item{HarmonizationOrder}{}
 \item{Method.TransformativeExpressions}{}
 \item{Method.Dictionary}{}
 \item{Method.FuzzyStringMatching}{}

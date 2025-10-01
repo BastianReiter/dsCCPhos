@@ -1,5 +1,5 @@
 
-#' CCP.CurateDS
+#' CurateDataDS
 #'
 #' `r lifecycle::badge("stable")` \cr\cr
 #' Transforms CCP Raw Data Set (RDS) into Curated Data Set (CDS) while tracing data transformation.
@@ -17,7 +17,8 @@
 #'                                            \item Dictionary \code{data.frame} - Default: \code{dsCCPhos::Set.Dictionary}
 #'                                            \item Dictionary.Profile \code{string} - Profile used in \emph{Dictionary} - Default: 'Default'
 #'                                            \item FuzzyStringMatching \code{data.frame} - Default: \code{dsCCPhos::Set.FuzzyStringMatching}
-#'                                            \item FuzzyStringMatching.Profile \code{string} - Profile used in \emph{FuzzyStringMatching} - Default: 'Default'}
+#'                                            \item FuzzyStringMatching.Profile \code{string} - Profile used in \emph{FuzzyStringMatching} - Default: 'Default'
+#'                                            \item ExludeIneligibleValues \code{logical} - Default: \code{TRUE} }
 #'                              \item \emph{FeatureObligations} - \code{list}
 #'                                  \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Set.FeatureObligations}
 #'                                            \item RuleSet.Profile \code{string} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
@@ -65,7 +66,7 @@
 #' @export
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
+CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                          Settings.S = list(DataHarmonization = list(Run = TRUE,
                                                                     Process = dsCCPhos::Set.DataHarmonization,
                                                                     Process.Profile = "Default",
@@ -74,7 +75,8 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
                                                                     Dictionary = dsCCPhos::Set.Dictionary,
                                                                     Dictionary.Profile = "Default",
                                                                     FuzzyStringMatching = dsCCPhos::Set.FuzzyStringMatching,
-                                                                    FuzzyStringMatching.Profile = "Default"),
+                                                                    FuzzyStringMatching.Profile = "Default",
+                                                                    ExcludeIneligibleValues = TRUE),
                                           FeatureObligations = list(RuleSet = dsCCPhos::Set.FeatureObligations,
                                                                     RuleSet.Profile = "Default"),
                                           FeatureTracking = list(RuleSet = dsCCPhos::Set.FeatureTracking,
@@ -92,6 +94,7 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
                          DataHarmonization.Dictionary.Profile = NULL,
                          DataHarmonization.FuzzyStringMatching = NULL,
                          DataHarmonization.FuzzyStringMatching.Profile = NULL,
+                         DataHarmonization.ExcludeIneligibleValues = NULL,
                          FeatureObligations.RuleSet = NULL,
                          FeatureObligations.RuleSet.Profile = NULL,
                          FeatureTracking.RuleSet = NULL,
@@ -176,7 +179,8 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
   #                                             Dictionary = dsCCPhos::Set.Dictionary,
   #                                             Dictionary.Profile = "Default",
   #                                             FuzzyStringMatching = dsCCPhos::Set.FuzzyStringMatching,
-  #                                             FuzzyStringMatching.Profile = "Default"),
+  #                                             FuzzyStringMatching.Profile = "Default",
+  #                                             ExcludeIneligibleValues = TRUE),
   #                    FeatureObligations = list(RuleSet = dsCCPhos::Set.FeatureObligations,
   #                                              RuleSet.Profile = "Default"),
   #                    FeatureTracking = list(RuleSet = dsCCPhos::Set.FeatureTracking,
@@ -203,6 +207,7 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
   if (is.null(Settings$DataHarmonization$Dictionary.Profile)) { Settings$DataHarmonization$Dictionary.Profile <- "Default" }
   if (is.null(Settings$DataHarmonization$FuzzyStringMatching)) { Settings$DataHarmonization$FuzzyStringMatching <- dsCCPhos::Set.FuzzyStringMatching }
   if (is.null(Settings$DataHarmonization$FuzzyStringMatching.Profile)) { Settings$DataHarmonization$FuzzyStringMatching.Profile <- "Default" }
+  if (is.null(Settings$DataHarmonization$ExcludeIneligibleValues)) { Settings$DataHarmonization$ExcludeIneligibleValues <- TRUE }
   if (is.null(Settings$FeatureObligations$RuleSet)) { Settings$FeatureObligations$RuleSet <- dsCCPhos::Set.FeatureObligations }
   if (is.null(Settings$FeatureObligations$RuleSet.Profile)) { Settings$FeatureObligations$RuleSet.Profile <- "Default" }
   if (is.null(Settings$FeatureTracking$RuleSet)) { Settings$FeatureTracking$RuleSet <- dsCCPhos::Set.FeatureTracking }
@@ -276,8 +281,8 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
 # Rename tables (Remove the 'RDS.'-prefix)
 #-------------------------------------------------------------------------------
 
-  names(DataSet) <- sapply(names(DataSet),
-                           function(TableName) { str_remove(TableName, "RDS.") })
+  # names(DataSet) <- sapply(names(DataSet),
+  #                          function(TableName) { str_remove(TableName, "RDS.") })
 
 
 # If tables are missing, create corresponding empty tables for easier management throughout following processing
@@ -592,7 +597,7 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
                                                                   {
                                                                       Values <- dsCCPhos::Meta.Values %>%
                                                                                     filter(Table == tablename,
-                                                                                           Feature == featurename) %>%
+                                                                                           FeatureName.Curated == featurename) %>%
                                                                                     select(Value.Raw,
                                                                                            Value.Curated)
 
@@ -677,7 +682,7 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
                                                           filter(Profile == Settings$DataHarmonization$Process.Profile,
                                                                  Table == tablename,
                                                                  RunHarmonization == TRUE) %>%
-                                                          arrange(HarmonizationOrder)   # Defines the order in which features within a table are being harmonized (this can be relevant in transformative espressions that contain inter-feature dependencies)
+                                                          arrange(HarmonizationOrder)      # Defines the order in which features within a table are being harmonized (this can be relevant in transformative espressions that contain inter-feature dependencies)
 
                               for (featurename in HarmonizationProcess$Feature)
                               {
@@ -688,7 +693,7 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
 
                                   EligibleValueSet <- dsCCPhos::Meta.Values %>%
                                                           filter(Table == tablename,
-                                                                 Feature == featurename) %>%
+                                                                 FeatureName.Curated == featurename) %>%
                                                           pull(Value.Curated)
 
                                   TransformativeExpressions <- Settings$DataHarmonization$TransformativeExpressions %>%
@@ -706,14 +711,14 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
                                                                      Feature == featurename) %>%
                                                               as.list()
 
-                                  Table <- Table %>%
-                                                mutate(across(all_of(featurename),
-                                                              ~ dsFreda::HarmonizeFeature(Vector = .x,
-                                                                                          Methods = Methods,
-                                                                                          EligibleValueSet = EligibleValueSet,
-                                                                                          TransformativeExpressions = TransformativeExpressions,
-                                                                                          Dictionary = Dictionary,
-                                                                                          FuzzyStringMatching = FuzzyStringMatching)))
+                                  Table[[featurename]] <- dsFreda::HarmonizeFeature(Feature = Table[[featurename]],
+                                                                                    FeatureName = featurename,
+                                                                                    ContextDataFrame = Table,
+                                                                                    Methods = Methods,
+                                                                                    EligibleValueSet = EligibleValueSet,
+                                                                                    TransformativeExpressions = TransformativeExpressions,
+                                                                                    Dictionary = Dictionary,
+                                                                                    FuzzyStringMatching = FuzzyStringMatching)
                               }
                           }
 
@@ -800,28 +805,27 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
                        {
                           try(ProgressBar$tick())
 
-                          if (!(nrow(Table) == 0))
+                          if (length(Table) > 0 && nrow(Table) > 0)
                           {
                               # Recode table data as defined in meta data
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                               FeaturesWithValueSets <- dsCCPhos::Meta.Values %>%
                                                             filter(Table == tablename) %>%
-                                                            pull(Feature) %>%
+                                                            pull(FeatureName.Curated) %>%
                                                             unique()
 
                               if (length(FeaturesWithValueSets) > 0)
                               {
                                   RecodingDictionaries <- dsCCPhos::Meta.Values %>%
                                                               filter(Table == tablename) %>%
-                                                              split(.$Feature) %>%      # 'split' is a base function and needs '.$' to address 'Feature'
+                                                              split(.$FeatureName.Curated) %>%      # 'split' is a base function and needs '.$' to address 'FeatureName.Curated'
                                                               map(\(Values) with(Values, set_names(Value.Curated, Value.Raw)))
 
-                                  for (i in 1:length(FeaturesWithValueSets))
+                                  for (featurename in FeaturesWithValueSets)
                                   {
-                                      Table <- Table %>%
-                                                    mutate(across(all_of(FeaturesWithValueSets[i]),
-                                                                  ~ RecodeData(.x, RecodingDictionaries[[FeaturesWithValueSets[i]]])))
+                                      Table[[featurename]] <- dsFreda::RecodeData(TargetVector = Table[[featurename]],
+                                                                                  Dictionary = RecodingDictionaries[[featurename]])
                                   }
                               }
 
@@ -930,24 +934,26 @@ CCP.CurateDS <- function(RawDataSetName.S = "RawDataSet",
                        {
                           try(ProgressBar$tick())
 
-                          if (!(nrow(Table) == 0))
+                          if (length(Table) > 0 && nrow(Table) > 0)
                           {
-                              FeaturesWithValueSets <- dsCCPhos::Meta.Values %>%
-                                                            filter(Table == tablename) %>%
-                                                            pull(Feature) %>%
-                                                            unique()
+                              # Get features that are supposed to be harmonized from settings
+                              HarmonizationProcess <- Settings$DataHarmonization$Process %>%
+                                                          filter(Profile == Settings$DataHarmonization$Process.Profile,
+                                                                 Table == tablename,
+                                                                 RunHarmonization == TRUE)
 
-                              if (length(FeaturesWithValueSets) > 0)
+                              for (featurename in HarmonizationProcess$Feature)
                               {
-                                  for (i in 1:length(FeaturesWithValueSets))
-                                  {
-                                      EligibleValueSet <- dsCCPhos::Meta.Values %>%
-                                                              filter(Table == tablename,
-                                                                     Feature == FeaturesWithValueSets[i])
+                                  # Get eligible value set for current feature as data.frame including data on factoring
+                                  EligibleValueSet <- dsCCPhos::Meta.Values %>%
+                                                          filter(Table == tablename,
+                                                                 FeatureName.Curated == featurename)
 
-                                      Table <- Table %>%
-                                                  mutate(across(all_of(FeaturesWithValueSets[i]),
-                                                                ~ dsFreda::FinalizeDataTransformation(.x, EligibleValueSet)))
+                                  if (nrow(EligibleValueSet) > 0)
+                                  {
+                                      Table[[featurename]] <- dsFreda::FinalizeDataTransformation(TargetVector = Table[[featurename]],
+                                                                                                  EligibleValueSet = EligibleValueSet,
+                                                                                                  ExcludeIneligibleValues = Settings$DataHarmonization$ExcludeIneligibleValues)
                                   }
                               }
                           }

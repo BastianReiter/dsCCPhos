@@ -1,5 +1,5 @@
 
-#' CCP.AugmentDS
+#' AugmentDataDS
 #'
 #' `r lifecycle::badge("stable")` \cr\cr
 #' Transforms Curated Data Set (CDS) into Augmented Data Set (ADS)
@@ -28,7 +28,7 @@
 #' @export
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CCP.AugmentDS <- function(CuratedDataSetName.S = "CuratedDataSet",
+AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
                           Settings.S = list(CutoffValues = list(DaysDiagnosisToInitialStaging = 30),
                                             DiagnosisAssociation = list(Check = TRUE,
                                                                         RuleSet = dsCCPhos::Set.DiagnosisAssociation,
@@ -890,7 +890,7 @@ CCP.AugmentDS <- function(CuratedDataSetName.S = "CuratedDataSet",
                            {
                                # Get value to comparator code matches from meta data
                                ComparatorCodeData <- dsCCPhos::Meta.Values %>%
-                                                        filter(Feature == FeatureName) %>%
+                                                        filter(FeatureName.Curated == FeatureName) %>%
                                                         select(Value.Curated, ComparatorCode)
 
                                # Create named vector

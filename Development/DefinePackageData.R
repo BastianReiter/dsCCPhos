@@ -58,7 +58,7 @@ for (sheetname in Sheetnames)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Data from TinkerLab
+# Resource data from TinkerLab
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Res.CancerGrouping <- TinkerLab::CancerGrouping

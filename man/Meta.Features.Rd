@@ -9,6 +9,7 @@
 
 \code{tibble}
 \describe{
+\item{TableID}{}
 \item{FeatureID}{}
 \item{TableName.Raw}{Name of table in Opal}
 \item{TableName.Curated}{Name of table after loading into R session}

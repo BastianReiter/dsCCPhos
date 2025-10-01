@@ -11,7 +11,8 @@
 \describe{
 \item{FeatureID}{}
 \item{Table}{Table name}
-\item{Feature}{Feature name}
+\item{Feature.Raw}{Raw feature name}
+\item{Feature.Curated}{Curated feature name}
 \item{ScaleLevel}{Scale level of feature}
 \item{Value.Raw}{Value in original / raw data}
 \item{Value.Curated}{Value as preferred}

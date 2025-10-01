@@ -37,6 +37,7 @@
 #' @format ## `Meta.Features`
 #' \code{tibble}
 #' \describe{
+#'   \item{TableID}{}
 #'   \item{FeatureID}{}
 #'   \item{TableName.Raw}{Name of table in Opal}
 #'   \item{TableName.Curated}{Name of table after loading into R session}
@@ -67,6 +68,7 @@
 #' @format ## `Meta.Tables`
 #' \code{tibble}
 #' \describe{
+#'   \item{TableID}{}
 #'   \item{TableName.Raw}{Table name in Raw Data Model}
 #'   \item{TableName.Curated}{Corresponding table name in Curated Data Model}
 #' }
@@ -89,7 +91,8 @@
 #' \describe{
 #'   \item{FeatureID}{}
 #'   \item{Table}{Table name}
-#'   \item{Feature}{Feature name}
+#'   \item{Feature.Raw}{Raw feature name}
+#'   \item{Feature.Curated}{Curated feature name}
 #'   \item{ScaleLevel}{Scale level of feature}
 #'   \item{Value.Raw}{Value in original / raw data}
 #'   \item{Value.Curated}{Value as preferred}
@@ -197,7 +200,7 @@
 #'   \item{Feature}{}
 #'   \item{HasEligibleValueSet}{}
 #'   \item{RunHarmonization}{}
-#'   \item{HarmonizationOrder}
+#'   \item{HarmonizationOrder}{}
 #'   \item{Method.TransformativeExpressions}{}
 #'   \item{Method.Dictionary}{}
 #'   \item{Method.FuzzyStringMatching}{}

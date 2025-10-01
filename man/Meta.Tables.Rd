@@ -9,6 +9,7 @@
 
 \code{tibble}
 \describe{
+\item{TableID}{}
 \item{TableName.Raw}{Table name in Raw Data Model}
 \item{TableName.Curated}{Corresponding table name in Curated Data Model}
 }

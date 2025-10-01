@@ -74,7 +74,7 @@ RawDataSet <- list(sample = sample,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rename tables of RawDataSet (the names are also changed when tables are being loaded into R server sessions)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-vc_Lookup <- paste0("RDS.", dsCCPhos::Meta.Tables$TableName.Curated)
+vc_Lookup <- dsCCPhos::Meta.Tables$TableName.Curated
 names(vc_Lookup) <- dsCCPhos::Meta.Tables$TableName.Raw
 
 names(RawDataSet) <- sapply(names(RawDataSet),
@@ -85,12 +85,9 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 # Check Tables for existence and completeness
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "RawDataSet",
-                                   AssumeCCPDataSet.S = TRUE)
-                                   # RequiredTableNames.S = paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated),
-                                   # RequiredFeatureNames.S = RequiredTableNames.S %>%
-                                   #                              map(\(tablename) filter(dsCCPhos::Meta_Features, TableName_Curated == str_remove(tablename, "RDS_"))$FeatureName_Raw) %>%
-                                   #                              set_names(RequiredTableNames.S))
+RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "RawDataSet",
+                                            Module.S = "CCP",
+                                            TransformationStage.S = "Raw")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,7 +111,7 @@ RDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "RawDataSet",
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Curate data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CurationOutput <- CCP.CurateDS(RawDataSetName.S = "RawDataSet",
+CurationOutput <- CurateDataDS(RawDataSetName.S = "RawDataSet",
                                Settings.S = list(DataHarmonization = list(Run = TRUE,
                                                                           Profile = "Default"),
                                                  FeatureObligations = list(Profile = "Default"),
@@ -140,7 +137,7 @@ CDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
 # Augment data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AugmentationOutput <- CCP.AugmentDS(CuratedDataSetName.S = "CuratedDataSet")
+AugmentationOutput <- AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 
 ADS <- AugmentationOutput$AugmentedDataSet
 
