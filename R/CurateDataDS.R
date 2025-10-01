@@ -271,18 +271,10 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #===============================================================================
 # MODULE A)  Harmonization of Raw Data Set meta data and structure
 #===============================================================================
-#   - Transform table names
 #   - Add empty tables in data set if they are missing in raw data
 #   - Rename features
 #   - In tables with missing features, add empty features accordingly
 #-------------------------------------------------------------------------------
-
-
-# Rename tables (Remove the 'RDS.'-prefix)
-#-------------------------------------------------------------------------------
-
-  # names(DataSet) <- sapply(names(DataSet),
-  #                          function(TableName) { str_remove(TableName, "RDS.") })
 
 
 # If tables are missing, create corresponding empty tables for easier management throughout following processing

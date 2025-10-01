@@ -20,6 +20,7 @@
 \item{Method.Dictionary}{}
 \item{Method.FuzzyStringMatching}{}
 \item{Method.NaiveBayes}{}
+\item{MatchToDictionaryLookupsInFSM}{}
 }
 }
 }
