@@ -7,7 +7,7 @@
 GetOutcomeMeasuresDS(Name_AugmentationOutput = "AugmentationOutput")
 }
 \arguments{
-\item{Name_AugmentationOutput}{String | Name of the list object created by AugmentDataDS() | Default: 'AugmentationOutput'}
+\item{Name_AugmentationOutput}{\code{string} - Name of the list object created by AugmentDataDS() - Default: 'AugmentationOutput'}
 }
 \value{
 ABC

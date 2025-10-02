@@ -8,8 +8,8 @@ AugmentDataDS(
   CuratedDataSetName.S = "CuratedDataSet",
   Settings.S = list(CutoffValues = list(DaysDiagnosisToInitialStaging = 30),
     DiagnosisAssociation = list(Check = TRUE, RuleSet =
-    dsCCPhos::Meta_DiagnosisAssociation, Profile = "Default"), EventFeatures =
-    list(RuleSet = dsCCPhos::Meta_EventFeatures, Profile = "Default"), OverallSurvival =
+    dsCCPhos::Set.DiagnosisAssociation, Profile = "Default"), EventFeatures =
+    list(RuleSet = dsCCPhos::Proc.EventFeatures, Profile = "Default"), OverallSurvival =
     list(ReferenceEvent = c(EventClass = "Diagnosis", EventSubclass =
     "InitialDiagnosis")), TherapyOfInterest = list(EventSubclass = "Surgery",
     EventSubclassRank = 1), TimeToEvent = list(ReferenceEvent = list(EventClass =
@@ -24,10 +24,10 @@ AugmentDataDS(
 \item{Settings.S}{\code{list} - Settings passed to function
 \itemize{\item DiagnosisAssociation \code{list}
 \itemize{\item Check \code{logical} - Whether or not to classify associated diagnosis entries
-\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_DiagnosisAssociation}
+\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Set.DiagnosisAssociation}
 \item Profile \code{character} - Profile name defining rule set to be used for classification of diagnosis associations. Profile name must be stated in \code{DiagnosisAssociation$RuleSet} - Default: 'Default'}
 \item EventFeatures \code{list}
-\itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Meta_EventFeatures}
+\itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Proc.EventFeatures}
 \item Profile \code{character} - Profile name defining rule set to be used for event feature engineering. Profile name must be stated in \code{EventFeatures$RuleSet} - Default: 'Default'}}}
 }
 \value{

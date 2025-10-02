@@ -1,22 +1,7 @@
 AggregateMethods:
-    GetCohortDescriptionDS,
-    GetCrossTabDS,
-    GetDataSetCheckDS,
-    GetFeatureInfoDS,
-    GetFrequencyTableDS,
-    GetObjectMetaDataDS,
-    GetObjectStatusDS,
-    GetRDSValidationReportDS,
-    GetReportingObjectDS,
-    GetSampleStatisticsDS,
-    GetTableCheckDS,
-    GetTTEModelDS
+    GetCohortDescriptionDS
 AssignMethods:
     AugmentDataDS,
     CurateDataDS,
     DrawSampleDS,
-    ExtractFromListDS,
-    FilterTableDS,
-    JoinTablesDS,
-    MatchDataDS,
-    MutateTableDS
+    MatchDataDS

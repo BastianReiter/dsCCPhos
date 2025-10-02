@@ -16,34 +16,38 @@ SummarizeEventData <- function(EventData,
                                ProgressBarObject = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-    require(dplyr)
+  require(assertthat)
+  require(dplyr)
+
+  # --- For Testing Purposes ---
+  # EventData <- ADS$Events %>%
+  #                   filter(PatientID == "Pat_10390") %>%
+  #                   unnest(cols = c(EventDetails), keep_empty = TRUE)
+
+  # --- Argument Assertions ---
+  assert_that(is.data.frame(EventData))
+
+#-------------------------------------------------------------------------------
+
+  # Update progress bar object, if assigned in function call
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (!is.null(ProgressBarObject)) { try(ProgressBarObject$tick()) }
 
 
-    ### For function testing purposes
-    # EventData <- ADS$Events %>%
-    #                   filter(PatientID == "Pat_10390") %>%
-    #                   unnest(cols = c(EventDetails), keep_empty = TRUE)
+  Output <- EventData %>%
+                summarize(PatientAgeAtDiagnosis = first(EventPatientAge[EventSubclass == "InitialDiagnosis"]),      # !!! TEMPORARY? !!! If multiple "InitialDiagnosis" entries occur (Which shouldn't be), select only the first
+                          #---------------------------------------------------
+                          TimeDiagnosisToDeath = ifelse("Deceased" %in% LastVitalStatus,
+                                                         first(EventDaysSinceDiagnosis[LastVitalStatus == "Deceased"], na_rm = TRUE),
+                                                         NA_integer_),
+                          TimeFollowUp = case_when(!is.na(TimeDiagnosisToDeath) ~ TimeDiagnosisToDeath,
+                                                   !all(is.na(EventDaysSinceDiagnosis)) ~ max(EventDaysSinceDiagnosis, na.rm = TRUE),
+                                                   .default = NA_integer_),
+                          IsDocumentedDeceased = case_when(!is.na(TimeDiagnosisToDeath) ~ TRUE,
+                                                           .default = FALSE))
+                          #---------------------------------------------------
+                          #HadChemotherapy = )
 
-
-    # Update progress bar object, if assigned in function call
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (!is.null(ProgressBarObject)) { try(ProgressBarObject$tick()) }
-
-
-    Output <- EventData %>%
-                  summarize(PatientAgeAtDiagnosis = first(EventPatientAge[EventSubclass == "InitialDiagnosis"]),      # !!! TEMPORARY? !!! If multiple "InitialDiagnosis" entries occur (Which shouldn't be), select only the first
-                            #---------------------------------------------------
-                            TimeDiagnosisToDeath = ifelse("Deceased" %in% LastVitalStatus,
-                                                           first(EventDaysSinceDiagnosis[LastVitalStatus == "Deceased"], na_rm = TRUE),
-                                                           NA_integer_),
-                            TimeFollowUp = case_when(!is.na(TimeDiagnosisToDeath) ~ TimeDiagnosisToDeath,
-                                                     !all(is.na(EventDaysSinceDiagnosis)) ~ max(EventDaysSinceDiagnosis, na.rm = TRUE),
-                                                     .default = NA_integer_),
-                            IsDocumentedDeceased = case_when(!is.na(TimeDiagnosisToDeath) ~ TRUE,
-                                                             .default = FALSE))
-                            #---------------------------------------------------
-                            #HadChemotherapy = )
-
-
-    return(as.data.frame(Output))
+#-------------------------------------------------------------------------------
+  return(as.data.frame(Output))
 }

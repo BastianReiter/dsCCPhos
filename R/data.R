@@ -1,22 +1,156 @@
 
-# --- DOCUMENTATION of package data ---
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# --- DOCUMENTATION of Package Data ---
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_CancerGrouping.rda
+# Meta.Features.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' General meta data: ICD-10 cancer grouping
+#' CCP meta data: Features
 #'
-#' A tibble containing meta data about grouping of ICD-10 cancer codes
+#' A tibble containing meta data about corresponding feature names in Raw Data Model (RDM) and Curated Data Model (CDM)
 #'
-#' @format ## `Meta_CancerGrouping`
+#' @format ## `Meta.Features`
 #' \code{tibble}
 #' \describe{
-#'   \item{ICD10CodeShort}{Three digit ICD-10 code}
-#'   \item{CancerTopographyGroup_ICD10}{Topography group as put forth by ICD-10}
-#'   \item{CancerTopographyOrgan_ICD10}{Affected organ / topography as put forth by ICD-10}
-#'   \item{CancerTopographyGroup_ZFKD}{Topography detail as put forth by ZFKD}
+#'   \item{TableID}{}
+#'   \item{FeatureID}{}
+#'   \item{TableName.Raw}{Name of table in Opal}
+#'   \item{TableName.Curated}{Name of table after loading into R session}
+#'   \item{FeaturePosition}{Position of Feature in Table}
+#'   \item{FeatureName.Raw}{Feature name in Raw Data Model}
+#'   \item{FeatureName.Curated}{Corresponding feature name in Curated Data Model}
+#'   \item{IsPrimaryKey}{Indicating whether feature serves as primary key for corresponding table}
+#'   \item{Type}{Data type}
+#'   \item{Scale}{Scale of measure}
+#'   \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
+#'   \item{IsDiscriminatory}{Indicating whether feature is used to strictly discriminate between different entries. Used for discrimination of table entries in redundancy classification.}
+#'   \item{IsEssential}{Indicating whether feature holds essential information. Used for discrimination of table entries in redundancy classification.}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta.Features"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta.Tables.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' CCP meta data: Tables
+#'
+#' A tibble containing meta data about corresponding table names in Raw Data Model (RDM) and Curated Data Model (CDM)
+#'
+#' @format ## `Meta.Tables`
+#' \code{tibble}
+#' \describe{
+#'   \item{TableID}{}
+#'   \item{TableName.Raw}{Table name in Raw Data Model}
+#'   \item{TableName.Curated}{Corresponding table name in Curated Data Model}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta.Tables"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta.Values.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' CCP meta data: Values
+#'
+#' A tibble containing meta data about data values
+#'
+#' @format ## `Meta.Values`
+#' \code{tibble}
+#' \describe{
+#'   \item{FeatureID}{}
+#'   \item{Table}{Table name}
+#'   \item{Feature.Raw}{Raw feature name}
+#'   \item{Feature.Curated}{Curated feature name}
+#'   \item{ScaleLevel}{Scale level of feature}
+#'   \item{Value.Raw}{Value in original / raw data}
+#'   \item{Value.Curated}{Value as preferred}
+#'   \item{Label.Curated}{Label for coded feature values}
+#'   \item{Label.Raw}{Label in original data}
+#'   \item{FactorRank}{Used to determine order in values}
+#'   \item{ComparatorCode}{Assignment of numeric value to certain non-numeric values to enable comparison operations}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta.Values"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Proc.EventFeatures.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Proc.EventFeatures
+#'
+#' Processing rules for engineering of informative features in event data
+#'
+#' @format ## `Proc.EventFeatures`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{Feature}{}
+#'   \item{Value}{}
+#'   \item{ValueRank}{}
+#'   \item{EvaluationOrder}{}
+#'   \item{Condition}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Proc.EventFeatures"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Proc.TableNormalization.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Processing preferences on table normalization operations
+#'
+#' A tibble
+#'
+#' @format ## `Proc.TableNormalization`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{FeatureID}{}
+#'   \item{Table}{}
+#'   \item{Feature}{}
+#'   \item{EvaluationOrder}{}
+#'   \item{Operation}{}
+#'   \item{Comment}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Proc.TableNormalization"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Res.CancerGrouping.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Resource data on ICD-10 cancer grouping
+#'
+#' A tibble containing data about grouping of ICD-10 cancer codes
+#'
+#' @format ## `Res.CancerGrouping`
+#' \code{tibble}
+#' \describe{
+#'   \item{ICD10Code.Short}{Three digit ICD-10 code}
+#'   \item{CancerTopographyGroup.ICD10}{Topography group as put forth by ICD-10}
+#'   \item{CancerTopographyOrgan.ICD10}{Affected organ / topography as put forth by ICD-10}
+#'   \item{CancerTopographyGroup.ZFKD}{Topography detail as put forth by ZFKD}
 #'   \item{CancerTopographySpecification}{Additional information on topography}
 #'   \item{CancerSpecification}{Specification of cancer entity where needed}
 #'   \item{CancerIsLikelyToMetastasize}{}
@@ -25,19 +159,19 @@
 #' }
 #' @source <https://github.com/BastianReiter/TinkerLab/tree/main/Development/Data>
 #' @author Bastian Reiter
-"Meta_CancerGrouping"
+"Res.CancerGrouping"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_DataHarmonizationMethods.rda
+# Set.DataHarmonization.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Meta data on which methods to use for each feature during data harmonization
+#' Settings on which feature should be harmonized and which methods to use for each feature
 #'
 #' A tibble
 #'
-#' @format ## `Meta_DataHarmonizationMethods`
+#' @format ## `Set.DataHarmonization`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
@@ -45,26 +179,29 @@
 #'   \item{Table}{}
 #'   \item{Feature}{}
 #'   \item{HasEligibleValueSet}{}
-#'   \item{TransformationRules}{}
-#'   \item{HashTable}{}
-#'   \item{FuzzyStringMatching}{}
-#'   \item{Classification}{}
+#'   \item{RunHarmonization}{}
+#'   \item{HarmonizationOrder}{}
+#'   \item{Method.TransformativeExpressions}{}
+#'   \item{Method.Dictionary}{}
+#'   \item{Method.FuzzyStringMatching}{}
+#'   \item{Method.NaiveBayes}{}
+#'   \item{MatchToDictionaryLookupsInFSM}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_DataHarmonizationMethods"
+"Set.DataHarmonization"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_DiagnosisAssociation.rda
+# Set.DiagnosisAssociation.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Meta data on rule-based identification of associations between diagnosis entries
+#' Settings on rule-based identification of associations between diagnosis entries
 #'
 #' A tibble containing rules
 #'
-#' @format ## `Meta_DiagnosisAssociation`
+#' @format ## `Set.DiagnosisAssociation`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
@@ -76,19 +213,19 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_DiagnosisAssociation"
+"Set.DiagnosisAssociation"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_DiagnosisRedundancy.rda
+# Set.DiagnosisRedundancy.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Meta data on rule-based identification of redundant diagnosis entries
+#' Settings on rule-based identification of redundant diagnosis entries
 #'
 #' A tibble containing rules
 #'
-#' @format ## `Meta_DiagnosisRedundancy`
+#' @format ## `Set.DiagnosisRedundancy`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
@@ -100,19 +237,19 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_DiagnosisRedundancy"
+"Set.DiagnosisRedundancy"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_Dictionary.rda
+# Set.Dictionary.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #' Dictionary data used in Data Harmonization
 #'
 #' A tibble containing look-up values and corresponding replacements
 #'
-#' @format ## `Meta_Dictionary`
+#' @format ## `Set.Dictionary`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
@@ -125,73 +262,19 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_Dictionary"
+"Set.Dictionary"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_EventFeatures.rda
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#' Meta_EventFeatures
-#'
-#' Rules for engineering of informative features in event data
-#'
-#' @format ## `Meta_EventFeatures`
-#' \code{tibble}
-#' \describe{
-#'   \item{Profile}{}
-#'   \item{Feature}{}
-#'   \item{Value}{}
-#'   \item{ValueRank}{}
-#'   \item{EvaluationOrder}{}
-#'   \item{Condition}{}
-#' }
-#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
-#' @author Bastian Reiter
-"Meta_EventFeatures"
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_Features.rda
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#' CCP meta data: Features
-#'
-#' A tibble containing meta data about corresponding feature names in Raw Data Model (RDM) and Curated Data Model (CDM)
-#'
-#' @format ## `Meta_Features`
-#' \code{tibble}
-#' \describe{
-#'   \item{FeatureID}{}
-#'   \item{TableName_Raw}{Name of table in Opal}
-#'   \item{TableName_Curated}{Name of table after loading into R session}
-#'   \item{FeaturePosition}{Position of Feature in Table}
-#'   \item{FeatureName_Raw}{Feature name in Raw Data Model}
-#'   \item{FeatureName_Curated}{Corresponding feature name in Curated Data Model}
-#'   \item{IsPrimaryKey}{Indicating whether feature serves as primary key for corresponding table}
-#'   \item{Type}{Data type}
-#'   \item{Scale}{Scale of measure}
-#'   \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
-#'   \item{IsDiscriminatory}{Indicating whether feature is used to strictly discriminate between different entries. Used for discrimination of table entries in redundancy classification.}
-#'   \item{IsEssential}{Indicating whether feature holds essential information. Used for discrimination of table entries in redundancy classification.}
-#' }
-#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
-#' @author Bastian Reiter
-"Meta_Features"
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_FeatureObligations.rda
+# Set.FeatureObligations.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #' Containing preferences on which features in CDS should be considered obligatory
 #'
 #' A tibble
 #'
-#' @format ## `Meta_FeatureObligations`
+#' @format ## `Set.FeatureObligations`
 #' \code{tibble}
 #' \describe{
 #'   \item{Table}{}
@@ -200,19 +283,19 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_FeatureObligations"
+"Set.FeatureObligations"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_FeatureTracking.rda
+# Set.FeatureTracking.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Containing preferences on which features should be tracked/monitored during curation process
+#' Settings on which features should be tracked/monitored during curation process
 #'
 #' A tibble
 #'
-#' @format ## `Meta_FeatureTracking`
+#' @format ## `Set.FeatureTracking`
 #' \code{tibble}
 #' \describe{
 #'   \item{Table}{}
@@ -222,19 +305,19 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_FeatureTracking"
+"Set.FeatureTracking"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_FuzzyStringMatching.rda
+# Set.FuzzyStringMatching.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Meta_FuzzyStringMatching
+#' Set.FuzzyStringMatching
 #'
 #' Feature-specific settings for Fuzzy String Matching
 #'
-#' @format ## `Meta_FuzzyStringMatching`
+#' @format ## `Set.FuzzyStringMatching`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
@@ -259,64 +342,19 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_FuzzyStringMatching"
+"Set.FuzzyStringMatching"
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_Tables.rda
+# Set.TransformativeExpressions.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' CCP meta data: Tables
-#'
-#' A tibble containing meta data about corresponding table names in Raw Data Model (RDM) and Curated Data Model (CDM)
-#'
-#' @format ## `Meta_Tables`
-#' \code{tibble}
-#' \describe{
-#'   \item{TableName_Raw}{Table name in Raw Data Model}
-#'   \item{TableName_Curated}{Corresponding table name in Curated Data Model}
-#' }
-#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
-#' @author Bastian Reiter
-"Meta_Tables"
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_TableNormalization.rda
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#' Containing preferences on table normalization operations
+#' Settings on transformative expressions used in Data Harmonization
 #'
 #' A tibble
 #'
-#' @format ## `Meta_TableNormalization`
-#' \code{tibble}
-#' \describe{
-#'   \item{Profile}{}
-#'   \item{FeatureID}{}
-#'   \item{Table}{}
-#'   \item{Feature}{}
-#'   \item{EvaluationOrder}{}
-#'   \item{Operation}{}
-#'   \item{Comment}{}
-#' }
-#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
-#' @author Bastian Reiter
-"Meta_TableNormalization"
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_TransformativeExpressions.rda
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#' Transformative expressions used in Data Harmonization
-#'
-#' A tibble
-#'
-#' @format ## `Meta_TransformativeExpressions`
+#' @format ## `Set.TransformativeExpressions`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
@@ -329,52 +367,5 @@
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Meta_TransformativeExpressions"
+"Set.TransformativeExpressions"
 
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Meta_Values.rda
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#' CCP meta data: Values
-#'
-#' A tibble containing meta data about data values
-#'
-#' @format ## `Meta_Values`
-#' \code{tibble}
-#' \describe{
-#'   \item{FeatureID}{}
-#'   \item{Table}{Table name}
-#'   \item{Feature}{Feature name}
-#'   \item{ScaleLevel}{Scale level of feature}
-#'   \item{Value_Raw}{Value in original / raw data}
-#'   \item{Value_Curated}{Value as preferred}
-#'   \item{Label_Curated}{Label for coded feature values}
-#'   \item{Label_Raw}{Label in original data}
-#'   \item{FactorRank}{Used to determine order in values}
-#'   \item{ComparatorCode}{Assignment of numeric value to certain non-numeric values to enable comparison operations}
-#' }
-#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
-#' @author Bastian Reiter
-"Meta_Values"
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# DisclosureSettings.rda
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#' Disclosure settings when using CCPhos
-#'
-#' A \code{list} containing settings concerning data privacy and disclosure mitigation
-#'
-#' @format ## `DisclosureSettings`
-#' \code{list}
-#' \describe{
-#'    \item{Profile}{Can be 'strict' or 'loose'}
-#'    \item{NThreshold}{The minimum sample size required for transmission of aggregated data to client}
-#' }
-#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
-#' @author Bastian Reiter
-"DisclosureSettings"

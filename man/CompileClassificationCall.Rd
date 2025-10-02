@@ -18,7 +18,7 @@ CompileClassificationCall(
 
 \item{RuleProfile}{\code{string} - Profile name stated in rule set data frame}
 
-\item{ValueIfNoRuleMet}{\code{string} - Value (as string) of TargetFeature if no rules are fulfilled | Default = "NA"}
+\item{ValueIfNoRuleMet}{\code{string} - Value (NA or string) of TargetFeature if no rules are fulfilled - Default = NA}
 }
 \value{
 \code{string} containing an unevaluated dplyr::case_when() expression

@@ -1,7 +1,7 @@
 
-
-library(dsCCPhos)
 library(dplyr)
+library(dsCCPhos)
+library(dsFreda)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load CCP test data as raw data set
@@ -74,8 +74,8 @@ RawDataSet <- list(sample = sample,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rename tables of RawDataSet (the names are also changed when tables are being loaded into R server sessions)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-vc_Lookup <- paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated)
-names(vc_Lookup) <- dsCCPhos::Meta_Tables$TableName_Raw
+vc_Lookup <- dsCCPhos::Meta.Tables$TableName.Curated
+names(vc_Lookup) <- dsCCPhos::Meta.Tables$TableName.Raw
 
 names(RawDataSet) <- sapply(names(RawDataSet),
                             function(TableName) { vc_Lookup[TableName] })
@@ -85,12 +85,9 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 # Check Tables for existence and completeness
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "RawDataSet",
-                                   AssumeCCPDataSet.S = TRUE)
-                                   # RequiredTableNames.S = paste0("RDS_", dsCCPhos::Meta_Tables$TableName_Curated),
-                                   # RequiredFeatureNames.S = RequiredTableNames.S %>%
-                                   #                              map(\(tablename) filter(dsCCPhos::Meta_Features, TableName_Curated == str_remove(tablename, "RDS_"))$FeatureName_Raw) %>%
-                                   #                              set_names(RequiredTableNames.S))
+RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "RawDataSet",
+                                            Module.S = "CCP",
+                                            TransformationStage.S = "Raw")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,7 +129,7 @@ CurationOutput <- CurateDataDS(RawDataSetName.S = "RawDataSet",
 CuratedDataSet <- CurationOutput$CuratedDataSet
 
 CDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
-                                AssumeCCPDataSet.S = TRUE)
+                                   AssumeCCPDataSet.S = TRUE)
 
 
 

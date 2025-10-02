@@ -19,132 +19,136 @@ ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
                                         ProgressBarObject = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-    require(dplyr)
-    require(stringr)
-    require(tidyr)
+  require(assertthat)
+  require(dplyr)
+  require(stringr)
+  require(tidyr)
+
+  # --- For Testing Purposes ---
+  # DiagnosisEntries <- df_CDS_Diagnosis %>% filter(PatientID == "Pat_10013")
+  # RulesProfile = "Default"
+  # print(DiagnosisEntries$DiagnosisID[1])
+
+  # --- Argument Assertions ---
+  assert_that(is.data.frame(DiagnosisEntries),
+              is.list(RuleCalls))
+
+#-------------------------------------------------------------------------------
+
+  # Update progress bar object, if assigned in function call
+  if (!is.null(ProgressBarObject)) { ProgressBarObject$tick() }
 
 
-    # For function testing purposes
-    # DiagnosisEntries <- df_CDS_Diagnosis %>% filter(PatientID == "Pat_10013")
-    # RulesProfile = "Default"
-    # print(DiagnosisEntries$DiagnosisID[1])
+  # Create vector of names of features that determine identification of redundant diagnosis entry
+  PredictorFeatures = c("DiagnosisDate",
+                        "ICD10Code",
+                        "ICDOTopographyCode",
+                        "LocalizationSide",
+                        "HistologyDate",
+                        "ICDOMorphologyCode",
+                        "Grading")
 
+  # Arrange diagnosis entries by DiagnosisDate and lowest number of relevant NAs
+  DiagnosisEntries <- DiagnosisEntries %>%
+                          mutate(CountRelevantNAs = rowSums(is.na(across(all_of(PredictorFeatures))))) %>%
+                          arrange(DiagnosisDate, CountRelevantNAs)
 
-    # Update progress bar object, if assigned in function call
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (!is.null(ProgressBarObject)) { ProgressBarObject$tick() }
+  # First reference diagnosis
+  Reference <- DiagnosisEntries %>%
+                    slice_min(tibble(DiagnosisDate, HistologyDate)) %>%      # Select earliest diagnosis (or diagnoses)
+                    first()
 
+  # First set of candidates that are compared to reference diagnosis
+  Candidates <- DiagnosisEntries %>%
+                    filter(DiagnosisID != Reference$DiagnosisID)
 
-    # Create vector of names of features that determine identification of redundant diagnosis entry
-    PredictorFeatures = c("DiagnosisDate",
-                          "ICD10Code",
-                          "ICDOTopographyCode",
-                          "LocalizationSide",
-                          "HistologyDate",
-                          "ICDOMorphologyCode",
-                          "Grading")
+  # Add CountDeviatingValues (calculated below) to vector of predicting feature names
+  PredictorFeatures <- c("CountDeviatingValues", PredictorFeatures)
 
-    # Arrange diagnosis entries by DiagnosisDate and lowest number of relevant NAs
-    DiagnosisEntries <- DiagnosisEntries %>%
-                            mutate(CountRelevantNAs = rowSums(is.na(across(all_of(PredictorFeatures))))) %>%
-                            arrange(DiagnosisDate, CountRelevantNAs)
+  # Initiation of Output data frame
+  Output <- NULL
 
-    # First reference diagnosis
-    Reference <- DiagnosisEntries %>%
-                      slice_min(tibble(DiagnosisDate, HistologyDate)) %>%      # Select earliest diagnosis (or diagnoses)
-                      first()
+  if (nrow(Candidates) == 0)      # In case the input data frame consists of one single diagnosis entry the loop below will not be executed, therefore the Output is simply the one diagnosis entry
+  {
+      Output <- Reference
 
-    # First set of candidates that are compared to reference diagnosis
-    Candidates <- DiagnosisEntries %>%
-                      filter(DiagnosisID != Reference$DiagnosisID)
+  } else {
 
-    # Add CountDeviatingValues (calculated below) to vector of predicting feature names
-    PredictorFeatures <- c("CountDeviatingValues", PredictorFeatures)
+      # Loop through all remaining "unassociated" diagnoses, as long as there are still candidates that are likely redundant with reference
+      while (nrow(Candidates) > 0)
+      {
+          # Apply rules on identification of redundant diagnosis entries set by predefined data frame. Creates TRUE values in new variable 'IsLikelyRedundant'.
+          Candidates <- Candidates %>%
+                            rowwise() %>%
+                                mutate(CountDeviatingValues = CountDeviations(CandidateEntry = pick(all_of(setdiff(PredictorFeatures, "CountDeviatingValues"))),
+                                                                              ReferenceEntry = Reference,
+                                                                              ComparedFeatures = setdiff(PredictorFeatures, "CountDeviatingValues"))) %>%
+                            ungroup() %>%
+                            mutate(IsLikelyRedundant = eval(parse(text = RuleCalls[["IsLikelyRedundant"]])))
 
-    # Initiation of Output data frame
-    Output <- NULL
+          # Filter for diagnoses classified as redundancies
+          # Collect DiagnosisIDs and number of redundancies
+          Redundancies <- Candidates %>%
+                            filter(IsLikelyRedundant == TRUE) %>%
+                            mutate(CountRedundancies = n(),
+                                   RedundantIDs = list(DiagnosisID),
+                                   RedundantOriginalIDs = list(OriginalDiagnosisID))
 
-    if (nrow(Candidates) == 0)      # In case the input data frame consists of one single diagnosis entry the loop below will not be executed, therefore the Output is simply the one diagnosis entry
-    {
-        Output <- Reference
+          # If there are missings in Reference diagnosis, take values from redundant entries if available there
+          # and consolidate in one joint diagnosis entry
+          JointDiagnosis <- bind_rows(Reference, Redundancies) %>%
+                                select(-c(CountDeviatingValues,
+                                          IsLikelyRedundant)) %>%
+                                fill(everything(), .direction = "down") %>%      # Partly responsible for slow function performance
+                                fill(everything(), .direction = "up") %>%
+                                filter(DiagnosisID == Reference$DiagnosisID)
 
-    } else {
+          # Add consolidated JointDiagnosis to Output
+          Output <- bind_rows(Output,
+                              JointDiagnosis)
 
-        # Loop through all remaining "unassociated" diagnoses, as long as there are still candidates that are likely redundant with reference
-        while (nrow(Candidates) > 0)
-        {
-            # Apply rules on identification of redundant diagnosis entries set by predefined data frame. Creates TRUE values in new variable 'IsLikelyRedundant'.
-            Candidates <- Candidates %>%
-                              rowwise() %>%
-                                  mutate(CountDeviatingValues = CountDeviations(CandidateEntry = pick(all_of(setdiff(PredictorFeatures, "CountDeviatingValues"))),
-                                                                                ReferenceEntry = Reference,
-                                                                                ComparedFeatures = setdiff(PredictorFeatures, "CountDeviatingValues"))) %>%
-                              ungroup() %>%
-                              mutate(IsLikelyRedundant = eval(parse(text = RuleCalls[["IsLikelyRedundant"]])))
+          # Assign new reference diagnosis
+          Reference <- Candidates %>%
+                            filter(IsLikelyRedundant == FALSE)
 
-            # Filter for diagnoses classified as redundancies
-            # Collect DiagnosisIDs and number of redundancies
-            Redundancies <- Candidates %>%
-                              filter(IsLikelyRedundant == TRUE) %>%
-                              mutate(CountRedundancies = n(),
-                                     RedundantIDs = list(DiagnosisID),
-                                     RedundantOriginalIDs = list(OriginalDiagnosisID))
+          # If a new Reference exists
+          if (nrow(Reference) > 0)
+          {
+              Reference <- Reference %>%
+                                slice_min(tibble(DiagnosisDate, HistologyDate)) %>%
+                                first()
+          }
 
-            # If there are missings in Reference diagnosis, take values from redundant entries if available there
-            # and consolidate in one joint diagnosis entry
-            JointDiagnosis <- bind_rows(Reference, Redundancies) %>%
-                                  select(-c(CountDeviatingValues,
-                                            IsLikelyRedundant)) %>%
-                                  fill(everything(), .direction = "down") %>%      # Partly responsible for slow function performance
-                                  fill(everything(), .direction = "up") %>%
-                                  filter(DiagnosisID == Reference$DiagnosisID)
+          # Assign new candidates for redundant diagnoses
+          Candidates <- Candidates %>%
+                            filter(IsLikelyRedundant == FALSE) %>%
+                            filter(DiagnosisID != Reference$DiagnosisID)
+      }
 
-            # Add consolidated JointDiagnosis to Output
-            Output <- bind_rows(Output,
-                                JointDiagnosis)
+      # If there are no more candidates (end of while-loop) but a single Reference entry
+      if (nrow(Reference) > 0)
+      {
+          # Delete auxiliary features
+          Reference <- Reference %>%
+                            select(-c(CountDeviatingValues,
+                                      IsLikelyRedundant))
+          # Add last Reference to Output
+          Output <- bind_rows(Output,
+                              Reference)
+      }
+  }
 
-            # Assign new reference diagnosis
-            Reference <- Candidates %>%
-                              filter(IsLikelyRedundant == FALSE)
+  # Process Output data frame
+  Output <- Output %>%
+                select(-CountRelevantNAs)
 
-            # If a new Reference exists
-            if (nrow(Reference) > 0)
-            {
-                Reference <- Reference %>%
-                                  slice_min(tibble(DiagnosisDate, HistologyDate)) %>%
-                                  first()
-            }
+  # In case no redundancies were classified anywhere, attach empty column "CountRedundancies" for subsequential syntax consistency
+  if ("CountRedundancies" %in% names(Output) == FALSE)
+  {
+      Output <- Output %>%
+                    mutate(CountRedundancies = NA)
+  }
 
-            # Assign new candidates for redundant diagnoses
-            Candidates <- Candidates %>%
-                              filter(IsLikelyRedundant == FALSE) %>%
-                              filter(DiagnosisID != Reference$DiagnosisID)
-        }
-
-        # If there are no more candidates (end of while-loop) but a single Reference entry
-        if (nrow(Reference) > 0)
-        {
-            # Delete auxiliary features
-            Reference <- Reference %>%
-                              select(-c(CountDeviatingValues,
-                                        IsLikelyRedundant))
-            # Add last Reference to Output
-            Output <- bind_rows(Output,
-                                Reference)
-        }
-    }
-
-    # Process Output data frame
-    Output <- Output %>%
-                  select(-CountRelevantNAs)
-
-    # In case no redundancies were classified anywhere, attach empty column "CountRedundancies" for subsequential syntax consistency
-    if ("CountRedundancies" %in% names(Output) == FALSE)
-    {
-        Output <- Output %>%
-                      mutate(CountRedundancies = NA)
-    }
-
-
-    return(as.data.frame(Output))
+#-------------------------------------------------------------------------------
+  return(as.data.frame(Output))
 }
