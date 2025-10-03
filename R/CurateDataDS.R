@@ -253,7 +253,6 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
   # Initiate Messaging objects
   Messages <- list()
-  Messages$RawFeatureNames <- character()
   Messages$ExcludedEntries_Primary <- character()
   Messages$ExcludedEntries_Secondary <- character()
   Messages$ExcludedEntries_SecondaryRedundancy <- character()
@@ -294,53 +293,6 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
   # Reestablish original order of tables in 'DataSet' list
   DataSet <- DataSet[AllTableNames]
-
-
-# Try to harmonize raw feature names using fuzzy string matching
-#-------------------------------------------------------------------------------
-  # DataSet <- DataSet %>%
-  #                 imap(function(Table, tablename)
-  #                      {
-  #                         # Get expected raw feature names
-  #                         EligibleFeatureNames <- filter(dsCCPhos::Meta.Features, TableName.Curated == tablename)$FeatureName.Raw
-  #
-  #                         # Create tibble containing tracks of all feature names, including harmonization attempt with fuzzy string matching
-  #                         FeatureNames <- tibble(Original = names(Table),
-  #                                                IsEligible = (Original %in% EligibleFeatureNames),
-  #                                                Harmonized = GetFuzzyStringMatches(Vector = Original,
-  #                                                                                   EligibleStrings = EligibleFeatureNames,
-  #                                                                                   PreferredMethod = "jw",
-  #                                                                                   Tolerance = 0.3),
-  #                                                ChosenName = case_when(IsEligible == FALSE ~ Harmonized,
-  #                                                                       .default = Original),
-  #                                                Changed = !(Original == ChosenName))
-  #
-  #                         # Re-assign names to current 'Table', possibly changing original feature names
-  #                         names(Table) <- FeatureNames$ChosenName
-  #
-  #                         # Obtain changed feature names for messaging
-  #                         ChangedNames <- FeatureNames %>%
-  #                                             filter(Changed == TRUE)
-  #
-  #                         if (length(ChangedNames) == 0 || nrow(ChangedNames) == 0)
-  #                         {
-  #                             Messages$RawFeatureNames <- "Raw feature names left unchanged."
-  #
-  #                         } else {
-  #
-  #                             for (i in 1:nrow(ChangedNames))
-  #                             {
-  #                                 Message <- paste0("Changed feature name '", ChangedNames$Original[i], "' to '", ChangedNames$ChosenName[i], "'.")
-  #                                 cli::cat_bullet(Message, bullet = "info")
-  #
-  #                                 # Save messages in output object
-  #                                 Messages$RawFeatureNames <- c(Messages$RawFeatureNames,
-  #                                                               info = Message)
-  #                             }
-  #                         }
-  #
-  #                         return(Table)
-  #                      })
 
 
 # Rename features from harmonized raw feature names to curated feature names
@@ -686,7 +638,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                                   EligibleValueSet <- dsCCPhos::Meta.Values %>%
                                                           filter(Table == tablename,
                                                                  FeatureName.Curated == featurename) %>%
-                                                          pull(Value.Curated)
+                                                          pull(Value.Raw)   # Eligible Values BEFORE recoding
 
                                   TransformativeExpressions <- Settings$DataHarmonization$TransformativeExpressions %>%
                                                                     filter(Table == tablename,
