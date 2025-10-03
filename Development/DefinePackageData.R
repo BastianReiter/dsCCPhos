@@ -5,10 +5,10 @@ library(usethis)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Read in Meta Data and Settings from xlsx-file
+# Read in Package Data from xlsx-file
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ExcelFilePath <- "./Development/Data/MetaData/MetaDataCCPhos.xlsx"
+ExcelFilePath <- "./Development/Data/PackageData/PackageDataCCPhos.xlsx"
 
 Sheetnames <- c("Meta.Tables",
                 "Meta.Features",
@@ -61,7 +61,7 @@ for (sheetname in Sheetnames)
 # Resource data from TinkerLab
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Res.CancerGrouping <- TinkerLab::CancerGrouping
+Res.CancerGrouping <- TinkerLab::Res.CancerGrouping
 
 # Save data in .rda-file and make it part of package
 use_data(Res.CancerGrouping, overwrite = TRUE)
@@ -71,8 +71,8 @@ use_data(Res.CancerGrouping, overwrite = TRUE)
 # Disclosure Settings
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DisclosureSettings <- list(Profile = "loose",     # Optional: 'strict', 'loose'
-                           NThreshold = 5)
+CCPhosDisclosureSettings <- list(Profile = "loose",     # Optional: 'strict', 'loose'
+                                 NThreshold = 5)
 
 # Save data in .rda-file and make it part of package
-use_data(DisclosureSettings, overwrite = TRUE)
+use_data(CCPhosDisclosureSettings, overwrite = TRUE)
