@@ -253,6 +253,8 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
   # Initiate Messaging objects
   Messages <- list()
+  Messages$AddedFeatures <- character()
+  Messages$RemovedFeatures <- character()
   Messages$ExcludedEntries_Primary <- character()
   Messages$ExcludedEntries_Secondary <- character()
   Messages$ExcludedEntries_SecondaryRedundancy <- character()
@@ -271,8 +273,9 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 # MODULE A)  Harmonization of Raw Data Set meta data and structure
 #===============================================================================
 #   - Add empty tables in data set if they are missing in raw data
-#   - Rename features
-#   - In tables with missing features, add empty features accordingly
+#   - Recode feature names according to meta data
+#   - Add empty features in case of missing feature names
+#   - Remove unknown features
 #-------------------------------------------------------------------------------
 
 
@@ -306,13 +309,13 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                           vc_Lookup <- filter(dsCCPhos::Meta.Features, TableName.Curated == tablename)$FeatureName.Raw
                           names(vc_Lookup) <- filter(dsCCPhos::Meta.Features, TableName.Curated == tablename)$FeatureName.Curated
 
-                          if (!is_empty(Table))
+                          if (length(Table) > 0)
                           {
                               # Rename feature names according to look-up vector
                               Table %>% rename(any_of(vc_Lookup))      # Returns a tibble
-                          }
-                          else
-                          {
+
+                          } else {
+
                               # Create empty data.frame with pre-defined column names
                               df <- data.frame(matrix(nrow = 0,
                                                       ncol = length(names(vc_Lookup)))) %>%
@@ -324,30 +327,52 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                        })
 
 
-# In tables with missing features, add empty features accordingly
+# Add empty features in case of missing feature names and remove unknown existing features
 #-------------------------------------------------------------------------------
 
   DataSet <- DataSet %>%
                   imap(function(Table, tablename)
                        {
-                          # Determine missing features
-                          RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta.Features, TableName.Curated == tablename)$FeatureName.Curated
+                          # Determine missing and unknown features
+                          RequiredFeatureNames <- dplyr::filter(dsFredaP21::Meta.Features, TableName.Curated == tablename)$FeatureName.Curated
                           PresentFeatureNames <- names(Table)
                           MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
+                          UnknownFeatures <- names(Table)[!(names(Table) %in% RequiredFeatureNames)]
 
                           # If a table misses features, add empty columns accordingly
                           if (length(MissingFeatures) > 0)
                           {
-                              ComplementedDataFrame <- Table %>%
-                                                          mutate(!!!set_names(rep(list(NA_character_), length(MissingFeatures)), MissingFeatures))
+                              Table <- Table %>%
+                                            mutate(!!!set_names(rep(list(NA_character_), length(MissingFeatures)), MissingFeatures))
 
-                              return(ComplementedDataFrame)
+                              # Print message
+                              Message <- paste0("Table '", tablename, "': Added empty vector for missing features ", paste0("'", MissingFeatures, "'", collapse = ", "), ".")
+                              cli::cat_bullet(Message, bullet = "info")
+                              cat("\n")
 
-                          } else {
-
-                            return(Table)
+                              # Save message for output
+                              Messages$AddedFeatures <- c(Messages$AddedFeatures,
+                                                          info = Message)
                           }
+
+                          # The following effectively removes all unknown features
+                          Table <- Table %>%
+                                        select(all_of(RequiredFeatureNames))
+
+                          # Print and save messages for removed features
+                          if (length(UnknownFeatures) > 0)
+                          {
+                              Message <- paste0("Table '", tablename, "': Removed unknown features ", paste0("'", UnknownFeatures, "'", collapse = ", "), "!")
+                              cli::cat_bullet(Message, bullet = "warning", bullet_col = "red")
+                              cat("\n")
+
+                              Messages$RemovedFeatures <- c(Messages$RemovedFeatures,
+                                                            warning = Message)
+                          }
+
+                          return(Table)
                        })
+
 
 
 #===============================================================================
@@ -403,7 +428,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                        {
                           try(ProgressBar$tick())
 
-                          if (!(is.null(Table) | length(Table) == 0 | nrow(Table) == 0))
+                          if (length(Table) > 0 && nrow(Table) > 0)
                           {
                               # Join current table with preselection of 'DataSetRoot'
                               if (all(c("PatientID", "DiagnosisID") %in% names(Table)))
@@ -503,22 +528,34 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #===============================================================================
 # MODULE D)  Data Harmonization / Transformation
 #===============================================================================
-#   1) Definition of features to monitor during Transformation
-#   2) Tracking of raw feature values
-#   3) Data harmonization (correctional transformation)
-#   4) Tracking of harmonized feature values
-#   5) Data recoding and formatting
-#   6) Tracking of recoded / formatted feature values
-#   7) Finalize transformation of data
+#   1) Conversion of all features into type character prior to definitive feature-specific formatting
+#   2) Definition of features to monitor during Transformation
+#   3) Tracking of raw feature values
+#   4) Data harmonization (correctional transformation)
+#   5) Tracking of harmonized feature values
+#   6) Data recoding and formatting
+#   7) Tracking of recoded / formatted feature values
+#   8) Finalize transformation of data
 #        - Removing of ineligible values
 #        - Optional conversion to factor
-#   8) Tracking of finalized feature values
-#   9) Compilation of monitor objects for reporting
+#   9) Tracking of finalized feature values
+#   10) Compilation of monitor objects for reporting
 #-------------------------------------------------------------------------------
+
+#===============================================================================
+# Module D 1)  Conversion of all features into type character prior to definitive formatting
+#===============================================================================
+
+  DataSet <- DataSet %>%
+                  imap(function(Table, tablename)
+                       {
+                          Table <- Table %>%
+                                      mutate(across(everything(), ~ as_character(.x)))
+                       })
 
 
 #===============================================================================
-# Module D 1)  Definition of tracked features and their sets of eligible values
+# Module D 2)  Definition of tracked features and their sets of eligible values
 #===============================================================================
 #     - Create meta data on eligible value sets of features to be tracked / monitored during curation process
 #     - Element object syntax: List of vectors
@@ -554,7 +591,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
-# Module D 2)  Track feature values of raw data
+# Module D 3)  Track feature values of raw data
 #===============================================================================
 #   - Get unique raw values and their frequencies for monitoring
 #   - Copy values of monitored features and mark them with TrackID that has correspondent in actually processed data frames
@@ -600,12 +637,12 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
-# Module D 3)  Data Harmonization (correctional transformation)
+# Module D 4)  Data Harmonization (correctional transformation)
 #===============================================================================
-#   Step-wise approach incorporating the following methods (controlled by meta data / arguments)
-#   1. Transformative expressions
-#   2. Dictionary look-up
-#   3. Fuzzy String Matching
+#   Step-wise approach incorporating the following methods (feature-specific selection and order defined by passed settings)
+#     - Transformative expressions
+#     - Dictionary look-up
+#     - Fuzzy String Matching
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -674,7 +711,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
-# Module D 4)  Track feature values after Harmonization
+# Module D 5)  Track feature values after Harmonization
 #===============================================================================
 
 # Map raw values to their harmonized state to get transformation tracks
@@ -732,7 +769,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
-# Module D 5)  Data recoding and formatting
+# Module D 6)  Data recoding and formatting
 #===============================================================================
 #   - Recoding data using dsCCPhos::RecodeData() based on specifications in dsCCPhos::Meta.Values
 #   - RecodeData() uses a dictionary in the form of a named vector to perform recoding on a target vector
@@ -801,7 +838,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
-# Module D 6)  Track feature values after Recoding
+# Module D 7)  Track feature values after Recoding
 #===============================================================================
 
 # Map raw values to their recoded state to get transformation tracks
@@ -860,7 +897,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
-# Module D 7)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
+# Module D 8)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
 #===============================================================================
 #   - (Optional / Default) Exclusion of ineligible data (including data that could not be transformed)
 #   - (Optional) Conversion to ordered factor
@@ -910,7 +947,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
-# Module D 8)  Track Feature Values after Finalized Transformation
+# Module D 9)  Track Feature Values after Finalized Transformation
 #===============================================================================
 
 # Map raw values to their finalized state to get transformation tracks
@@ -969,7 +1006,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
-# Module D 9)  Merge monitor objects into coherent summaries
+# Module D 10)  Merge monitor objects into coherent summaries
 #===============================================================================
 
 # Summarize Transformation Tracks
@@ -1203,7 +1240,6 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                           try(Table %>% select(-TrackID))
                       })
 
-
   # Print info message
   cli::cat_bullet("Data transformation monitors are stored in 'CurationReport$Transformation'", bullet = "info")
   cat("\n")
@@ -1319,16 +1355,16 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
   try(ProgressBar$tick())
 
-  # Using dsCCPhos::FindRedundantEntries(), mark redundant entries in table 'Diagnosis' for further processing
+  # Using dsFreda::FindRedundantEntries(), mark redundant entries in table 'Diagnosis' for further processing
   Aux_DiagnosisRedundancies <- DataSet$Diagnosis %>%
-                                    FindRedundantEntries(PrimaryKeyFeature = "DiagnosisID",
-                                                         DiscriminatoryFeatures = Meta.Features %>%
-                                                                                      filter(TableName.Curated == "Diagnosis", IsDiscriminatory == TRUE) %>%
-                                                                                      pull(FeatureName.Curated),
-                                                         EssentialFeatures = Meta.Features %>%
-                                                                                  filter(TableName.Curated == "Diagnosis", IsEssential == TRUE) %>%
-                                                                                  pull(FeatureName.Curated),
-                                                         RemoveRedundantEntries = FALSE)
+                                    dsFreda::FindRedundantEntries(PrimaryKeyFeature = "DiagnosisID",
+                                                                  DiscriminatoryFeatures = Meta.Features %>%
+                                                                                               filter(TableName.Curated == "Diagnosis", IsDiscriminatory == TRUE) %>%
+                                                                                               pull(FeatureName.Curated),
+                                                                  EssentialFeatures = Meta.Features %>%
+                                                                                           filter(TableName.Curated == "Diagnosis", IsEssential == TRUE) %>%
+                                                                                           pull(FeatureName.Curated),
+                                                                  RemoveRedundantEntries = FALSE)
 
   # Any DiagnosisIDs that are removed due to redundancy need to be replaced in dependent tables
   # Create a mapping structure to know which IDs to replace
@@ -1364,16 +1400,16 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
                               # ... then proceed with secondary redundancy removal
                               Table <- Table %>%
-                                            FindRedundantEntries(PrimaryKeyFeature = Meta.Features %>%
-                                                                                          filter(TableName.Curated == tablename, IsPrimaryKey == TRUE) %>%
-                                                                                          pull(FeatureName.Curated),
-                                                                 DiscriminatoryFeatures = Meta.Features %>%
-                                                                                              filter(TableName.Curated == tablename, IsDiscriminatory == TRUE) %>%
-                                                                                              pull(FeatureName.Curated),
-                                                                 EssentialFeatures = Meta.Features %>%
-                                                                                          filter(TableName.Curated == tablename, IsEssential == TRUE) %>%
-                                                                                          pull(FeatureName.Curated),
-                                                                 RemoveRedundantEntries = TRUE)
+                                            dsFreda::FindRedundantEntries(PrimaryKeyFeature = Meta.Features %>%
+                                                                                                   filter(TableName.Curated == tablename, IsPrimaryKey == TRUE) %>%
+                                                                                                   pull(FeatureName.Curated),
+                                                                          DiscriminatoryFeatures = Meta.Features %>%
+                                                                                                       filter(TableName.Curated == tablename, IsDiscriminatory == TRUE) %>%
+                                                                                                       pull(FeatureName.Curated),
+                                                                          EssentialFeatures = Meta.Features %>%
+                                                                                                   filter(TableName.Curated == tablename, IsEssential == TRUE) %>%
+                                                                                                   pull(FeatureName.Curated),
+                                                                          RemoveRedundantEntries = TRUE)
 
                           } else { return(Table) }
                        })
