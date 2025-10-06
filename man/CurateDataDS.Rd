@@ -63,7 +63,7 @@ CurateDataDS(
 \itemize{ \item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}
 \item \emph{TableNormalization} - \code{list}
 \itemize{ \item Run \code{logical} - Whether or not to perform table normalization - Default: \code{TRUE}
-\item RuleSet \code{data.frame} - Deault: \code{dsCCPhos::Proc.TableNormalization}
+\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Proc.TableNormalization}
 \item RuleSet.Profile \code{string} - Profile name defining rule set to be used for table normalization. Profile name must be stated in \code{TableNormalization$RuleSet} - Default: 'Default'}}}
 }
 \value{
