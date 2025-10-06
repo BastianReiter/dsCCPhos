@@ -29,7 +29,6 @@ DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
 
   # Get local object: Parse expression and evaluate
   RawDataSet <- eval(parse(text = RawDataSetName.S), envir = parent.frame())
-  SampleSize <- SampleSize.S
 
 #-------------------------------------------------------------------------------
 # Sample PatientIDs and subset RDS tables accordingly
@@ -39,21 +38,21 @@ DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
   #AllPatientIDs <- RawDataSet$RDS_Patient$PatientID
   AvailableNumberPatients <- length(unique(AllPatientIDs))
 
-  if (SampleSize > AvailableNumberPatients) { SampleSize <- AvailableNumberPatients }
-
+  # Reduce SampleSize.S if necessary
+  if (SampleSize.S > AvailableNumberPatients) { SampleSize.S <- AvailableNumberPatients }
 
   # Get a random sample of PatientIDs
   SampleIDs <- sample(AllPatientIDs,
-                      size = SampleSize)
+                      size = SampleSize.S)
 
   # Subset RDS tables with sampled PatientIDs
   RawDataSetSample <- RawDataSet %>%
                           imap(function(Table, tablename)
                                {
-                                  if (length(Table) > 0 && !is.null(Table) && !is_empty(Table) && nrow(Table) > 0)
+                                  if (length(Table) > 0 && nrow(Table) > 0)
                                   {
-                                      if (tablename == "RDS_Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
-                                      else if (tablename %in% c("RDS_GeneralCondition", "RDS_OtherClassification", "RDS_TherapyRecommendation")) { return(filter(Table, Table$PatientID %in% SampleIDs)) }
+                                      if (tablename == "RDS.Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
+                                      else if (tablename %in% c("RDS.GeneralCondition", "RDS.OtherClassification", "RDS.TherapyRecommendation")) { return(filter(Table, Table$PatientID %in% SampleIDs)) }
                                       else { return(filter(Table, Table$'patient-id' %in% SampleIDs)) }
                                   }
                                   else { return(NULL) }
