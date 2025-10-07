@@ -334,7 +334,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                   imap(function(Table, tablename)
                        {
                           # Determine missing and unknown features
-                          RequiredFeatureNames <- dplyr::filter(dsFredaP21::Meta.Features, TableName.Curated == tablename)$FeatureName.Curated
+                          RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta.Features, TableName.Curated == tablename)$FeatureName.Curated
                           PresentFeatureNames <- names(Table)
                           MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
                           UnknownFeatures <- names(Table)[!(names(Table) %in% RequiredFeatureNames)]
