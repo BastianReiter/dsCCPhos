@@ -550,7 +550,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                   imap(function(Table, tablename)
                        {
                           Table <- Table %>%
-                                      mutate(across(everything(), ~ as_character(.x)))
+                                      mutate(across(everything(), ~ as.character(.x)))
                        })
 
 
