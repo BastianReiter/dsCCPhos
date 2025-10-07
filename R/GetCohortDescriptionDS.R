@@ -6,7 +6,7 @@
 #' Server-side AGGREGATE method
 #'
 #' @param DataSetName.S \code{string} - Name of Data Set object (list) on server, usually "RawDataSet", "CuratedDataSet" or "AugmentedDataSet"
-#' @param CCPDataSetType.S \code{string} - Indicating the type of CCP data set that should be described, one of "RDS" / "CDS" / "ADS" - Default: "ADS"
+#' @param Stage.S \code{string} - Indicating the transformation stage of the described data set, one of "Raw" / "Curated" / "Augmented" - Default: "Augmented"
 #'
 #' @return \code{list}
 #' @export
@@ -14,7 +14,7 @@
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
-                                   CCPDataSetType.S = "ADS")
+                                   Stage.S = "Augmented")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
   require(assertthat)
@@ -24,9 +24,9 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
   # --- For Testing Purposes ---
   # DataSet <- AugmentedDataSet
 
-  # --- Argument Assertions ---
+  # --- Argument Validation ---
   assert_that(is.string(DataSetName.S),
-              is.string(CCPDataSetType.S))
+              is.string(Stage.S))
 
 #-------------------------------------------------------------------------------
 
@@ -45,9 +45,9 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
                               ungroup()
 
 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # Cohort Size
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#-------------------------------------------------------------------------------
+# Cohort Size
+#-------------------------------------------------------------------------------
   CohortSize <- CohortData %>%
                     summarize(PatientCount = n_distinct(PatientID),
                               DiagnosisCount = n_distinct(DiagnosisID)) %>%
@@ -62,9 +62,9 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
                                   mutate(DiagnosesPerPatient = DiagnosisCount / PatientCount)
 
 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # Age Groups
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#-------------------------------------------------------------------------------
+# Age Groups
+#-------------------------------------------------------------------------------
   Age <- CohortDataSingleDiag %>%
             select(PatientID, DiagnosisID, DiagnosisDate, PatientAgeAtDiagnosis) %>%
             mutate(AgeGroup = case_when(PatientAgeAtDiagnosis < 18 ~ "< 18",
@@ -93,9 +93,9 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
             arrange(AgeGroup)
 
 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # Sex Distribution
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#-------------------------------------------------------------------------------
+# Sex Distribution
+#-------------------------------------------------------------------------------
 
   Sex <- CohortDataSingleDiag %>%
               group_by(Sex) %>%
@@ -111,10 +111,7 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
                                   values_from = N)
 
 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # Return
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+#-------------------------------------------------------------------------------
   return(list(CohortSize = CohortSize,
               CohortSize_OverTime = CohortSize_OverTime,
               Sex = Sex,
