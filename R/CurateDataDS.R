@@ -352,7 +352,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
                               # Save message for output
                               Messages$AddedFeatures <- c(Messages$AddedFeatures,
-                                                          info = Message)
+                                                          Info = Message)
                           }
 
                           # The following effectively removes all unknown features
@@ -367,7 +367,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                               cat("\n")
 
                               Messages$RemovedFeatures <- c(Messages$RemovedFeatures,
-                                                            warning = Message)
+                                                            Warning = Message)
                           }
 
                           return(Table)
@@ -486,7 +486,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
       # Save messages in output object
       Messages$ExcludedEntries_Primary <- c(Messages$ExcludedEntries_Primary,
-                                            info = Message)
+                                            Info = Message)
   }
   cat("\n")
 
@@ -1333,7 +1333,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
       # Save messages in output object
       Messages$ExcludedEntries_Secondary <- c(Messages$ExcludedEntries_Secondary,
-                                              info = Message)
+                                              Info = Message)
   }
   cat("\n")
 
@@ -1437,7 +1437,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
       # Save messages in output object
       Messages$ExcludedEntries_SecondaryRedundancy <- c(Messages$ExcludedEntries_SecondaryRedundancy,
-                                                        info = Message)
+                                                        Info = Message)
   }
   cat("\n")
 
