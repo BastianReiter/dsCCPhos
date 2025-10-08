@@ -39,7 +39,7 @@ A \code{list} containing the following objects:
 \item Diagnosis
 \item Patient}
 \item AugmentationReport \code{list}
-\item AugmentationMessages \code{list}}
+\item Messages \code{list}}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}} \cr\cr

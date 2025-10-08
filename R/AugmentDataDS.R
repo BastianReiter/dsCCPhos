@@ -24,7 +24,7 @@
 #'                               \item Diagnosis
 #'                               \item Patient}
 #'                  \item AugmentationReport \code{list}
-#'                  \item AugmentationMessages \code{list}}
+#'                  \item Messages \code{list}}
 #' @export
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1207,7 +1207,7 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
   #   # Return the Augmented Data Set (ADS), an Augmentation Report (defined above) and Messages
     return(list(AugmentedDataSet = ADS,
                 AugmentationReport = ls_AugmentationReport,
-                AugmentationMessages = Messages))
+                Messages = Messages))
   # })
 
 }
