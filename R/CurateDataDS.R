@@ -62,7 +62,7 @@
 #'                                    \itemize{ \item Monitors
 #'                                              \item EligibilityOverviews
 #'                                              \item ValueSetOverviews}}
-#'                  \item CurationMessages \code{list}}
+#'                  \item Messages \code{list}}
 #' @export
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1506,7 +1506,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
   #   # Return the Curated Data Set (CDS) a Curation Report (defined above) and Messages
     return(list(CuratedDataSet = DataSet,
                 CurationReport = CurationReport,
-                CurationMessages = Messages))
+                Messages = Messages))
   # })
 
 }

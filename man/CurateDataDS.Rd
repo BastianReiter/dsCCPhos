@@ -97,7 +97,7 @@ A \code{list} containing the following objects:
 \itemize{ \item Monitors
 \item EligibilityOverviews
 \item ValueSetOverviews}}
-\item CurationMessages \code{list}}
+\item Messages \code{list}}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}} \cr\cr
