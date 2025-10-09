@@ -1358,10 +1358,10 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
   # Using dsFreda::FindRedundantEntries(), mark redundant entries in table 'Diagnosis' for further processing
   Aux_DiagnosisRedundancies <- DataSet$Diagnosis %>%
                                     dsFreda::FindRedundantEntries(PrimaryKeyFeature = "DiagnosisID",
-                                                                  DiscriminatoryFeatures = Meta.Features %>%
+                                                                  DiscriminatoryFeatures = dsCCPhos::Meta.Features %>%
                                                                                                filter(TableName.Curated == "Diagnosis", IsDiscriminatory == TRUE) %>%
                                                                                                pull(FeatureName.Curated),
-                                                                  EssentialFeatures = Meta.Features %>%
+                                                                  EssentialFeatures = dsCCPhos::Meta.Features %>%
                                                                                            filter(TableName.Curated == "Diagnosis", IsEssential == TRUE) %>%
                                                                                            pull(FeatureName.Curated),
                                                                   RemoveRedundantEntries = FALSE)
@@ -1400,13 +1400,13 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
                               # ... then proceed with secondary redundancy removal
                               Table <- Table %>%
-                                            dsFreda::FindRedundantEntries(PrimaryKeyFeature = Meta.Features %>%
+                                            dsFreda::FindRedundantEntries(PrimaryKeyFeature = dsCCPhos::Meta.Features %>%
                                                                                                    filter(TableName.Curated == tablename, IsPrimaryKey == TRUE) %>%
                                                                                                    pull(FeatureName.Curated),
-                                                                          DiscriminatoryFeatures = Meta.Features %>%
+                                                                          DiscriminatoryFeatures = dsCCPhos::Meta.Features %>%
                                                                                                        filter(TableName.Curated == tablename, IsDiscriminatory == TRUE) %>%
                                                                                                        pull(FeatureName.Curated),
-                                                                          EssentialFeatures = Meta.Features %>%
+                                                                          EssentialFeatures = dsCCPhos::Meta.Features %>%
                                                                                                    filter(TableName.Curated == tablename, IsEssential == TRUE) %>%
                                                                                                    pull(FeatureName.Curated),
                                                                           RemoveRedundantEntries = TRUE)
