@@ -9,6 +9,7 @@
 #' @param Stage.S \code{string} - Indicating the transformation stage of the described data set, one of "Raw" / "Curated" / "Augmented" - Default: "Augmented"
 #'
 #' @return \code{list}
+#'
 #' @export
 #'
 #' @author Bastian Reiter
@@ -17,10 +18,6 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
                                    Stage.S = "Augmented")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-  require(assertthat)
-  require(dplyr)
-  require(tidyr)
-
   # --- For Testing Purposes ---
   # DataSet <- AugmentedDataSet
 

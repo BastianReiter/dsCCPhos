@@ -63,7 +63,9 @@
 #'                                              \item EligibilityOverviews
 #'                                              \item ValueSetOverviews}}
 #'                  \item Messages \code{list}}
+#'
 #' @export
+#'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
@@ -158,16 +160,6 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #
 #===============================================================================
 
-  require(assertthat)
-  require(dplyr)
-  require(dsFreda)
-  require(lubridate)
-  require(progress)
-  require(purrr)
-  require(rlang)
-  require(stats)
-  require(stringr)
-  require(tidyr)
 
   # --- For Testing Purposes ---
   # DataSet <- RawDataSet
@@ -217,7 +209,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
   if (is.null(Settings$TableNormalization$RuleSet)) { Settings$TableNormalization$RuleSet <- dsCCPhos::Proc.TableNormalization }
   if (is.null(Settings$TableNormalization$RuleSet.Profile)) { Settings$TableNormalization$RuleSet.Profile <- "Default" }
 
-  # --- Argument Assertions ---
+  # --- Argument Validation ---
   assert_that(is.string(RawDataSetName.S))
 
   if (Settings$FeatureObligations$RuleSet.Profile %in% names(Settings$FeatureObligations$RuleSet) == FALSE)

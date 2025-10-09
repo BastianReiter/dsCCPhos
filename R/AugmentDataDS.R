@@ -25,7 +25,9 @@
 #'                               \item Patient}
 #'                  \item AugmentationReport \code{list}
 #'                  \item Messages \code{list}}
+#'
 #' @export
+#'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
@@ -98,14 +100,6 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 #
 #===============================================================================
 
-  require(assertthat)
-  require(dplyr)
-  require(lubridate)
-  require(purrr)
-  # require(slider)
-  require(stringr)
-  require(tidyr)
-
   # --- For Testing Purposes ---
   # CDS <- CuratedDataSet
   # Settings.S <- list(CutoffValues = list(DaysDiagnosisToInitialStaging = 50),
@@ -139,7 +133,7 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
                                                                     TargetEvent = c(EventClass = "VitalStatus",
                                                                                     EventSubclass = "Deceased")) }
 
-  # --- Argument Assertions ---
+  # --- Argument Validation ---
   assert_that(is.string(CuratedDataSetName.S))
 
 
@@ -823,7 +817,7 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
                         arrange(EventDate, .by_group = TRUE) %>%      # Sort by date again after possible date adjustments
                         mutate(EventRank = row_number(),
                                EventDaysSinceDiagnosis = round(as.numeric(difftime(EventDate, InitialDiagnosisDate, units = "days")), digits = 1),
-                               EventPatientAge = floor(time_length(difftime(EventDate, DateOfBirth), unit = "years"))) %>%
+                               EventPatientAge = floor(lubridate::time_length(difftime(EventDate, DateOfBirth), unit = "years"))) %>%
                     group_by(PatientID, DiagnosisID, EventClass) %>%
                         mutate(EventClassRank = row_number()) %>%
                     select(PatientID,

@@ -11,25 +11,22 @@
 #' @param ProgressBarObject \code{progress::progress_bar} object - Optionally pass progress bar object to display progress
 #'
 #' @return \code{data.frame} of consolidated diagnosis entries
+#'
 #' @export
 #'
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ClassifyDiagnosisRedundancy <- function(DiagnosisEntries,
                                         RuleCalls,
                                         ProgressBarObject = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-  require(assertthat)
-  require(dplyr)
-  require(stringr)
-  require(tidyr)
-
   # --- For Testing Purposes ---
   # DiagnosisEntries <- df_CDS_Diagnosis %>% filter(PatientID == "Pat_10013")
   # RulesProfile = "Default"
   # print(DiagnosisEntries$DiagnosisID[1])
 
-  # --- Argument Assertions ---
+  # --- Argument Validation ---
   assert_that(is.data.frame(DiagnosisEntries),
               is.list(RuleCalls))
 
