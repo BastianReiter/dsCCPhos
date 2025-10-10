@@ -8,6 +8,7 @@
 #' @param Name_AugmentationOutput \code{string} - Name of the list object created by AugmentDataDS() - Default: 'AugmentationOutput'
 #'
 #' @return ABC
+#'
 #' @export
 #'
 #' @author Bastian Reiter

@@ -12,7 +12,9 @@
 #' @param MatchItArguments.S \code{list} - Elements correspond to arguments of \code{MatchIt::matchit()}
 #'
 #' @return A ...
+#'
 #' @export
+#'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 MatchDataDS <- function(DataFrame.S,
@@ -22,10 +24,6 @@ MatchDataDS <- function(DataFrame.S,
                         MatchItArguments.S = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-  require(dplyr)
-  require(MatchIt)
-  require(stats)
-
   # --- For Testing Purposes ---
   # DataFrame.S <- "ADS$Patients"
   # GroupingVariable.S <- "IsDocumentedDeceased"
@@ -34,32 +32,11 @@ MatchDataDS <- function(DataFrame.S,
   # MatchItArguments.S <- list(method = "nearest",
   #                            distance = "glm")
 
-  # --- Argument Assertions ---
+  # --- Argument Validation ---
   # assert_that(is.data.frame(DataFrame.S),
   #             is.string(GroupingVariable.S))
 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # - Package requirements -
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  # Use require() to load package namespaces
-
-
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # - Evaluate and parse input before proceeding -
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  if (is.character(DataFrame.S))
-  {
-      DataFrame <- eval(parse(text = DataFrame.S), envir = parent.frame())
-
-  } else {
-
-      ClientMessage <- "ERROR: 'DataFrame.S' must be specified as a character string."
-      stop(ClientMessage, call. = FALSE)
-  }
-
+#-------------------------------------------------------------------------------
 
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -101,32 +78,32 @@ MatchDataDS <- function(DataFrame.S,
 
 
   # Compute 'matchit' object to assess initial covariate (im)balance
-  InitialBalance <- matchit(formula = MatchingFormula,
-                            data = DataFrame,
-                            method = NULL,
-                            distance = "glm")
+  InitialBalance <- MatchIt::matchit(formula = MatchingFormula,
+                                     data = DataFrame,
+                                     method = NULL,
+                                     distance = "glm")
 
   # Look at statistics of covariate (im)balance
   summary(InitialBalance)
 
   # Compute 'matchit' object
-  MatchingObject <- matchit(formula = MatchingFormula,
-                            data = DataFrame,
-                            method = MatchItArguments$method,
-                            distance = MatchItArguments$distance,
-                            link = MatchItArguments$link,
-                            estimand = MatchItArguments$estimand,
-                            exact = MatchItArguments$exact,
-                            mahvars = MatchItArguments$mahvars,
-                            antiexact = MatchItArguments$antiexact,
-                            discard = MatchItArguments$discard,
-                            ratio = MatchItArguments$ratio)
+  MatchingObject <- MatchIt::matchit(formula = MatchingFormula,
+                                     data = DataFrame,
+                                     method = MatchItArguments$method,
+                                     distance = MatchItArguments$distance,
+                                     link = MatchItArguments$link,
+                                     estimand = MatchItArguments$estimand,
+                                     exact = MatchItArguments$exact,
+                                     mahvars = MatchItArguments$mahvars,
+                                     antiexact = MatchItArguments$antiexact,
+                                     discard = MatchItArguments$discard,
+                                     ratio = MatchItArguments$ratio)
 
   # Re-assess covariate (im)balance after matching
   summary(MatchingObject, un = FALSE)
 
   # Get matched data set
-  MatchedDataSet <- match.data(MatchingObject)
+  MatchedDataSet <- MatchIt::match_data(MatchingObject)
 
 
 

@@ -86,8 +86,7 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "RawDataSet",
-                                            Module.S = "CCP",
-                                            TransformationStage.S = "Raw")
+                                            Stage.S = "Raw")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,8 +127,8 @@ CurationOutput <- CurateDataDS(RawDataSetName.S = "RawDataSet",
 
 CuratedDataSet <- CurationOutput$CuratedDataSet
 
-CDSTableCheck <- GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
-                                   AssumeCCPDataSet.S = TRUE)
+CDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
+                                            Stage.S = "Curated")
 
 
 

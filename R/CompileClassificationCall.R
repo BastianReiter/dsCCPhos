@@ -11,26 +11,24 @@
 #' @param ValueIfNoRuleMet \code{string} - Value (NA or string) of TargetFeature if no rules are fulfilled - Default = NA
 #'
 #' @return \code{string} containing an unevaluated dplyr::case_when() expression
+#'
 #' @export
 #'
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CompileClassificationCall <- function(TargetFeature,
                                       RuleSet,
                                       RuleProfile,
                                       ValueIfNoRuleMet = NA)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-  require(assertthat)
-  require(dplyr)
-  require(stringr)
-
   # --- For Testing Purposes ---
   # TargetFeature <- "IsLikelyRedundant"
   # RuleSet <- RuleSet_DiagnosisRedundancy
   # RuleProfile <- RuleProfile_DiagnosisRedundancy.S
   # ValueIfNoRuleMet <- FALSE
 
-  # --- Argument Assertions ---
+  # --- Argument Validation ---
   assert_that(is.string(TargetFeature),
               is.data.frame(RuleSet),
               is.string(RuleProfile))

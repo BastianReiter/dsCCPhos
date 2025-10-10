@@ -1,5 +1,6 @@
 ^dsCCPhos\.Rproj$
 ^\.Rproj\.user$
+^.github$
 ^Development$
 ^LICENSE\.md$
 ^Documentation$

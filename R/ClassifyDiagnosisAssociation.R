@@ -10,27 +10,23 @@
 #' @param ProgressBarObject \code{progress::progress_bar} object - Optionally pass progress bar object to display progress
 #'
 #' @return \code{data.frame} enhanced with classified diagnosis associations
+#'
 #' @export
 #'
 #' @author Bastian Reiter
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ClassifyDiagnosisAssociation <- function(DiagnosisEntries,
                                          RuleCalls,
                                          ProgressBarObject = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
-  require(assertthat)
-  require(dplyr)
-  require(dsCCPhos)
-  require(stringr)
-  require(tidyr)
-
   # --- For Testing Purposes
   # DiagnosisEntries <- df_Diagnosis %>% filter(PatientID == "Pat_10010")
   # RuleCalls <- RuleCalls_DiagnosisAssociation
   # RulesProfile = "Default"
   # print(DiagnosisEntries$DiagnosisID[1])
 
-  # --- Argument Assertions ---
+  # --- Argument Validation ---
   assert_that(is.data.frame(DiagnosisEntries),
               is.list(RuleCalls))
 
