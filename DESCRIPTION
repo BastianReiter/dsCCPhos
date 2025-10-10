@@ -15,6 +15,7 @@ Imports:
     cli,
     dplyr,
     dsFreda,
+    lifecycle,
     lubridate,
     magrittr,
     MatchIt,
