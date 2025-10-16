@@ -1,6 +1,5 @@
 
 library(dplyr)
-library(dsCCPhos)
 library(dsFreda)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,6 +85,7 @@ names(RawDataSet) <- sapply(names(RawDataSet),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "RawDataSet",
+                                            Module.S = "CCP",
                                             Stage.S = "Raw")
 
 
@@ -128,6 +128,7 @@ CurationOutput <- CurateDataDS(RawDataSetName.S = "RawDataSet",
 CuratedDataSet <- CurationOutput$CuratedDataSet
 
 CDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
+                                            Module.S = "CCP",
                                             Stage.S = "Curated")
 
 
@@ -140,20 +141,24 @@ AugmentationOutput <- AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
 
 ADS <- AugmentationOutput$AugmentedDataSet
 
-ADSTableCheck <- GetDataSetCheckDS(DataSetName.S = "ADS")
+ADSTableCheck <- GetDataSetCheckDS(DataSetName.S = "ADS",
+                                   Module.S = "CCP",
+                                   Stage.S = "Augmented")
 
 
-
-ADS_Patient <- ADS$Patient
-ADS_Diagnosis <- ADS$Diagnosis
+# saveRDS(ADS, file = "TestADS.rds")
 
 
-ADS_Patient <- ADS_Patient %>%
+ADS.Patient <- ADS$Patient
+ADS.Diagnosis <- ADS$Diagnosis
+
+
+ADS.Patient <- ADS_Patient %>%
                     filter(CountDiagnoses == 1)
 
 
-Analysis <- JoinTablesDS(TableNameA.S = "ADS_Patient",
-                         TableNameB.S = "ADS_Diagnosis",
+Analysis <- JoinTablesDS(TableNameA.S = "ADS.Patient",
+                         TableNameB.S = "ADS.Diagnosis",
                          ByStatement.S = "PatientID")
 
 #

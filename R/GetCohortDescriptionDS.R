@@ -52,7 +52,7 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
 
   # Cohort Size over time
   CohortSize_OverTime <- CohortData %>%
-                              mutate(DiagnosisYear = year(DiagnosisDate)) %>%
+                              mutate(DiagnosisYear = lubridate::year(DiagnosisDate)) %>%
                               group_by(DiagnosisYear) %>%
                                   summarize(PatientCount = n_distinct(PatientID),
                                             DiagnosisCount = n_distinct(DiagnosisID)) %>%
@@ -100,7 +100,7 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
                   mutate(Proportion = N / sum(N))
 
   Sex_OverTime <- CohortDataSingleDiag %>%
-                      mutate(DiagnosisYear = year(DiagnosisDate)) %>%
+                      mutate(DiagnosisYear = lubridate::year(DiagnosisDate)) %>%
                       group_by(DiagnosisYear, Sex) %>%
                           summarize(N = n()) %>%
                       ungroup() %>%
