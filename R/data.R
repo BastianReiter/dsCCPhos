@@ -7,6 +7,30 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta.ADS.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' CCP meta data: Table names, feature names and eligible values in AugmentedDataSet (ADS)
+#'
+#' A \code{tibble} containing meta data
+#'
+#' @format ## `Meta.ADS`
+#' \code{tibble}
+#' \describe{
+#'   \item{TableName}{Table name}
+#'   \item{FeatureName}{Feature name}
+#'   \item{ScaleLevel}{Scale level of feature}
+#'   \item{Value}{Eligible value}
+#'   \item{Label}{Label for values}
+#'   \item{HasEligibleValueSet}{logical}
+#'   \item{FeatureIsFromCDS}{logical}
+#' }
+#' @author Bastian Reiter
+"Meta.ADS"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Meta.Features.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

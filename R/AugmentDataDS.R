@@ -1159,6 +1159,11 @@ AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
   # Final modifications
   #===============================================================================
 
+  # Unnest Column 'EventDetails' in ADS$Events
+  ADS$Events <- ADS$Events %>%
+                    unnest(cols = c(EventDetails), keep_empty = TRUE)
+
+
   # Conversion of ADS tables from tibble to data.frame, because DataSHIELD can handle data.frames better
   ADS <- ADS %>%
               map(\(Table) as.data.frame(Table))
