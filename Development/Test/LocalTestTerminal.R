@@ -104,7 +104,7 @@ RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "RawDataSet",
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # RawDataSet <- DrawSampleDS(RawDataSetName.S = "RawDataSet",
-#                            SampleSize.S = "1000")
+#                            SampleSize.S = 1000)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
