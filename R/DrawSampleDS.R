@@ -18,6 +18,10 @@ DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
                          SampleSize.S = 100)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
+  # --- For Testing Purposes ---
+  # RawDataSetName.S <- "RawDataSet"
+  # SampleSize.S <- 2000
+
   # --- Argument Validation ---
   assert_that(is.string(RawDataSetName.S),
               is.count(SampleSize.S))
@@ -31,8 +35,8 @@ DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
 # Sample PatientIDs and subset RDS tables accordingly
 #-------------------------------------------------------------------------------
 
-  AllPatientIDs <- RawDataSet$RDS_Patient$"_id"
-  #AllPatientIDs <- RawDataSet$RDS_Patient$PatientID
+  AllPatientIDs <- RawDataSet$Patient$"_id"
+  #AllPatientIDs <- RawDataSet$Patient$PatientID
   AvailableNumberPatients <- length(unique(AllPatientIDs))
 
   # Reduce SampleSize.S if necessary
@@ -48,8 +52,8 @@ DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
                                {
                                   if (length(Table) > 0 && nrow(Table) > 0)
                                   {
-                                      if (tablename == "RDS.Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
-                                      else if (tablename %in% c("RDS.GeneralCondition", "RDS.OtherClassification", "RDS.TherapyRecommendation")) { return(filter(Table, Table$PatientID %in% SampleIDs)) }
+                                      if (tablename == "Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
+                                      else if (tablename %in% c("GeneralCondition", "OtherClassification", "TherapyRecommendation")) { return(filter(Table, Table$PatientID %in% SampleIDs)) }
                                       else { return(filter(Table, Table$'patient-id' %in% SampleIDs)) }
                                   }
                                   else { return(NULL) }
