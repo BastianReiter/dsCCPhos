@@ -145,6 +145,8 @@ ADSTableCheck <- GetDataSetCheckDS(DataSetName.S = "ADS",
                                    Module.S = "CCP",
                                    Stage.S = "Augmented")
 
+typeof(Test$DiagnosisDate)
+
 
 # saveRDS(ADS, file = "TestADS.rds")
 
