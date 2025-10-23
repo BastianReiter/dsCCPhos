@@ -7,7 +7,7 @@ library(dsFreda)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #RawDataSet <- readRDS(file = "./Development/Data/RealData/CCPRealData_Frankfurt.rds")
 #OldTestData <- readRDS(file = "./Development/Data/TestData/OldTestData/CCPTestData.rds")
-RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
+CCP.RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
 #RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData_WithMissingTables.rds")
 
 
@@ -24,67 +24,32 @@ RawDataSet <- readRDS(file = "./Development/Data/TestData/CCPTestData.rds")
 #                        "sample")
 
 
-
-# - - OPTIONAL START - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# OPTIONAL: Sub-sample test data for easier testing
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-NumberOfPatients <- 1000
-
-# Get a random sample of PatientIDs
-SamplePatientIDs <- sample(RawDataSet$patient$"_id",
-                           size = NumberOfPatients)
-
-# Get data subsets that relate to sampled PatientIDs
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Special tables 'sample' and 'molecularmarker' might be empty
-sample <- data.frame()
-if (nrow(RawDataSet$sample) > 0)
-{
-    sample <- as.data.frame(filter(RawDataSet$sample, RawDataSet$sample$"patient-id" %in% SamplePatientIDs))
-}
-
-molecularmarker <- data.frame()
-if (nrow(RawDataSet$`molecular-marker`) > 0)
-{
-    molecularmarker <- as.data.frame(filter(RawDataSet$"molecular-marker", RawDataSet$"molecular-marker"$"patient-id" %in% SamplePatientIDs))
-}
-
-# Compile list 'RawDataSet'
-#~~~~~~~~~~~~~~~~~~~~~~~~~~
-RawDataSet <- list(sample = sample,
-                   diagnosis = as.data.frame(filter(RawDataSet$diagnosis, RawDataSet$diagnosis$"patient-id" %in% SamplePatientIDs)),
-                   histology = as.data.frame(filter(RawDataSet$histology, RawDataSet$histology$"patient-id" %in% SamplePatientIDs)),
-                   metastasis = as.data.frame(filter(RawDataSet$metastasis, RawDataSet$metastasis$"patient-id" %in% SamplePatientIDs)),
-                   "molecular-marker" = molecularmarker,
-                   patient = as.data.frame(filter(RawDataSet$patient, RawDataSet$patient$"_id" %in% SamplePatientIDs)),
-                   progress = as.data.frame(filter(RawDataSet$progress, RawDataSet$progress$"patient-id" %in% SamplePatientIDs)),
-                   "radiation-therapy" = as.data.frame(filter(RawDataSet$"radiation-therapy", RawDataSet$"radiation-therapy"$"patient-id" %in% SamplePatientIDs)),
-                   tnm = as.data.frame(filter(RawDataSet$tnm, RawDataSet$tnm$"patient-id" %in% SamplePatientIDs)),
-                   surgery = as.data.frame(filter(RawDataSet$surgery, RawDataSet$surgery$"patient-id" %in% SamplePatientIDs)),
-                   "system-therapy" = as.data.frame(filter(RawDataSet$"system-therapy", RawDataSet$"system-therapy"$"patient-id" %in% SamplePatientIDs)))
-
-# - - OPTIONAL END - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rename tables of RawDataSet (the names are also changed when tables are being loaded into R server sessions)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 vc_Lookup <- dsCCPhos::Meta.Tables$TableName.Curated
 names(vc_Lookup) <- dsCCPhos::Meta.Tables$TableName.Raw
 
-names(RawDataSet) <- sapply(names(RawDataSet),
+names(CCP.RawDataSet) <- sapply(names(CCP.RawDataSet),
                             function(TableName) { vc_Lookup[TableName] })
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Perform preparatory operations prior to curation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+RDSPreparation <- PrepareRawDataDS(RawDataSetName.S = "CCP.RawDataSet",
+                                   Module.S = "CCP",
+                                   CurateFeatureNames.S = TRUE)
+
+CCP.RawDataSet <- RDSPreparation$RawDataSet
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Check Tables for existence and completeness
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "RawDataSet",
+RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "CCP.RawDataSet",
                                             Module.S = "CCP",
                                             Stage.S = "Raw")
 
@@ -93,7 +58,7 @@ RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "RawDataSet",
 # Validate Raw Data Set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# RDSValidationReport <- GetRDSValidationReportDS("RawDataSet")
+# RDSValidationReport <- GetRDSValidationReportDS("CCP.RawDataSet")
 
 # summary(RDSValidationReport$RDS_BioSampling)
 
@@ -103,14 +68,14 @@ RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "RawDataSet",
 # OPTIONAL: Draw sample from Raw Data Set
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# RawDataSet <- DrawSampleDS(RawDataSetName.S = "RawDataSet",
-#                            SampleSize.S = 1000)
+# CCP.RawDataSet <- DrawSampleDS(RawDataSetName.S = "CCP.RawDataSet",
+#                                SampleSize.S = 1000)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Curate data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CurationOutput <- CurateDataDS(RawDataSetName.S = "RawDataSet",
+CurationOutput <- CurateDataDS(RawDataSetName.S = "CCP.RawDataSet",
                                Settings.S = list(DataHarmonization = list(Run = TRUE,
                                                                           Profile = "Default"),
                                                  FeatureObligations = list(Profile = "Default"),
@@ -125,9 +90,9 @@ CurationOutput <- CurateDataDS(RawDataSetName.S = "RawDataSet",
 # View(CurationOutput$CurationReport$Transformation$ValueSetOverviews$Staging$Harmonized)
 
 
-CuratedDataSet <- CurationOutput$CuratedDataSet
+CCP.CuratedDataSet <- CurationOutput$CuratedDataSet
 
-CDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
+CDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "CCP.CuratedDataSet",
                                             Module.S = "CCP",
                                             Stage.S = "Curated")
 
@@ -137,7 +102,7 @@ CDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "CuratedDataSet",
 # Augment data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AugmentationOutput <- AugmentDataDS(CuratedDataSetName.S = "CuratedDataSet")
+AugmentationOutput <- AugmentDataDS(CuratedDataSetName.S = "CCP.CuratedDataSet")
 
 ADS <- AugmentationOutput$AugmentedDataSet
 
