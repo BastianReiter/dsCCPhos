@@ -5,7 +5,7 @@
 #'
 #' Server-side ASSIGN method
 #'
-#' @param RawDataSetName.S \code{string} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
+#' @param RawDataSetName.S \code{string} - Name of Raw Data Set object (list) on server - Default: 'CCP.RawDataSet'
 #' @param SampleSize.S \code{integer} - Number of patients in sample
 #'
 #' @return A \code{list} containing a subset of Raw Data Set
@@ -14,12 +14,12 @@
 #'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
+DrawSampleDS <- function(RawDataSetName.S = "CCP.RawDataSet",
                          SampleSize.S = 100)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
   # --- For Testing Purposes ---
-  # RawDataSetName.S <- "RawDataSet"
+  # RawDataSetName.S <- "CCP.RawDataSet"
   # SampleSize.S <- 2000
 
   # --- Argument Validation ---
@@ -35,8 +35,7 @@ DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
 # Sample PatientIDs and subset RDS tables accordingly
 #-------------------------------------------------------------------------------
 
-  AllPatientIDs <- RawDataSet$Patient$"_id"
-  #AllPatientIDs <- RawDataSet$Patient$PatientID
+  AllPatientIDs <- RawDataSet$Patient$PatientID
   AvailableNumberPatients <- length(unique(AllPatientIDs))
 
   # Reduce SampleSize.S if necessary
@@ -52,9 +51,12 @@ DrawSampleDS <- function(RawDataSetName.S = "RawDataSet",
                                {
                                   if (length(Table) > 0 && nrow(Table) > 0)
                                   {
-                                      if (tablename == "Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
-                                      else if (tablename %in% c("GeneralCondition", "OtherClassification", "TherapyRecommendation")) { return(filter(Table, Table$PatientID %in% SampleIDs)) }
-                                      else { return(filter(Table, Table$'patient-id' %in% SampleIDs)) }
+                                      return(filter(Table, Table$PatientID %in% SampleIDs))
+
+                                      # OLD (before preparational recoding of feature names)
+                                      # if (tablename == "Patient") { return(filter(Table, Table$'_id' %in% SampleIDs)) }
+                                      # else if (tablename %in% c("GeneralCondition", "OtherClassification", "TherapyRecommendation")) { return(filter(Table, Table$PatientID %in% SampleIDs)) }
+                                      # else { return(filter(Table, Table$'patient-id' %in% SampleIDs)) }
                                   }
                                   else { return(NULL) }
                                })
