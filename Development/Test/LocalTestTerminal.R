@@ -40,6 +40,7 @@ names(CCP.RawDataSet) <- sapply(names(CCP.RawDataSet),
 
 RDSPreparation <- PrepareRawDataDS(RawDataSetName.S = "CCP.RawDataSet",
                                    Module.S = "CCP",
+                                   RunFuzzyStringMatching.S = FALSE,
                                    CurateFeatureNames.S = TRUE)
 
 CCP.RawDataSet <- RDSPreparation$RawDataSet

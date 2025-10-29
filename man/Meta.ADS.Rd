@@ -11,7 +11,7 @@
 \describe{
 \item{TableName}{Table name}
 \item{FeatureName}{Feature name}
-\item{ScaleLevel}{Scale level of feature}
+\item{FeatureType}{Feature data type}
 \item{Value}{Eligible value}
 \item{Label}{Label for values}
 \item{HasEligibleValueSet}{logical}
