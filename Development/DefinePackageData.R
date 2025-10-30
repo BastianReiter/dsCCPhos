@@ -83,7 +83,8 @@ CDSValues <- Meta.Values %>%
 Meta.ADS <- Meta.ADS %>%
                 left_join(CDSValues,
                           by = join_by(FeatureName),
-                          relationship = "many-to-many")
+                          relationship = "many-to-many") %>%
+                distinct()
 
 # Save data in .rda-file and make it part of package
 use_data(Meta.ADS, overwrite = TRUE)
