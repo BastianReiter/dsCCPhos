@@ -138,17 +138,5 @@ Analysis <- JoinTablesDS(TableNameA.S = "ADS.Patient",
 
 
 
-Test <- Analysis %>%
-            filter(str_starts(ICD10Code, "C34") == TRUE)
-
-
-
-str_starts(Analysis$ICD10Code, "C50")
-
-
-
-
-
-
 
 

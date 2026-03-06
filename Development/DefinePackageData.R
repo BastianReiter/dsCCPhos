@@ -11,11 +11,16 @@ library(usethis)
 ExcelFilePath <- "./Development/Data/PackageData/PackageDataCCPhos.xlsx"
 
 Sheetnames <- c("Meta.Tables",
+                "Meta.Relationships",
+                "Meta.Links",
                 "Meta.Features",
                 "Meta.Values",
-                "Proc.EventFeatures",
                 "Proc.TableNormalization",
-                "Set.FeatureObligations",
+                "Proc.EventFeatures",
+                "Set.CurationProcess",
+                "Set.PrimaryTableCleaning",
+                "Set.SecondaryTableCleaning",
+                "Set.FeatureRequirements",
                 "Set.FeatureTracking",
                 "Set.DataHarmonization",
                 "Set.TransformativeExpressions",

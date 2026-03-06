@@ -3,7 +3,7 @@
 \docType{data}
 \name{Set.DiagnosisRedundancy}
 \alias{Set.DiagnosisRedundancy}
-\title{Settings on rule-based identification of redundant diagnosis entries}
+\title{Settings on rule-based identification of redundant diagnosis records}
 \format{
 \subsection{\code{Set.DiagnosisRedundancy}}{
 

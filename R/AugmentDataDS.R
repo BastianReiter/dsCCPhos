@@ -1,7 +1,7 @@
 
 #' AugmentDataDS
 #'
-#' `r lifecycle::badge("stable")` \cr\cr
+#' `r lifecycle::badge("experimental")` \cr\cr
 #' Transforms Curated Data Set (CDS) into Augmented Data Set (ADS)
 #'
 #' Server-side ASSIGN method

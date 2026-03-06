@@ -12,6 +12,7 @@
 \item{TableID}{}
 \item{TableName.Raw}{Table name in Raw Data Model}
 \item{TableName.Curated}{Corresponding table name in Curated Data Model}
+\item{Role}{Indicating role of table in the relational data set. Usually one of 'Seed' / 'Root' / 'Branch'}
 }
 }
 }
