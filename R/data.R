@@ -255,10 +255,9 @@
 #'   \item{TableID}{}
 #'   \item{Table}{}
 #'   \item{PrimaryTableCleaning}{}
+#'   \item{TableNormalization}{}
 #'   \item{DataTransformation}{}
 #'   \item{SecondaryTableCleaning}{}
-#'   \item{SecondaryRedundancies.Detect}{}
-#'   \item{SecondaryRedundancies.Remove}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -506,6 +505,8 @@
 #'   \item{DuplicateRecords.Remove}{}
 #'   \item{FeatureAvailabilityViolations.Detect}{}
 #'   \item{FeatureAvailabilityViolations.Remove}{}
+#'   \item{SecondaryRedundancies.Detect}{}
+#'   \item{SecondaryRedundancies.Remove}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter

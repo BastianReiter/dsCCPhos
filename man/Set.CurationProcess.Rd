@@ -13,10 +13,9 @@
 \item{TableID}{}
 \item{Table}{}
 \item{PrimaryTableCleaning}{}
+\item{TableNormalization}{}
 \item{DataTransformation}{}
 \item{SecondaryTableCleaning}{}
-\item{SecondaryRedundancies.Detect}{}
-\item{SecondaryRedundancies.Remove}{}
 }
 }
 }

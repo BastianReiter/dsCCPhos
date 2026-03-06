@@ -19,6 +19,8 @@
 \item{DuplicateRecords.Remove}{}
 \item{FeatureAvailabilityViolations.Detect}{}
 \item{FeatureAvailabilityViolations.Remove}{}
+\item{SecondaryRedundancies.Detect}{}
+\item{SecondaryRedundancies.Remove}{}
 }
 }
 }
