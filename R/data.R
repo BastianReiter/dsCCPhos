@@ -52,8 +52,8 @@
 #'   \item{Type}{Data type}
 #'   \item{Scale}{Scale of measure}
 #'   \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
-#'   \item{IsDiscriminatory}{Indicating whether feature is used to strictly discriminate between different records. Used for discrimination of table records in redundancy classification.}
-#'   \item{IsEssential}{Indicating whether feature holds essential information. Used for discrimination of table records in redundancy classification.}
+#'   \item{Subsumption.IsDistinctive}{Indicating whether feature is used to strictly distinguish different records. Used in record subsumption.}
+#'   \item{Subsumption.IsNegligible}{Indicating whether feature holds negligible information. Used in record subsumption.}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -256,8 +256,9 @@
 #'   \item{Table}{}
 #'   \item{PrimaryTableCleaning}{}
 #'   \item{TableNormalization}{}
-#'   \item{DataTransformation}{}
+#'   \item{DataHarmonization}{}
 #'   \item{SecondaryTableCleaning}{}
+#'   \item{RecordSubsumption}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -288,6 +289,8 @@
 #'   \item{Method.FuzzyStringMatching}{}
 #'   \item{Method.NaiveBayes}{}
 #'   \item{MatchToDictionaryLookupsInFSM}{}
+#'   \item{UnharmonizedValues.Substitute}{}
+#'   \item{UnharmonizedValues.Substitution}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -409,7 +412,7 @@
 #'   \item{Table}{}
 #'   \item{Feature}{}
 #'   \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
-#'   \item{Track}{}
+#'   \item{IsTracked}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -485,6 +488,29 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Set.RecordSubsumption.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Settings on record subsumption
+#'
+#' A tibble
+#'
+#' @format ## `Set.RecordSubsumption`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{TableID}{}
+#'   \item{Table}{}
+#'   \item{SubsumptionRedundancies.Detect}{}
+#'   \item{SubsumptionRedundancies.Remove}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Set.RecordSubsumption"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set.SecondaryTableCleaning.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -498,6 +524,8 @@
 #'   \item{Profile}{}
 #'   \item{TableID}{}
 #'   \item{Table}{}
+#'   \item{UnlinkedRecords.Detect}{}
+#'   \item{UnlinkedRecords.Remove}{}
 #'   \item{EmptyStrings.Detect}{}
 #'   \item{EmptyStrings.Substitute}{}
 #'   \item{EmptyStrings.Substitution}{}
@@ -505,8 +533,6 @@
 #'   \item{DuplicateRecords.Remove}{}
 #'   \item{FeatureAvailabilityViolations.Detect}{}
 #'   \item{FeatureAvailabilityViolations.Remove}{}
-#'   \item{SecondaryRedundancies.Detect}{}
-#'   \item{SecondaryRedundancies.Remove}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter

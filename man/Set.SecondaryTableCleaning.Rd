@@ -12,6 +12,8 @@
 \item{Profile}{}
 \item{TableID}{}
 \item{Table}{}
+\item{UnlinkedRecords.Detect}{}
+\item{UnlinkedRecords.Remove}{}
 \item{EmptyStrings.Detect}{}
 \item{EmptyStrings.Substitute}{}
 \item{EmptyStrings.Substitution}{}
@@ -19,8 +21,6 @@
 \item{DuplicateRecords.Remove}{}
 \item{FeatureAvailabilityViolations.Detect}{}
 \item{FeatureAvailabilityViolations.Remove}{}
-\item{SecondaryRedundancies.Detect}{}
-\item{SecondaryRedundancies.Remove}{}
 }
 }
 }

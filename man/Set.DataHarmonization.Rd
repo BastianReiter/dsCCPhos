@@ -21,6 +21,8 @@
 \item{Method.FuzzyStringMatching}{}
 \item{Method.NaiveBayes}{}
 \item{MatchToDictionaryLookupsInFSM}{}
+\item{UnharmonizedValues.Substitute}{}
+\item{UnharmonizedValues.Substitution}{}
 }
 }
 }
