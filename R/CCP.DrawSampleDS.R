@@ -1,5 +1,5 @@
 
-#' DrawSampleDS
+#' CCP.DrawSampleDS
 #'
 #' Draws a sample (subset) from Raw Data Set
 #'
@@ -14,8 +14,8 @@
 #'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-DrawSampleDS <- function(RawDataSetName.S = "CCP.RawDataSet",
-                         SampleSize.S = 100)
+CCP.DrawSampleDS <- function(RawDataSetName.S = "CCP.RawDataSet",
+                             SampleSize.S = 100)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
   # --- For Testing Purposes ---

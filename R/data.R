@@ -256,9 +256,10 @@
 #'   \item{Table}{}
 #'   \item{PrimaryTableCleaning}{}
 #'   \item{TableNormalization}{}
-#'   \item{DataHarmonization}{}
+#'   \item{DataRemediation}{}
+#'   \item{DataRemediation.NonconformingRecords}{}
 #'   \item{SecondaryTableCleaning}{}
-#'   \item{RecordSubsumption}
+#'   \item{RecordSubsumption}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -267,14 +268,14 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Set.DataHarmonization.rda
+# Set.DataRemediation.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Settings on which feature should be harmonized and which methods to use for each feature
+#' Settings on how feature values should be remediated and which methods to use for each feature
 #'
 #' A tibble
 #'
-#' @format ## `Set.DataHarmonization`
+#' @format ## `Set.DataRemediation`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
@@ -282,19 +283,19 @@
 #'   \item{Table}{}
 #'   \item{Feature}{}
 #'   \item{HasEligibleValueSet}{}
-#'   \item{RunHarmonization}{}
-#'   \item{HarmonizationOrder}{}
+#'   \item{RunRemediation}{}
+#'   \item{RemediationOrder}{}
 #'   \item{Method.TransformativeExpressions}{}
 #'   \item{Method.Dictionary}{}
 #'   \item{Method.FuzzyStringMatching}{}
 #'   \item{Method.NaiveBayes}{}
 #'   \item{MatchToDictionaryLookupsInFSM}{}
-#'   \item{UnharmonizedValues.Substitute}{}
-#'   \item{UnharmonizedValues.Substitution}{}
+#'   \item{UnremediatedValues.Substitute}{}
+#'   \item{UnremediatedValues.Substitution}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Set.DataHarmonization"
+"Set.DataRemediation"
 
 
 
@@ -350,7 +351,7 @@
 # Set.Dictionary.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Dictionary data used in Data Harmonization
+#' Dictionary data used in Data Remediation
 #'
 #' A tibble containing look-up values and corresponding replacements
 #'
@@ -389,6 +390,7 @@
 #'   \item{Type}{}
 #'   \item{Scale}{}
 #'   \item{Availability}{}
+#'   \item{NegligibleValues}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -426,7 +428,7 @@
 
 #' Set.FuzzyStringMatching
 #'
-#' Feature-specific settings for Fuzzy String Matching
+#' Feature-specific settings for Fuzzy String Matching used in Data Remediation
 #'
 #' @format ## `Set.FuzzyStringMatching`
 #' \code{tibble}
@@ -502,7 +504,7 @@
 #'   \item{TableID}{}
 #'   \item{Table}{}
 #'   \item{SubsumptionRedundancies.Detect}{}
-#'   \item{SubsumptionRedundancies.Remove}{}
+#'   \item{SubsumptionRedundancies.Remove}{\code{logical flag} - Indicates whether to remove table records that are considered redundant by subsumption. If set to \code{FALSE}, the redundant records are marked as such and preserved.}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -544,7 +546,7 @@
 # Set.TransformativeExpressions.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Settings on transformative expressions used in Data Harmonization
+#' Settings on transformative expressions used in Data Remediation
 #'
 #' A tibble
 #'

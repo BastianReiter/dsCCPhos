@@ -14,9 +14,10 @@
 \item{Table}{}
 \item{PrimaryTableCleaning}{}
 \item{TableNormalization}{}
-\item{DataHarmonization}{}
+\item{DataRemediation}{}
+\item{DataRemediation.NonconformingRecords}{}
 \item{SecondaryTableCleaning}{}
-\item{RecordSubsumption}
+\item{RecordSubsumption}{}
 }
 }
 }

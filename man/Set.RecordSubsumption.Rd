@@ -13,7 +13,7 @@
 \item{TableID}{}
 \item{Table}{}
 \item{SubsumptionRedundancies.Detect}{}
-\item{SubsumptionRedundancies.Remove}{}
+\item{SubsumptionRedundancies.Remove}{\code{logical flag} - Indicates whether to remove table records that are considered redundant by subsumption. If set to \code{FALSE}, the redundant records are marked as such and preserved.}
 }
 }
 }

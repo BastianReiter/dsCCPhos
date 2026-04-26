@@ -16,6 +16,7 @@
 \item{Type}{}
 \item{Scale}{}
 \item{Availability}{}
+\item{NegligibleValues}{}
 }
 }
 }
