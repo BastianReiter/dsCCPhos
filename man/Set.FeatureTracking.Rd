@@ -9,10 +9,12 @@
 
 \code{tibble}
 \describe{
+\item{Profile}{}
+\item{FeatureID}{}
 \item{Table}{}
 \item{Feature}{}
 \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
-\item{Default}{}
+\item{IsTracked}{}
 }
 }
 }

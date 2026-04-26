@@ -3,7 +3,7 @@
 \docType{data}
 \name{Set.Dictionary}
 \alias{Set.Dictionary}
-\title{Dictionary data used in Data Harmonization}
+\title{Dictionary data used in Data Remediation}
 \format{
 \subsection{\code{Set.Dictionary}}{
 

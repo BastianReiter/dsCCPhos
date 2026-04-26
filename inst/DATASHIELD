@@ -1,7 +1,6 @@
 AggregateMethods:
-    GetCohortDescriptionDS
+    CCP.GetCohortDescriptionDS
 AssignMethods:
-    AugmentDataDS,
-    CurateDataDS,
-    DrawSampleDS,
-    MatchDataDS
+    CCP.AugmentDataDS,
+    CCP.DrawSampleDS,
+    CCP.MatchDataDS

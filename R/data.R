@@ -41,8 +41,8 @@
 #' @format ## `Meta.Features`
 #' \code{tibble}
 #' \describe{
-#'   \item{TableID}{}
 #'   \item{FeatureID}{}
+#'   \item{TableID}{}
 #'   \item{TableName.Raw}{Name of table in Opal}
 #'   \item{TableName.Curated}{Name of table after loading into R session}
 #'   \item{FeaturePosition}{Position of Feature in Table}
@@ -52,12 +52,64 @@
 #'   \item{Type}{Data type}
 #'   \item{Scale}{Scale of measure}
 #'   \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
-#'   \item{IsDiscriminatory}{Indicating whether feature is used to strictly discriminate between different entries. Used for discrimination of table entries in redundancy classification.}
-#'   \item{IsEssential}{Indicating whether feature holds essential information. Used for discrimination of table entries in redundancy classification.}
+#'   \item{Subsumption.IsDistinctive}{Indicating whether feature is used to strictly distinguish different records. Used in record subsumption.}
+#'   \item{Subsumption.IsNegligible}{Indicating whether feature holds negligible information. Used in record subsumption.}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
 "Meta.Features"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta.Links.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' CCP meta data: Links
+#'
+#' A tibble containing meta data about features used for linkage of related tables
+#'
+#' @format ## `Meta.Links`
+#' \code{tibble}
+#' \describe{
+#'   \item{LinkID}{}
+#'   \item{RelationshipID}{}
+#'   \item{ParentTableName}{Name of parent table}
+#'   \item{ChildTableName}{Name of child table}
+#'   \item{ParentFeatureID}{ID of parent feature}
+#'   \item{ParentFeatureName}{Name of parent feature}
+#'   \item{ChildFeatureID}{ID of child feature}
+#'   \item{ChildFeatureName}{Name of child feature}
+#'   \item{Check.ParentTableName}{For checking purposes during meta data entry}
+#'   \item{Check.ChildTableName}{For checking purposes during meta data entry}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta.Links"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Meta.Relationships.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' CCP meta data: Relationships
+#'
+#' A tibble containing meta data about relationships between tables
+#'
+#' @format ## `Meta.Relationships`
+#' \code{tibble}
+#' \describe{
+#'   \item{RelationshipID}{}
+#'   \item{Type}{Type of relationship between tables}
+#'   \item{ParentTableID}{The ID of the 'parent' table in a relationship}
+#'   \item{ParentTableName}{The corresponding name of the 'parent' table in a relationship}
+#'   \item{ChildTableID}{The ID of the 'child' table in a relationship}
+#'   \item{ChildTableName}{The corresponding name of the 'child' table in a relationship}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Meta.Relationships"
 
 
 
@@ -75,6 +127,7 @@
 #'   \item{TableID}{}
 #'   \item{TableName.Raw}{Table name in Raw Data Model}
 #'   \item{TableName.Curated}{Corresponding table name in Curated Data Model}
+#'   \item{Role}{Indicating role of table in the relational data set. Usually one of 'Seed' / 'Root' / 'Branch'}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -151,7 +204,7 @@
 #'   \item{Table}{}
 #'   \item{Feature}{}
 #'   \item{EvaluationOrder}{}
-#'   \item{Operation}{}
+#'   \item{Expression}{}
 #'   \item{Comment}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
@@ -188,14 +241,41 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Set.DataHarmonization.rda
+# Set.CurationProcess.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Settings on which feature should be harmonized and which methods to use for each feature
+#' Settings on how data set curation is supposed to proceed
 #'
 #' A tibble
 #'
-#' @format ## `Set.DataHarmonization`
+#' @format ## `Set.CurationProcess`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{TableID}{}
+#'   \item{Table}{}
+#'   \item{PrimaryTableCleaning}{}
+#'   \item{TableNormalization}{}
+#'   \item{DataRemediation}{}
+#'   \item{DataRemediation.NonconformingRecords}{}
+#'   \item{SecondaryTableCleaning}{}
+#'   \item{RecordSubsumption}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Set.CurationProcess"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Set.DataRemediation.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Settings on how feature values should be remediated and which methods to use for each feature
+#'
+#' A tibble
+#'
+#' @format ## `Set.DataRemediation`
 #' \code{tibble}
 #' \describe{
 #'   \item{Profile}{}
@@ -203,17 +283,19 @@
 #'   \item{Table}{}
 #'   \item{Feature}{}
 #'   \item{HasEligibleValueSet}{}
-#'   \item{RunHarmonization}{}
-#'   \item{HarmonizationOrder}{}
+#'   \item{RunRemediation}{}
+#'   \item{RemediationOrder}{}
 #'   \item{Method.TransformativeExpressions}{}
 #'   \item{Method.Dictionary}{}
 #'   \item{Method.FuzzyStringMatching}{}
 #'   \item{Method.NaiveBayes}{}
 #'   \item{MatchToDictionaryLookupsInFSM}{}
+#'   \item{UnremediatedValues.Substitute}{}
+#'   \item{UnremediatedValues.Substitution}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Set.DataHarmonization"
+"Set.DataRemediation"
 
 
 
@@ -221,7 +303,7 @@
 # Set.DiagnosisAssociation.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Settings on rule-based identification of associations between diagnosis entries
+#' Settings on rule-based identification of associations between diagnosis records
 #'
 #' A tibble containing rules
 #'
@@ -245,7 +327,7 @@
 # Set.DiagnosisRedundancy.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Settings on rule-based identification of redundant diagnosis entries
+#' Settings on rule-based identification of redundant diagnosis records
 #'
 #' A tibble containing rules
 #'
@@ -269,7 +351,7 @@
 # Set.Dictionary.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Dictionary data used in Data Harmonization
+#' Dictionary data used in Data Remediation
 #'
 #' A tibble containing look-up values and corresponding replacements
 #'
@@ -291,23 +373,28 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Set.FeatureObligations.rda
+# Set.FeatureRequirements.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Containing preferences on which features in CDS should be considered obligatory
+#' Containing requirements for table features in CDS
 #'
 #' A tibble
 #'
-#' @format ## `Set.FeatureObligations`
+#' @format ## `Set.FeatureRequirements`
 #' \code{tibble}
 #' \describe{
+#'   \item{Profile}{}
+#'   \item{FeatureID}{}
 #'   \item{Table}{}
 #'   \item{Feature}{}
-#'   \item{Default}{}
+#'   \item{Type}{}
+#'   \item{Scale}{}
+#'   \item{Availability}{}
+#'   \item{NegligibleValues}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
-"Set.FeatureObligations"
+"Set.FeatureRequirements"
 
 
 
@@ -322,10 +409,12 @@
 #' @format ## `Set.FeatureTracking`
 #' \code{tibble}
 #' \describe{
+#'   \item{Profile}{}
+#'   \item{FeatureID}{}
 #'   \item{Table}{}
 #'   \item{Feature}{}
 #'   \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
-#'   \item{Default}{}
+#'   \item{IsTracked}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
@@ -339,7 +428,7 @@
 
 #' Set.FuzzyStringMatching
 #'
-#' Feature-specific settings for Fuzzy String Matching
+#' Feature-specific settings for Fuzzy String Matching used in Data Remediation
 #'
 #' @format ## `Set.FuzzyStringMatching`
 #' \code{tibble}
@@ -371,10 +460,93 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Set.PrimaryTableCleaning.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Settings on primary table cleaning procedures
+#'
+#' A tibble
+#'
+#' @format ## `Set.PrimaryTableCleaning`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{TableID}{}
+#'   \item{Table}{}
+#'   \item{UnlinkedRecords.Detect}{}
+#'   \item{UnlinkedRecords.Remove}{}
+#'   \item{EmptyStrings.Detect}{}
+#'   \item{EmptyStrings.Substitute}{}
+#'   \item{EmptyStrings.Substitution}{}
+#'   \item{DuplicateRecords.Detect}{}
+#'   \item{DuplicateRecords.Remove}{}
+#'   \item{FeatureAvailabilityViolations.Detect}{}
+#'   \item{FeatureAvailabilityViolations.Remove}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Set.PrimaryTableCleaning"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Set.RecordSubsumption.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Settings on record subsumption
+#'
+#' A tibble
+#'
+#' @format ## `Set.RecordSubsumption`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{TableID}{}
+#'   \item{Table}{}
+#'   \item{SubsumptionRedundancies.Detect}{}
+#'   \item{SubsumptionRedundancies.Remove}{\code{logical flag} - Indicates whether to remove table records that are considered redundant by subsumption. If set to \code{FALSE}, the redundant records are marked as such and preserved.}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Set.RecordSubsumption"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Set.SecondaryTableCleaning.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Settings on secondary table cleaning procedures
+#'
+#' A tibble
+#'
+#' @format ## `Set.SecondaryTableCleaning`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{TableID}{}
+#'   \item{Table}{}
+#'   \item{UnlinkedRecords.Detect}{}
+#'   \item{UnlinkedRecords.Remove}{}
+#'   \item{EmptyStrings.Detect}{}
+#'   \item{EmptyStrings.Substitute}{}
+#'   \item{EmptyStrings.Substitution}{}
+#'   \item{DuplicateRecords.Detect}{}
+#'   \item{DuplicateRecords.Remove}{}
+#'   \item{FeatureAvailabilityViolations.Detect}{}
+#'   \item{FeatureAvailabilityViolations.Remove}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Set.SecondaryTableCleaning"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set.TransformativeExpressions.rda
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Settings on transformative expressions used in Data Harmonization
+#' Settings on transformative expressions used in Data Remediation
 #'
 #' A tibble
 #'

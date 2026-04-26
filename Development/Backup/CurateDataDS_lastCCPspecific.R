@@ -1,36 +1,36 @@
 
 #' CurateDataDS
 #'
-#' `r lifecycle::badge("stable")` \cr\cr
+#' `r lifecycle::badge("experimental")` \cr\cr
 #' Transforms CCP Raw Data Set (RDS) into Curated Data Set (CDS) while tracing data transformation.
 #'
 #' Server-side ASSIGN method
 #'
-#' @param RawDataSetName.S \code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
-#' @param Settings.S \code{list} - Settings passed to function
-#'                   \itemize{  \item \emph{DataHarmonization} - \code{list}
-#'                                  \itemize{ \item Run \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
-#'                                            \item Process \code{data.frame} - Default: \code{dsCCPhos::Set.DataHarmonization}
-#'                                            \item Process.Profile \code{string} - Profile used in \emph{Process} - Default: 'Default'
-#'                                            \item TransformativeExpressions \code{data.frame} - Default: \code{dsCCPhos::Set.TransformativeExpressions}
-#'                                            \item TransformativeExpressions.Profile \code{string} - Profile used in \emph{TransformativeExpressions} - Default: 'Default'
-#'                                            \item Dictionary \code{data.frame} - Default: \code{dsCCPhos::Set.Dictionary}
-#'                                            \item Dictionary.Profile \code{string} - Profile used in \emph{Dictionary} - Default: 'Default'
-#'                                            \item FuzzyStringMatching \code{data.frame} - Default: \code{dsCCPhos::Set.FuzzyStringMatching}
-#'                                            \item FuzzyStringMatching.Profile \code{string} - Profile used in \emph{FuzzyStringMatching} - Default: 'Default'
-#'                                            \item ExludeIneligibleValues \code{logical} - Default: \code{TRUE} }
-#'                              \item \emph{FeatureObligations} - \code{list}
-#'                                  \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Set.FeatureObligations}
-#'                                            \item RuleSet.Profile \code{string} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'}
-#'                              \item \emph{FeatureTracking} - \code{list}
-#'                                  \itemize{ \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Set.FeatureTracking}
-#'                                            \item RuleSet.Profile \code{string} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'}
-#'                              \item \emph{TableCleaning} - \code{list}
-#'                                  \itemize{ \item Run \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}}
-#'                              \item \emph{TableNormalization} - \code{list}
-#'                                  \itemize{ \item Run \code{logical} - Whether or not to perform table normalization - Default: \code{TRUE}
-#'                                            \item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Proc.TableNormalization}
-#'                                            \item RuleSet.Profile \code{string} - Profile name defining rule set to be used for table normalization. Profile name must be stated in \code{TableNormalization$RuleSet} - Default: 'Default'}}
+#' @param \code{RawDataSetName.S} \code{character} - Name of Raw Data Set object (list) on server - Default: 'RawDataSet'
+#' @param \code{MetaData.S} \code{list} - A \code{list} of \code{data.frames} describing the structural and semantic characteristics of a hierarchical data model.
+#'            \itemize{ \item \code{Meta.Tables}
+#'                      \item \code{Meta.Features}
+#'                      \item \code{Meta.Relationships}
+#'                      \item \code{Meta.Links}
+#'                      \item \code{Meta.Values}}
+#' @param \code{DataHarmonization.Run.S} \code{logical} - Whether or not to perform data harmonization - Default: \code{TRUE}
+#' @param \code{DataHarmonization.Process.S} \code{data.frame} - Default: \code{dsCCPhos::Set.DataHarmonization}
+#' @param \code{DataHarmonization.Process.Profile.S} \code{string} - Profile used in \emph{Process} - Default: 'Default'
+#' @param \code{DataHarmonization.TransformativeExpressions.S} \code{data.frame} - Default: \code{dsCCPhos::Set.TransformativeExpressions}
+#' @param \code{DataHarmonization.TransformativeExpressions.Profile.S} \code{string} - Profile used in \emph{TransformativeExpressions} - Default: 'Default'
+#' @param \code{DataHarmonization.Dictionary.S} \code{data.frame} - Default: \code{dsCCPhos::Set.Dictionary}
+#' @param \code{DataHarmonization.Dictionary.Profile.S} \code{string} - Profile used in \emph{Dictionary} - Default: 'Default'
+#' @param \code{DataHarmonization.FuzzyStringMatching.S} \code{data.frame} - Default: \code{dsCCPhos::Set.FuzzyStringMatching}
+#' @param \code{DataHarmonization.FuzzyStringMatching.Profile.S} \code{string} - Profile used in \emph{FuzzyStringMatching} - Default: 'Default'
+#' @param \code{DataHarmonization.ExludeIneligibleValues.S} \code{logical} - Default: \code{TRUE}
+#' @param \code{FeatureObligations.RuleSet.S} \code{data.frame} - Default: \code{dsCCPhos::Set.FeatureObligations}
+#' @param \code{FeatureObligations.RuleSet.Profile.S} \code{string} - Profile name defining strict and trans-feature rules for obligatory feature content. Profile name must be stated in \code{FeatureObligations$RuleSet} - Default: 'Default'
+#' @param \code{FeatureTracking.RuleSet.S} \code{data.frame} - Default: \code{dsCCPhos::Set.FeatureTracking}
+#' @param \code{FeatureTracking.RuleSet.Profile.S} \code{string} - Profile name defining which features should be tracked/monitored during curation process. Profile name must be stated in \code{FeatureTracking$RuleSet} - Default: 'Default'
+#' @param \code{TableCleaning.Run.S} \code{logical} - Whether or not to perform table cleaning (removal of redundant and ineligible entries) - Default: \code{TRUE}
+#' @param \code{TableNormalization.Run.S} \code{logical} - Whether or not to perform table normalization - Default: \code{TRUE}
+#' @param \code{TableNormalization.RuleSet.S} \code{data.frame} - Default: \code{dsCCPhos::Proc.TableNormalization}
+#' @param \code{TableNormalization.RuleSet.Profile.S} \code{string} - Profile name defining rule set to be used for table normalization. Profile name must be stated in \code{TableNormalization$RuleSet} - Default: 'Default'
 #'
 #' @return A \code{list} containing the following objects:
 #'         \itemize{\item CuratedDataSet \code{list}
@@ -69,42 +69,29 @@
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
-                         Settings.S = list(DataHarmonization = list(Run = TRUE,
-                                                                    Process = dsCCPhos::Set.DataHarmonization,
-                                                                    Process.Profile = "Default",
-                                                                    TransformativeExpressions = dsCCPhos::Set.TransformativeExpressions,
-                                                                    TransformativeExpressions.Profile = "Default",
-                                                                    Dictionary = dsCCPhos::Set.Dictionary,
-                                                                    Dictionary.Profile = "Default",
-                                                                    FuzzyStringMatching = dsCCPhos::Set.FuzzyStringMatching,
-                                                                    FuzzyStringMatching.Profile = "Default",
-                                                                    ExcludeIneligibleValues = TRUE),
-                                          FeatureObligations = list(RuleSet = dsCCPhos::Set.FeatureObligations,
-                                                                    RuleSet.Profile = "Default"),
-                                          FeatureTracking = list(RuleSet = dsCCPhos::Set.FeatureTracking,
-                                                                 RuleSet.Profile = "Default"),
-                                          TableCleaning = list(Run = TRUE),
-                                          TableNormalization = list(Run = TRUE,
-                                                                    RuleSet = dsCCPhos::Proc.TableNormalization,
-                                                                    RuleSet.Profile = "Default")),
-                         DataHarmonization.Run = NULL,
-                         DataHarmonization.Process = NULL,
-                         DataHarmonization.Process.Profile = NULL,
-                         DataHarmonization.TransformativeExpressions = NULL,
-                         DataHarmonization.TransformativeExpressions.Profile = NULL,
-                         DataHarmonization.Dictionary = NULL,
-                         DataHarmonization.Dictionary.Profile = NULL,
-                         DataHarmonization.FuzzyStringMatching = NULL,
-                         DataHarmonization.FuzzyStringMatching.Profile = NULL,
-                         DataHarmonization.ExcludeIneligibleValues = NULL,
-                         FeatureObligations.RuleSet = NULL,
-                         FeatureObligations.RuleSet.Profile = NULL,
-                         FeatureTracking.RuleSet = NULL,
-                         FeatureTracking.RuleSet.Profile = NULL,
-                         TableCleaning.Run = NULL,
-                         TableNormalization.Run = NULL,
-                         TableNormalization.RuleSet = NULL,
-                         TableNormalization.RuleSet.Profile = NULL)
+                         MetaData.S = list(Tables = dsCCPhos::Meta.Tables,
+                                           Relationships = dsCCPhos::Meta.Relationships,
+                                           Links = dsCCPhos::Meta.Links,
+                                           Features = dsCCPhos::Meta.Features,
+                                           Values = dsCCPhos::Meta.Values),
+                         DataHarmonization.Run.S = TRUE,
+                         DataHarmonization.Process.S = dsCCPhos::Set.DataHarmonization,
+                         DataHarmonization.Process.Profile.S = "Default",
+                         DataHarmonization.TransformativeExpressions.S = dsCCPhos::Set.TransformativeExpressions,
+                         DataHarmonization.TransformativeExpressions.Profile.S = "Default",
+                         DataHarmonization.Dictionary.S = dsCCPhos::Set.Dictionary,
+                         DataHarmonization.Dictionary.Profile.S = "Default",
+                         DataHarmonization.FuzzyStringMatching.S = dsCCPhos::Set.FuzzyStringMatching,
+                         DataHarmonization.FuzzyStringMatching.Profile.S = "Default",
+                         DataHarmonization.ExcludeIneligibleValues.S = TRUE,
+                         FeatureObligations.RuleSet.S = dsCCPhos::Set.FeatureObligations,
+                         FeatureObligations.RuleSet.Profile.S = "Default",
+                         FeatureTracking.RuleSet.S = dsCCPhos::Set.FeatureTracking,
+                         FeatureTracking.RuleSet.Profile.S = "Default",
+                         TableCleaning.Run.S = TRUE,
+                         TableNormalization.Run.S = TRUE,
+                         TableNormalization.RuleSet.S = dsCCPhos::Proc.TableNormalization,
+                         TableNormalization.RuleSet.Profile.S = "Default")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 
@@ -162,66 +149,114 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
   # --- For Testing Purposes ---
-  # DataSet <- RawDataSet
-  # Settings.S <- list(DataHarmonization = list(Run = TRUE,
-  #                                             Process = dsCCPhos::Set.DataHarmonization,
-  #                                             Process.Profile = "Default",
-  #                                             TransformativeExpressions = dsCCPhos::Set.TransformativeExpressions,
-  #                                             TransformativeExpressions.Profile = "Default",
-  #                                             Dictionary = dsCCPhos::Set.Dictionary,
-  #                                             Dictionary.Profile = "Default",
-  #                                             FuzzyStringMatching = dsCCPhos::Set.FuzzyStringMatching,
-  #                                             FuzzyStringMatching.Profile = "Default",
-  #                                             ExcludeIneligibleValues = TRUE),
-  #                    FeatureObligations = list(RuleSet = dsCCPhos::Set.FeatureObligations,
-  #                                              RuleSet.Profile = "Default"),
-  #                    FeatureTracking = list(RuleSet = dsCCPhos::Set.FeatureTracking,
-  #                                           RuleSet.Profile = "Default"),
-  #                    TableCleaning = list(Run = TRUE),
-  #                    TableNormalization = list(Run = TRUE,
-  #                                              RuleSet = dsCCPhos::Proc.TableNormalization,
-  #                                              RuleSet.Profile = "Default"))
+  # RawDataSetName.S <- "RawDataSet"
+  # MetaData.S <- list(Tables = dsCCPhos::Meta.Tables,
+  #                    Relationships = dsCCPhos::Meta.Relationships,
+  #                    Links = dsCCPhos::Meta.Links,
+  #                    Features = dsCCPhos::Meta.Features,
+  #                    Values = dsCCPhos::Meta.Values)
+  # DataHarmonization.Run.S <- TRUE
+  # DataHarmonization.Process.S <- dsCCPhos::Set.DataHarmonization
+  # DataHarmonization.Process.Profile.S <- "Default"
+  # DataHarmonization.TransformativeExpressions.S <- dsCCPhos::Set.TransformativeExpressions
+  # DataHarmonization.TransformativeExpressions.Profile.S <- "Default"
+  # DataHarmonization.Dictionary.S <- dsCCPhos::Set.Dictionary
+  # DataHarmonization.Dictionary.Profile.S <- "Default"
+  # DataHarmonization.FuzzyStringMatching.S <- dsCCPhos::Set.FuzzyStringMatching
+  # DataHarmonization.FuzzyStringMatching.Profile.S <- "Default"
+  # DataHarmonization.ExcludeIneligibleValues.S <- TRUE
+  # FeatureObligations.RuleSet.S <- dsCCPhos::Set.FeatureObligations
+  # FeatureObligations.RuleSet.Profile.S <- "Default"
+  # FeatureTracking.RuleSet.S <- dsCCPhos::Set.FeatureTracking
+  # FeatureTracking.RuleSet.Profile.S <- "Default"
+  # TableCleaning.Run.S <- TRUE
+  # TableNormalization.Run.S <- TRUE
+  # TableNormalization.RuleSet.S <- dsCCPhos::Proc.TableNormalization
+  # TableNormalization.RuleSet.Profile.S <- "Default"
+
+
+  # --- Argument Validation ---
+  assert_that(is.string(RawDataSetName.S),
+              is.list(MetaData),
+              is.data.frame(MetaData$Tables),
+              is.data.frame(MetaData$Relationships),
+              is.data.frame(MetaData$Links),
+              is.data.frame(MetaData$Features),
+              is.data.frame(MetaData$Values),
+              is.flag(DataHarmonization.Run.S),
+              is.data.frame(DataHarmonization.Process.S),
+              is.string(DataHarmonization.Process.Profile.S),
+              is.data.frame(DataHarmonization.TransformativeExpressions.S),
+              is.string(DataHarmonization.TransformativeExpressions.Profile.S),
+              is.data.frame(DataHarmonization.Dictionary.S),
+              is.string(DataHarmonization.Dictionary.Profile.S),
+              is.data.frame(DataHarmonization.FuzzyStringMatching.S),
+              is.string(DataHarmonization.FuzzyStringMatching.Profile.S),
+              is.flag(DataHarmonization.ExcludeIneligibleValues.S),
+              is.data.frame(FeatureObligations.RuleSet.S),
+              is.string(FeatureObligations.RuleSet.Profile.S),
+              is.data.frame(FeatureTracking.RuleSet.S),
+              is.string(FeatureTracking.RuleSet.Profile.S),
+              is.flag(TableCleaning.Run.S),
+              is.flag(TableNormalization.Run.S),
+              is.data.frame(TableNormalization.RuleSet.S),
+              is.string(TableNormalization.RuleSet.Profile.S))
+
+  # Special validation rules implemented with base::stopifnot() instead of assertthat::assert_that()
+  stopifnot("ERROR: Value of argument 'DataHarmonization.Process.Profile.S' must be a column name of the data.frame passed in argument 'DataHarmonization.Process.S'." = (DataHarmonization.Process.Profile.S %in% names(DataHarmonization.Process.S)))
+  stopifnot("ERROR: Value of argument 'DataHarmonization.TransformativeExpressions.Profile.S' must be a column name of the data.frame passed in argument 'DataHarmonization.TransformativeExpressions.S'." = (DataHarmonization.TransformativeExpressions.Profile.S %in% names(DataHarmonization.TransformativeExpressions.S)))
+  stopifnot("ERROR: Value of argument 'DataHarmonization.Dictionary.Profile.S' must be a column name of the data.frame passed in argument 'DataHarmonization.Dictionary.S'." = (DataHarmonization.Dictionary.Profile.S %in% names(DataHarmonization.Dictionary.S)))
+  stopifnot("ERROR: Value of argument 'DataHarmonization.FuzzyStringMatching.Profile.S' must be a column name of the data.frame passed in argument 'DataHarmonization.FuzzyStringMatching.S'." = (DataHarmonization.FuzzyStringMatching.Profile.S %in% names(DataHarmonization.FuzzyStringMatching.S)))
+  stopifnot("ERROR: Value of argument 'FeatureObligations.RuleSet.Profile.S' must be a column name of the data.frame passed in argument 'FeatureObligations.RuleSet.S'." = (FeatureObligations.RuleSet.Profile.S %in% names(FeatureObligations.RuleSet.S)))
+  stopifnot("ERROR: Value of argument 'FeatureTracking.RuleSet.Profile.S' must be a column name of the data.frame passed in argument 'FeatureTracking.RuleSet.S'." = (FeatureTracking.RuleSet.Profile.S %in% names(FeatureTracking.RuleSet.S)))
+  stopifnot("ERROR: Value of argument 'TableNormalization.RuleSet.Profile.S' must be a column name of the data.frame passed in argument 'TableNormalization.RuleSet.S'." = (TableNormalization.RuleSet.Profile.S %in% names(TableNormalization.RuleSet.S)))
+
 
 #-------------------------------------------------------------------------------
 # - Equip 'Settings' with default values in case of missing arguments -
 #-------------------------------------------------------------------------------
 
-  # Rename 'Settings.S' argument for better code readability
-  Settings <- Settings.S
+  # Bundle settings arguments in a list
+  Settings <- list(DataHarmonization = list(Run = DataHarmonization.Run.S,
+                                            Process = DataHarmonization.Process.S,
+                                            Process.Profile = DataHarmonization.Process.Profile.S,
+                                            TransformativeExpressions = DataHarmonization.TransformativeExpressions.S,
+                                            TransformativeExpressions.Profile = DataHarmonization.TransformativeExpressions.Profile.S,
+                                            Dictionary = DataHarmonization.Dictionary.S,
+                                            Dictionary.Profile = DataHarmonization.Dictionary.Profile.S,
+                                            FuzzyStringMatching = DataHarmonization.FuzzyStringMatching.S,
+                                            FuzzyStringMatching.Profile = DataHarmonization.FuzzyStringMatching.Profile.S,
+                                            ExcludeIneligibleValues = DataHarmonization.ExcludeIneligibleValues.S),
+                   FeatureObligations = list(RuleSet = FeatureObligations.RuleSet.S,
+                                             RuleSet.Profile = FeatureObligations.RuleSet.Profile.S),
+                   FeatureTracking = list(RuleSet = FeatureTracking.RuleSet.S,
+                                          RuleSet.Profile = FeatureTracking.RuleSet.Profile.S),
+                   TableCleaning = list(Run = TableCleaning.Run.S),
+                   TableNormalization = list(Run = TableNormalization.Run.S,
+                                             RuleSet = TableNormalization.RuleSet.S,
+                                             RuleSet.Profile = TableNormalization.RuleSet.Profile.S))
+
 
   # If list of 'Settings' passed to function is incomplete, complete it with default values
-  if (is.null(Settings$DataHarmonization$Run)) { Settings$DataHarmonization$Run <- TRUE }
-  if (is.null(Settings$DataHarmonization$Process)) { Settings$DataHarmonization$Process <- dsCCPhos::Set.DataHarmonization }
-  if (is.null(Settings$DataHarmonization$Process.Profile)) { Settings$DataHarmonization$Process.Profile <- "Default" }
-  if (is.null(Settings$DataHarmonization$TransformativeExpressions)) { Settings$DataHarmonization$TransformativeExpressions <- dsCCPhos::Set.TransformativeExpressions }
-  if (is.null(Settings$DataHarmonization$TransformativeExpressions.Profile)) { Settings$DataHarmonization$TransformativeExpressions.Profile <- "Default" }
-  if (is.null(Settings$DataHarmonization$Dictionary)) { Settings$DataHarmonization$Dictionary <- dsCCPhos::Set.Dictionary }
-  if (is.null(Settings$DataHarmonization$Dictionary.Profile)) { Settings$DataHarmonization$Dictionary.Profile <- "Default" }
-  if (is.null(Settings$DataHarmonization$FuzzyStringMatching)) { Settings$DataHarmonization$FuzzyStringMatching <- dsCCPhos::Set.FuzzyStringMatching }
-  if (is.null(Settings$DataHarmonization$FuzzyStringMatching.Profile)) { Settings$DataHarmonization$FuzzyStringMatching.Profile <- "Default" }
-  if (is.null(Settings$DataHarmonization$ExcludeIneligibleValues)) { Settings$DataHarmonization$ExcludeIneligibleValues <- TRUE }
-  if (is.null(Settings$FeatureObligations$RuleSet)) { Settings$FeatureObligations$RuleSet <- dsCCPhos::Set.FeatureObligations }
-  if (is.null(Settings$FeatureObligations$RuleSet.Profile)) { Settings$FeatureObligations$RuleSet.Profile <- "Default" }
-  if (is.null(Settings$FeatureTracking$RuleSet)) { Settings$FeatureTracking$RuleSet <- dsCCPhos::Set.FeatureTracking }
-  if (is.null(Settings$FeatureTracking$RuleSet.Profile)) { Settings$FeatureTracking$RuleSet.Profile <- "Default" }
-  if (is.null(Settings$TableCleaning$Run)) { Settings$TableCleaning$Run <- TRUE }
-  if (is.null(Settings$TableNormalization$Run)) { Settings$TableNormalization$Run <- TRUE }
-  if (is.null(Settings$TableNormalization$RuleSet)) { Settings$TableNormalization$RuleSet <- dsCCPhos::Proc.TableNormalization }
-  if (is.null(Settings$TableNormalization$RuleSet.Profile)) { Settings$TableNormalization$RuleSet.Profile <- "Default" }
+  # if (is.null(Settings$DataHarmonization$Run)) { Settings$DataHarmonization$Run <- TRUE }
+  # if (is.null(Settings$DataHarmonization$Process)) { Settings$DataHarmonization$Process <- dsCCPhos::Set.DataHarmonization }
+  # if (is.null(Settings$DataHarmonization$Process.Profile)) { Settings$DataHarmonization$Process.Profile <- "Default" }
+  # if (is.null(Settings$DataHarmonization$TransformativeExpressions)) { Settings$DataHarmonization$TransformativeExpressions <- dsCCPhos::Set.TransformativeExpressions }
+  # if (is.null(Settings$DataHarmonization$TransformativeExpressions.Profile)) { Settings$DataHarmonization$TransformativeExpressions.Profile <- "Default" }
+  # if (is.null(Settings$DataHarmonization$Dictionary)) { Settings$DataHarmonization$Dictionary <- dsCCPhos::Set.Dictionary }
+  # if (is.null(Settings$DataHarmonization$Dictionary.Profile)) { Settings$DataHarmonization$Dictionary.Profile <- "Default" }
+  # if (is.null(Settings$DataHarmonization$FuzzyStringMatching)) { Settings$DataHarmonization$FuzzyStringMatching <- dsCCPhos::Set.FuzzyStringMatching }
+  # if (is.null(Settings$DataHarmonization$FuzzyStringMatching.Profile)) { Settings$DataHarmonization$FuzzyStringMatching.Profile <- "Default" }
+  # if (is.null(Settings$DataHarmonization$ExcludeIneligibleValues)) { Settings$DataHarmonization$ExcludeIneligibleValues <- TRUE }
+  # if (is.null(Settings$FeatureObligations$RuleSet)) { Settings$FeatureObligations$RuleSet <- dsCCPhos::Set.FeatureObligations }
+  # if (is.null(Settings$FeatureObligations$RuleSet.Profile)) { Settings$FeatureObligations$RuleSet.Profile <- "Default" }
+  # if (is.null(Settings$FeatureTracking$RuleSet)) { Settings$FeatureTracking$RuleSet <- dsCCPhos::Set.FeatureTracking }
+  # if (is.null(Settings$FeatureTracking$RuleSet.Profile)) { Settings$FeatureTracking$RuleSet.Profile <- "Default" }
+  # if (is.null(Settings$TableCleaning$Run)) { Settings$TableCleaning$Run <- TRUE }
+  # if (is.null(Settings$TableNormalization$Run)) { Settings$TableNormalization$Run <- TRUE }
+  # if (is.null(Settings$TableNormalization$RuleSet)) { Settings$TableNormalization$RuleSet <- dsCCPhos::Proc.TableNormalization }
+  # if (is.null(Settings$TableNormalization$RuleSet.Profile)) { Settings$TableNormalization$RuleSet.Profile <- "Default" }
 
-  # --- Argument Validation ---
-  assert_that(is.string(RawDataSetName.S))
-
-  if (Settings$FeatureObligations$RuleSet.Profile %in% names(Settings$FeatureObligations$RuleSet) == FALSE)
-  {
-      ClientMessage <- "ERROR: Value of settings argument 'FeatureObligations$RuleSet.Profile' must be column name of data.frame passed in settings argument 'FeatureObligations$RuleSet'."
-      stop(ClientMessage, call. = FALSE)
-  }
-  if (Settings$FeatureTracking$RuleSet.Profile %in% names(Settings$FeatureTracking$RuleSet) == FALSE)
-  {
-      ClientMessage <- "ERROR: Value of settings argument 'FeatureTracking$RuleSet.Profile' must be column name of data.frame passed in settings argument 'FeatureTracking$RuleSet'."
-      stop(ClientMessage, call. = FALSE)
-  }
 
 
 #-------------------------------------------------------------------------------
@@ -236,8 +271,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
   # Print starting message
   cat("\n")
-  Message <- paste0("Starting Data Curation...")
-  cli::cat_bullet(Message, bullet = "star")
+  cli::cat_bullet("Starting Data Curation...", bullet = "star")
   cat("\n")
 
   # Suppress summarize info messages
@@ -262,6 +296,43 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
+# MODULE A)  Processing of data set meta data
+#===============================================================================
+
+  # Renaming meta data object for better code readability
+  MetaData <- MetaData.S
+
+  # Extracting all table names
+  TableNames <- MetaData$Tables$TableName.Curated
+
+  # Assuming a hierarchical data model
+  SeedTableName <- MetaData$Tables %>%
+                        filter(Role == "Seed") %>%
+                        pull(TableName.Curated)
+
+  stopifnot("ERROR in meta data: There must be exactly one table with role 'Seed'!" = (length(SeedTableName) == 1))
+
+
+  RootTableNames <- MetaData$Tables %>%
+                        filter(Role == "Root") %>%
+                        pull(TableName.Curated)
+
+  BranchTableNames <- MetaData$Tables %>%
+                          filter(Role == "Branch") %>%
+                          pull(TableName.Curated)
+
+
+  RootFeatureNames <- TableNames %>%
+                          map(function(tablename)
+                              {
+                                  MetaData$Links %>%
+                                      filter(ChildTableName == tablename) %>%
+                                      pull(ChildFeatureName)
+                              }) %>%
+                          set_names(TableNames)
+
+
+#===============================================================================
 # MODULE A)  Harmonization of Raw Data Set meta data and structure
 #===============================================================================
 #   - Add empty tables in data set if they are missing in raw data
@@ -274,8 +345,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 # If tables are missing, create corresponding empty tables for easier management throughout following processing
 #-------------------------------------------------------------------------------
 
-  AllTableNames <- dsCCPhos::Meta.Tables$TableName.Curated
-  MissingTableNames <- AllTableNames[!(AllTableNames %in% names(DataSet))]
+  MissingTableNames <- TableNames[!(TableNames %in% names(DataSet))]
 
   # Create empty data frames for missing tables
   if (length(MissingTableNames) > 0)
@@ -287,7 +357,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
   }
 
   # Reestablish original order of tables in 'DataSet' list
-  DataSet <- DataSet[AllTableNames]
+  DataSet <- DataSet[TableNames]
 
 
 # Rename features from harmonized raw feature names to curated feature names
@@ -298,8 +368,8 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                   imap(function(Table, tablename)
                        {
                           # Create named vector to look up matching feature names in meta data ('OldName' = 'NewName')
-                          vc_Lookup <- filter(dsCCPhos::Meta.Features, TableName.Curated == tablename)$FeatureName.Raw
-                          names(vc_Lookup) <- filter(dsCCPhos::Meta.Features, TableName.Curated == tablename)$FeatureName.Curated
+                          vc_Lookup <- filter(MetaData$Features, TableName.Curated == tablename)$FeatureName.Raw
+                          names(vc_Lookup) <- filter(MetaData$Features, TableName.Curated == tablename)$FeatureName.Curated
 
                           if (length(Table) > 0)
                           {
@@ -326,7 +396,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                   imap(function(Table, tablename)
                        {
                           # Determine missing and unknown features
-                          RequiredFeatureNames <- dplyr::filter(dsCCPhos::Meta.Features, TableName.Curated == tablename)$FeatureName.Curated
+                          RequiredFeatureNames <- dplyr::filter(MetaData$Features, TableName.Curated == tablename)$FeatureName.Curated
                           PresentFeatureNames <- names(Table)
                           MissingFeatures <- RequiredFeatureNames[!(RequiredFeatureNames %in% PresentFeatureNames)]
                           UnknownFeatures <- names(Table)[!(names(Table) %in% RequiredFeatureNames)]
@@ -388,15 +458,17 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
   # By merging 'Patient' and 'Diagnosis', create auxiliary data frame containing all eligible combinations of PatientIDs and DiagnosisIDs
   # Do NOT simply delete (pseudo-)duplicate entries (because different DiagnosisIDs of same patient and diagnosis can e.g. be related to different Histologies).
   # Filter out any entry that has missings in features marked as obligatory in meta data (thereby also removing 'rogue'/unlinked patient or diagnosis entries because this way every patient needs to have at least one related diagnosis and vice versa)
+
   DataSetRoot <- DataSet$Patient %>%
                       left_join(DataSet$Diagnosis, by = join_by(PatientID)) %>%
                       {   if (Settings$TableCleaning$Run == TRUE)
                           {
                               dsFreda::CleanTable(Table = .,
                                                   TableNameLookup = c("Diagnosis", "Patient"),
+                                                  RootFeatures,
+                                                  FeatureObligations = Settings$FeatureObligations,
                                                   RemoveEmptyStrings = TRUE,
-                                                  RemoveRedundantEntries = FALSE,
-                                                  FeatureObligations = Settings$FeatureObligations)
+                                                  RemoveDuplicateEntries = FALSE)
                           } else {.}
                       } %>%
                       select(PatientID, DiagnosisID) %>%
@@ -442,7 +514,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                                   Table <- Table %>%
                                                 dsFreda::CleanTable(TableNameLookup = tablename,
                                                                     RemoveEmptyStrings = TRUE,
-                                                                    RemoveRedundantEntries = TRUE,
+                                                                    RemoveDuplicateEntries = TRUE,
                                                                     FeatureObligations = Settings$FeatureObligations)
                               }
 
@@ -568,7 +640,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                                     ls_EligibleValues <- vc_FeaturesToTrack %>%
                                                               map(function(featurename)
                                                                   {
-                                                                      Values <- dsCCPhos::Meta.Values %>%
+                                                                      Values <- MetaData$Values %>%
                                                                                     filter(Table == tablename,
                                                                                            FeatureName.Curated == featurename) %>%
                                                                                     select(Value.Raw,
@@ -664,7 +736,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                                                          Feature == featurename) %>%
                                                   as.list()
 
-                                  EligibleValueSet <- dsCCPhos::Meta.Values %>%
+                                  EligibleValueSet <- MetaData$Values %>%
                                                           filter(Table == tablename,
                                                                  FeatureName.Curated == featurename) %>%
                                                           pull(Value.Raw)   # Eligible Values BEFORE recoding
@@ -763,9 +835,9 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 #===============================================================================
 # Module D 6)  Data recoding and formatting
 #===============================================================================
-#   - Recoding data using dsCCPhos::RecodeData() based on specifications in dsCCPhos::Meta.Values
+#   - Recoding data using dsFreda::RecodeData() based on specifications in MetaData$Values
 #   - RecodeData() uses a dictionary in the form of a named vector to perform recoding on a target vector
-#   - Format / Re-type data using dsCCPhos::FormatData() based on specifications in dsCCPhos::Meta.Features
+#   - Format / Re-type data using dsFreda::FormatData() based on specifications in MetaData$Features
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -783,14 +855,14 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                               # Recode table data as defined in meta data
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-                              FeaturesWithValueSets <- dsCCPhos::Meta.Values %>%
+                              FeaturesWithValueSets <- MetaData$Values %>%
                                                             filter(Table == tablename) %>%
                                                             pull(FeatureName.Curated) %>%
                                                             unique()
 
                               if (length(FeaturesWithValueSets) > 0)
                               {
-                                  RecodingDictionaries <- dsCCPhos::Meta.Values %>%
+                                  RecodingDictionaries <- MetaData$Values %>%
                                                               filter(Table == tablename) %>%
                                                               split(.$FeatureName.Curated) %>%      # 'split' is a base function and needs '.$' to address 'FeatureName.Curated'
                                                               map(\(Values) with(Values, set_names(Value.Curated, Value.Raw)))
@@ -805,7 +877,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                               # Format / Re-type table data as defined in meta data
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-                              FeatureTypes <- dsCCPhos::Meta.Features %>%
+                              FeatureTypes <- MetaData$Features %>%
                                                   filter(TableName.Curated == tablename,
                                                          Type != "character") %>%
                                                   select(FeatureName.Curated, Type) %>%
@@ -889,12 +961,12 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
 
 #===============================================================================
-# Module D 8)  Finalize transformation of data values using dsCCPhos::FinalizeDataTransformation()
+# Module D 8)  Finalize transformation of data values using dsFreda::FinalizeDataTransformation()
 #===============================================================================
 #   - (Optional / Default) Exclusion of ineligible data (including data that could not be transformed)
 #   - (Optional) Conversion to ordered factor
 #   - (Optional) Assignment of factor labels   <-- Conversion to factor is put off for now, 02/2024
-#   - All predefined information stored in dsCCPhos::Meta.Values
+#   - All predefined information stored in MetaData$Values
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -918,7 +990,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                               for (featurename in HarmonizationProcess$Feature)
                               {
                                   # Get eligible value set for current feature as data.frame including data on factoring
-                                  EligibleValueSet <- dsCCPhos::Meta.Values %>%
+                                  EligibleValueSet <- MetaData$Values %>%
                                                           filter(Table == tablename,
                                                                  FeatureName.Curated == featurename)
 
@@ -1257,7 +1329,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                           {
                               dsFreda::CleanTable(Table = .,
                                                   TableNameLookup = c("Diagnosis", "Patient"),
-                                                  RemoveRedundantEntries = FALSE,
+                                                  RemoveDuplicateEntries = FALSE,
                                                   FeatureObligations = Settings$FeatureObligations)
                           } else {.}
                       } %>%
@@ -1290,7 +1362,7 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
                               {
                                   Table <- Table %>%
                                                 dsFreda::CleanTable(TableNameLookup = tablename,
-                                                                    RemoveRedundantEntries = TRUE,
+                                                                    RemoveDuplicateEntries = TRUE,
                                                                     FeatureObligations = Settings$FeatureObligations)
                               }
 
@@ -1350,10 +1422,10 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
   # Using dsFreda::FindRedundantEntries(), mark redundant entries in table 'Diagnosis' for further processing
   Aux_DiagnosisRedundancies <- DataSet$Diagnosis %>%
                                     dsFreda::FindRedundantEntries(PrimaryKeyFeature = "DiagnosisID",
-                                                                  DiscriminatoryFeatures = dsCCPhos::Meta.Features %>%
+                                                                  DiscriminatoryFeatures = MetaData$Features %>%
                                                                                                filter(TableName.Curated == "Diagnosis", IsDiscriminatory == TRUE) %>%
                                                                                                pull(FeatureName.Curated),
-                                                                  EssentialFeatures = dsCCPhos::Meta.Features %>%
+                                                                  EssentialFeatures = MetaData$Features %>%
                                                                                            filter(TableName.Curated == "Diagnosis", IsEssential == TRUE) %>%
                                                                                            pull(FeatureName.Curated),
                                                                   RemoveRedundantEntries = FALSE)
@@ -1392,13 +1464,13 @@ CurateDataDS <- function(RawDataSetName.S = "RawDataSet",
 
                               # ... then proceed with secondary redundancy removal
                               Table <- Table %>%
-                                            dsFreda::FindRedundantEntries(PrimaryKeyFeature = dsCCPhos::Meta.Features %>%
+                                            dsFreda::FindRedundantEntries(PrimaryKeyFeature = MetaData$Features %>%
                                                                                                    filter(TableName.Curated == tablename, IsPrimaryKey == TRUE) %>%
                                                                                                    pull(FeatureName.Curated),
-                                                                          DiscriminatoryFeatures = dsCCPhos::Meta.Features %>%
+                                                                          DiscriminatoryFeatures = MetaData$Features %>%
                                                                                                        filter(TableName.Curated == tablename, IsDiscriminatory == TRUE) %>%
                                                                                                        pull(FeatureName.Curated),
-                                                                          EssentialFeatures = dsCCPhos::Meta.Features %>%
+                                                                          EssentialFeatures = MetaData$Features %>%
                                                                                                    filter(TableName.Curated == tablename, IsEssential == TRUE) %>%
                                                                                                    pull(FeatureName.Curated),
                                                                           RemoveRedundantEntries = TRUE)

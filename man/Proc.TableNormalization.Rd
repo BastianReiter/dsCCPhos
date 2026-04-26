@@ -14,7 +14,7 @@
 \item{Table}{}
 \item{Feature}{}
 \item{EvaluationOrder}{}
-\item{Operation}{}
+\item{Expression}{}
 \item{Comment}{}
 }
 }

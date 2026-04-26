@@ -3,7 +3,7 @@
 \docType{data}
 \name{Set.DiagnosisAssociation}
 \alias{Set.DiagnosisAssociation}
-\title{Settings on rule-based identification of associations between diagnosis entries}
+\title{Settings on rule-based identification of associations between diagnosis records}
 \format{
 \subsection{\code{Set.DiagnosisAssociation}}{
 

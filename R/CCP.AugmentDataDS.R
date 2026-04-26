@@ -1,7 +1,7 @@
 
-#' AugmentDataDS
+#' CCP.AugmentDataDS
 #'
-#' `r lifecycle::badge("stable")` \cr\cr
+#' `r lifecycle::badge("experimental")` \cr\cr
 #' Transforms Curated Data Set (CDS) into Augmented Data Set (ADS)
 #'
 #' Server-side ASSIGN method
@@ -30,21 +30,21 @@
 #'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
-                          Settings.S = list(CutoffValues = list(DaysDiagnosisToInitialStaging = 30),
-                                            DiagnosisAssociation = list(Check = TRUE,
-                                                                        RuleSet = dsCCPhos::Set.DiagnosisAssociation,
-                                                                        Profile = "Default"),
-                                            EventFeatures = list(RuleSet = dsCCPhos::Proc.EventFeatures,
-                                                                 Profile = "Default"),
-                                            OverallSurvival = list(ReferenceEvent = c(EventClass = "Diagnosis",
-                                                                                      EventSubclass = "InitialDiagnosis")),
-                                            TherapyOfInterest = list(EventSubclass = "Surgery",
-                                                                     EventSubclassRank = 1),
-                                            TimeToEvent = list(ReferenceEvent = list(EventClass = "Diagnosis",
-                                                                                     EventSubclass = "InitialDiagnosis"),
-                                                               TargetEvent = list(EventClass = "VitalStatus",
-                                                                                  EventSubclass = "Deceased"))))
+CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
+                              Settings.S = list(CutoffValues = list(DaysDiagnosisToInitialStaging = 30),
+                                                DiagnosisAssociation = list(Check = TRUE,
+                                                                            RuleSet = dsCCPhos::Set.DiagnosisAssociation,
+                                                                            Profile = "Default"),
+                                                EventFeatures = list(RuleSet = dsCCPhos::Proc.EventFeatures,
+                                                                     Profile = "Default"),
+                                                OverallSurvival = list(ReferenceEvent = c(EventClass = "Diagnosis",
+                                                                                          EventSubclass = "InitialDiagnosis")),
+                                                TherapyOfInterest = list(EventSubclass = "Surgery",
+                                                                         EventSubclassRank = 1),
+                                                TimeToEvent = list(ReferenceEvent = list(EventClass = "Diagnosis",
+                                                                                         EventSubclass = "InitialDiagnosis"),
+                                                                   TargetEvent = list(EventClass = "VitalStatus",
+                                                                                      EventSubclass = "Deceased"))))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 

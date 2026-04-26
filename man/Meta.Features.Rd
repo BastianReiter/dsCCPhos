@@ -9,8 +9,8 @@
 
 \code{tibble}
 \describe{
-\item{TableID}{}
 \item{FeatureID}{}
+\item{TableID}{}
 \item{TableName.Raw}{Name of table in Opal}
 \item{TableName.Curated}{Name of table after loading into R session}
 \item{FeaturePosition}{Position of Feature in Table}
@@ -20,8 +20,8 @@
 \item{Type}{Data type}
 \item{Scale}{Scale of measure}
 \item{HasEligibleValueSet}{Indicating whether values of feature are part of a finite, discrete eligible value set}
-\item{IsDiscriminatory}{Indicating whether feature is used to strictly discriminate between different entries. Used for discrimination of table entries in redundancy classification.}
-\item{IsEssential}{Indicating whether feature holds essential information. Used for discrimination of table entries in redundancy classification.}
+\item{Subsumption.IsDistinctive}{Indicating whether feature is used to strictly distinguish different records. Used in record subsumption.}
+\item{Subsumption.IsNegligible}{Indicating whether feature holds negligible information. Used in record subsumption.}
 }
 }
 }

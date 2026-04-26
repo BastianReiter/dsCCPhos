@@ -1,5 +1,5 @@
 
-#' MatchDataDS
+#' CCP.MatchDataDS
 #'
 #' Obtain matched subsets from a given source \code{data.frame}, usually \code{ADS$Patients} from the Augmented Data Set (ADS).
 #'
@@ -17,11 +17,11 @@
 #'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-MatchDataDS <- function(DataFrame.S,
-                        GroupingVariable.S,
-                        CustomGroupingVariable.S = NULL,
-                        MatchingVariables.S,
-                        MatchItArguments.S = NULL)
+CCP.MatchDataDS <- function(DataFrame.S,
+                            GroupingVariable.S,
+                            CustomGroupingVariable.S = NULL,
+                            MatchingVariables.S,
+                            MatchItArguments.S = NULL)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
   # --- For Testing Purposes ---

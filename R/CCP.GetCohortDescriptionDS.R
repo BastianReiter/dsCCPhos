@@ -1,5 +1,5 @@
 
-#' GetCohortDescriptionDS
+#' CCP.GetCohortDescriptionDS
 #'
 #' What it does
 #'
@@ -14,8 +14,8 @@
 #'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
-                                   Stage.S = "Augmented")
+CCP.GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
+                                       Stage.S = "Augmented")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
   # --- For Testing Purposes ---
@@ -51,7 +51,7 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
                     mutate(DiagnosesPerPatient = DiagnosisCount / PatientCount)
 
   # Cohort Size over time
-  CohortSize_OverTime <- CohortData %>%
+  CohortSize.OverTime <- CohortData %>%
                               mutate(DiagnosisYear = lubridate::year(DiagnosisDate)) %>%
                               group_by(DiagnosisYear) %>%
                                   summarize(PatientCount = n_distinct(PatientID),
@@ -99,7 +99,7 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
                   summarize(N = n()) %>%
                   mutate(Proportion = N / sum(N))
 
-  Sex_OverTime <- CohortDataSingleDiag %>%
+  Sex.OverTime <- CohortDataSingleDiag %>%
                       mutate(DiagnosisYear = lubridate::year(DiagnosisDate)) %>%
                       group_by(DiagnosisYear, Sex) %>%
                           summarize(N = n()) %>%
@@ -110,8 +110,8 @@ GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
 
 #-------------------------------------------------------------------------------
   return(list(CohortSize = CohortSize,
-              CohortSize_OverTime = CohortSize_OverTime,
+              CohortSize.OverTime = CohortSize.OverTime,
               Sex = Sex,
-              Sex_OverTime = Sex_OverTime,
+              Sex.OverTime = Sex.OverTime,
               Age = Age))
 }

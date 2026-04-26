@@ -4,3 +4,5 @@
 ^Development$
 ^LICENSE\.md$
 ^Documentation$
+^\.positai$
+^\.claude$

@@ -3,7 +3,7 @@
 \docType{data}
 \name{Set.TransformativeExpressions}
 \alias{Set.TransformativeExpressions}
-\title{Settings on transformative expressions used in Data Harmonization}
+\title{Settings on transformative expressions used in Data Remediation}
 \format{
 \subsection{\code{Set.TransformativeExpressions}}{
 

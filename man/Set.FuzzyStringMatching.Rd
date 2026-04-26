@@ -38,7 +38,7 @@
 Set.FuzzyStringMatching
 }
 \description{
-Feature-specific settings for Fuzzy String Matching
+Feature-specific settings for Fuzzy String Matching used in Data Remediation
 }
 \author{
 Bastian Reiter
