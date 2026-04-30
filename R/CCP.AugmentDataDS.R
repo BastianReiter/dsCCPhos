@@ -101,7 +101,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 #===============================================================================
 
   # --- For Testing Purposes ---
-  # CDS <- CuratedDataSet
+  # CDS <- CCP.CuratedDataSet
   # Settings.S <- list(CutoffValues = list(DaysDiagnosisToInitialStaging = 50),
   #                    DiagnosisAssociation = list(Check = TRUE,
   #                                                RuleSet = dsCCPhos::Set.DiagnosisAssociation,
@@ -183,6 +183,10 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
   # Temporary !!!
+
+  CDS$Diagnosis <- CDS$Diagnosis %>%
+                        filter(.IsRedundant == FALSE) %>%
+                        select(-.IsRedundant)
 
   # df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
   #                         filter(IsReferenceEntry == TRUE)
@@ -350,15 +354,15 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
       # Reassemble CDS$Diagnosis after processing of associated diagnosis entries
       CDS$Diagnosis <- CDS$Diagnosis %>%
                                 filter(PatientCountEntries == 1) %>%
-                                mutate(ReferenceDiagnosisID = DiagnosisID,
+                                mutate(.Reference.DiagnosisID = DiagnosisID,
                                        IsLikelyAssociated = FALSE) %>%
                                 bind_rows(df_Aux_Diagnosis_ClassifiedAssociations) %>%
-                                mutate(IsReferenceEntry = (ReferenceDiagnosisID == DiagnosisID),
+                                mutate(IsReferenceEntry = (.Reference.DiagnosisID == DiagnosisID),
                                                           .after = DiagnosisID) %>%
                                 arrange(PatientID) %>%
-                                relocate(c(PatientID, ReferenceDiagnosisID), .before = DiagnosisID) %>%
+                                relocate(c(PatientID, .Reference.DiagnosisID), .before = DiagnosisID) %>%
                                 rename(all_of(c(SubDiagnosisID = "DiagnosisID",
-                                                DiagnosisID = "ReferenceDiagnosisID")))
+                                                DiagnosisID = ".Reference.DiagnosisID")))
 
 
       #===============================================================================
@@ -408,12 +412,12 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
-  #===============================================================================
-  # Update related tables
-  #===============================================================================
-  #     - Replace DiagnosisIDs to associate entries
-  #     - Rearrange column order
-  #-------------------------------------------------------------------------------
+#===============================================================================
+# Update related tables
+#===============================================================================
+#     - Replace DiagnosisIDs to associate entries
+#     - Rearrange column order
+#-------------------------------------------------------------------------------
 
   # Create table for DiagnosisID replacement in related tables
   Aux_Diagnosis_IDMappingAssociations <- CDS$Diagnosis %>%
@@ -434,7 +438,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
                                                                                                   DiagnosisID)) %>%
                                       mutate(DiagnosisID = ifelse(!is.na(NewDiagnosisID),
                                                                   NewDiagnosisID,
-                                                                  OldDiagnosisID)) %>%
+                                                                  DiagnosisID)) %>%
                                       select(-NewDiagnosisID) %>%
                                       relocate(c(PatientID, DiagnosisID))   # Moves features 'PatientID' and 'DiagnosisID' to front of table
 
@@ -443,13 +447,13 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
-  # Module D 4)
-  #===============================================================================
-  #   - Reconstruct CDS$Histology from CDS$Diagnosis
-  #-------------------------------------------------------------------------------
+# Module D 4)
+#===============================================================================
+#   - Reconstruct CDS$Histology from CDS$Diagnosis
+#-------------------------------------------------------------------------------
 
-  # Reconstruction of CDS$Histology
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Reconstruction of CDS$Histology
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   if (Settings$DiagnosisAssociation$Check == TRUE)
   {
@@ -467,13 +471,13 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
-  #===============================================================================
-  # MODULE B)  Generate ADS$Events
-  #===============================================================================
-  #   1) Initiation
-  #   2) Loop through CDS tables and generate event data
-  #   3) Enhance data set with useful features
-  #-------------------------------------------------------------------------------
+#===============================================================================
+# MODULE B)  Generate ADS$Events
+#===============================================================================
+#   1) Initiation
+#   2) Loop through CDS tables and generate event data
+#   3) Enhance data set with useful features
+#-------------------------------------------------------------------------------
 
 
   #--- Set up progress bar -------------------------------------------------------
@@ -485,9 +489,9 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
-  #===============================================================================
-  # 1) Initiate ADS$Events, integrating patient-specific and initial diagnosis events
-  #===============================================================================
+#===============================================================================
+# 1) Initiate ADS$Events, integrating patient-specific and initial diagnosis events
+#===============================================================================
 
   # Initiation 1: Initial diagnosis event
   ADS$Events <- CDS$Patient %>%
@@ -998,9 +1002,9 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
-  #===============================================================================
-  # MODULE D)  Generate ADS$Therapy
-  #===============================================================================
+#===============================================================================
+# MODULE D)  Generate ADS$Therapy
+#===============================================================================
 
   # TO DO:
   # - Group therapies (same chemotherapy, adjuvant/neoadjuvant therapy, time-wise distance, etc)
@@ -1050,9 +1054,9 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
-  #===============================================================================
-  # MODULE E)  Generate ADS$Diagnosis
-  #===============================================================================
+#===============================================================================
+# MODULE E)  Generate ADS$Diagnosis
+#===============================================================================
 
 
   #--- Set up progress bar -------------------------------------------------------
