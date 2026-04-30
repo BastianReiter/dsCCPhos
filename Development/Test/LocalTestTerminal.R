@@ -76,12 +76,8 @@ RDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "CCP.RawDataSet",
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Curate data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CurationOutput <- CurateDataDS(RawDataSetName.S = "CCP.RawDataSet",
-                               Settings.S = list(DataHarmonization = list(Run = TRUE,
-                                                                          Profile = "Default"),
-                                                 FeatureObligations = list(Profile = "Default"),
-                                                 FeatureTracking = list(Profile = "Default"),
-                                                 TableCleaning = list(Run = TRUE)))
+CurationOutput <- dsFreda::CurateDataDS(RawDataSetName.S = "CCP.RawDataSet",
+                                        Module.S = "CCP")
 
 
 # CurationOutput$CurationReport$EntryCounts
@@ -91,7 +87,7 @@ CurationOutput <- CurateDataDS(RawDataSetName.S = "CCP.RawDataSet",
 # View(CurationOutput$CurationReport$Transformation$ValueSetOverviews$Staging$Harmonized)
 
 
-CCP.CuratedDataSet <- CurationOutput$CuratedDataSet
+CCP.CuratedDataSet <- CurationOutput$DataSet
 
 CDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "CCP.CuratedDataSet",
                                             Module.S = "CCP",
@@ -103,7 +99,7 @@ CDSTableCheck <- dsFreda::GetDataSetCheckDS(DataSetName.S = "CCP.CuratedDataSet"
 # Augment data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AugmentationOutput <- AugmentDataDS(CuratedDataSetName.S = "CCP.CuratedDataSet")
+AugmentationOutput <- CCP.AugmentDataDS(CuratedDataSetName.S = "CCP.CuratedDataSet")
 
 ADS <- AugmentationOutput$AugmentedDataSet
 
