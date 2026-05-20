@@ -8,7 +8,7 @@ library(usethis)
 # Read in Package Data from xlsx-file
 #===============================================================================
 
-ExcelFilePath <- "./Development/Data/PackageData/PackageDataCCPhos.xlsx"
+ExcelFilePath <- "./Development/Data/ModuleData/ModuleDataCCPhos.xlsx"
 
 Sheetnames <- c("Meta.Tables",
                 "Meta.Relationships",
