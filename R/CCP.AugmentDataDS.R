@@ -184,9 +184,12 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
   # Temporary !!!
 
-  CDS$Diagnosis <- CDS$Diagnosis %>%
-                        filter(.IsRedundant == FALSE) %>%
-                        select(-.IsRedundant)
+  if (".IsRedundant" %in% names(CDS$Diagnosis))
+  {
+      CDS$Diagnosis <- CDS$Diagnosis %>%
+                            filter(.IsRedundant == FALSE) %>%
+                            select(-.IsRedundant)
+  }
 
   # df_CDS_Diagnosis <- df_CDS_Diagnosis %>%
   #                         filter(IsReferenceEntry == TRUE)
