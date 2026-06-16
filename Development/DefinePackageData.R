@@ -11,8 +11,8 @@ library(usethis)
 ExcelFilePath <- "./Development/Data/ModuleData/ModuleDataCCPhos.xlsx"
 
 Sheetnames <- c("Meta.Tables",
-                "Meta.Relationships",
-                "Meta.Links",
+                # "Meta.Relationships",
+                # "Meta.Links",
                 "Meta.Features",
                 "Meta.Values",
                 "Proc.TableNormalization",
