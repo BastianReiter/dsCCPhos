@@ -21,7 +21,8 @@ Sheetnames <- c("Meta.Tables",
                 "Set.PrimaryTableCleaning",
                 "Set.SecondaryTableCleaning",
                 "Set.RecordSubsumption",
-                "Set.FeatureRequirements",
+                "Set.ValueAvailability",
+                "Set.ValueValidity",
                 "Set.FeatureTracking",
                 "Set.DataRemediation",
                 "Set.TransformativeExpressions",
@@ -59,7 +60,7 @@ for (sheetname in Sheetnames)
            value = Table)
 
     # Save data in .rda-file and make it part of the package
-    do.call(use_data, list(as.name(sheetname), overwrite = TRUE))
+    do.call(usethis::use_data, list(as.name(sheetname), overwrite = TRUE))
 }
 
 
@@ -93,7 +94,7 @@ Meta.ADS <- Meta.ADS %>%
                 distinct()
 
 # Save data in .rda-file and make it part of package
-use_data(Meta.ADS, overwrite = TRUE)
+usethis::use_data(Meta.ADS, overwrite = TRUE)
 
 
 # ADSValues.NotFromCDS <- ADSValues %>%
@@ -111,10 +112,33 @@ use_data(Meta.ADS, overwrite = TRUE)
 # Resource data from TinkerLab
 #===============================================================================
 
+
+Res.ATCCoding <- TinkerLab::Res.ATCCoding %>%
+                      rename(ATCCode = "Code")
+
+
 Res.CancerGrouping <- TinkerLab::Res.CancerGrouping
 
 # Save data in .rda-file and make it part of package
-use_data(Res.CancerGrouping, overwrite = TRUE)
+usethis::use_data(Res.CancerGrouping, overwrite = TRUE)
+
+
+Res.ICDOMorphology <- TinkerLab::Res.ICDOMorphology
+
+usethis::use_data(Res.ICDOMorphology, overwrite = TRUE)
+
+
+
+Res.SystemicTherapy.Regimens <- TinkerLab::Res.SystemicTherapy.Regimens %>%
+                                    mutate(Substances = pmap(pick(starts_with("Substance")),
+                                                             ~ unname(c(...)) %>% discard(is.na) %>% sort()),      # Put values of Substance columns in vectors and sort the alphabetically
+                                           .after = Regimen) %>%
+                                    select(-matches("^Substance[0-9]$")) %>%
+                                    mutate(Substances.String = map_chr(Substances, ~ paste(.x, collapse = "*&*")),
+                                           .after = Substances)
+
+usethis::use_data(Res.SystemicTherapy.Regimens, overwrite = TRUE)
+
 
 
 #===============================================================================
@@ -125,4 +149,4 @@ Set.Privacy <- list(Profile = "loose",     # Optional: 'strict', 'loose'
                     NThreshold = 5)
 
 # Save data in .rda-file and make it part of package
-use_data(Set.Privacy, overwrite = TRUE)
+usethis::use_data(Set.Privacy, overwrite = TRUE)
