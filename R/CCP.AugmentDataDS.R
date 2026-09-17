@@ -16,6 +16,7 @@
 #'                                \itemize{\item RuleSet \code{data.frame} - Default: \code{dsCCPhos::Proc.EventFeatures}
 #'                                         \item Profile \code{character} - Profile name defining rule set to be used for event feature engineering. Profile name must be stated in \code{EventFeatures$RuleSet} - Default: 'Default'}}
 #'
+#'
 #' @return A \code{list} containing the following objects:
 #'         \itemize{\item AugmentedDataSet \code{list}
 #'                      \itemize{\item Events
@@ -30,21 +31,28 @@
 #'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
-                              Settings.S = list(CutoffValues = list(DaysDiagnosisToInitialStaging = 30),
-                                                DiagnosisAssociation = list(Check = TRUE,
-                                                                            RuleSet = dsCCPhos::Set.DiagnosisAssociation,
-                                                                            Profile = "Default"),
-                                                EventFeatures = list(RuleSet = dsCCPhos::Proc.EventFeatures,
-                                                                     Profile = "Default"),
-                                                OverallSurvival = list(ReferenceEvent = c(EventClass = "Diagnosis",
-                                                                                          EventSubclass = "InitialDiagnosis")),
-                                                TherapyOfInterest = list(EventSubclass = "Surgery",
-                                                                         EventSubclassRank = 1),
-                                                TimeToEvent = list(ReferenceEvent = list(EventClass = "Diagnosis",
-                                                                                         EventSubclass = "InitialDiagnosis"),
-                                                                   TargetEvent = list(EventClass = "VitalStatus",
-                                                                                      EventSubclass = "Deceased"))))
+CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
+                              CutoffValues.DaysDiagnosisToInitialStaging.S = 30,
+                              DiagnosisAssociation.Check.S = TRUE,
+                              DiagnosisAssociation.RuleSet.S = dsCCPhos::Set.DiagnosisAssociation,
+                              DiagnosisAssociation.Profile.S = "Default",
+                              EventFeatures.RuleSet.S = dsCCPhos::Proc.EventFeatures,
+                              EventFeatures.Profile.S = "Default",
+                              Imputation.SystemicTherapyRegimen.Run.S = TRUE,
+                              Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S = 1,
+                              Imputation.SystemicTherapyRegimen.RunAccuracyTest.S = TRUE,
+                              Imputation.UICCStage.Run.S = TRUE,
+                              Imputation.UICCStage.AcceptableTNMCongruence.S = 0.8,
+                              Imputation.UICCStage.RunAccuracyTest.S = TRUE,
+                              OverallSurvival.ReferenceEvent.EventClass.S = "Diagnosis",
+                              OverallSurvival.ReferenceEvent.EventSubclass.S = "InitialDiagnosis",
+                              TherapyOfInterest.EventSubclass.S = "Surgery",
+                              TherapyOfInterest.EventSubclassRank.S = 1,
+                              TimeToEvent.ReferenceEvent.EventClass.S = "Diagnosis",
+                              TimeToEvent.ReferenceEvent.EventSubclass.S = "InitialDiagnosis",
+                              TimeToEvent.TargetEvent.EventClass.S = "VitalStatus",
+                              TimeToEvent.TargetEvent.EventSubclass.S = "Deceased",
+                              MetaDataKey.S = Sys.getenv("METADATAKEY"))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
 
@@ -56,20 +64,28 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 #
 #   MODULE A) Classify associations between diagnosis entries
 #
-#   MODULE B)  Creation of ADS$Events
+#   MODULE B) Simple derivative mutations
+#
+#   MODULE C) Enrichment with meta data
+#
+#   MODULE D) Missing data imputation
+#       - D1) Imputation of CDS$Staging$UICCStage
+#       - D2) Imputation of CDS$SystemicTherapy$Regimen
+#
+#   MODULE E)  Creation of ADS$Events
 #       - Diagnosis-related
 #       - Patient-related
 #
-#   MODULE C)  Creation of ADS$DiseaseCourse
+#   MODULE F)  Creation of ADS$DiseaseCourse
 #       - On basis of ADS$Events
 #
-#   MODULE D)  Creation of ADS$Therapy
+#   MODULE G)  Creation of ADS$Therapy
 #       - Consolidate information from ADS$Events
 #
-#   MODULE E)  Creation of ADS$Diagnosis
+#   MODULE H)  Creation of ADS$Diagnosis
 #       - Consolidate information from ADS$Events
 #
-#   MODULE F)  Creation of ADS$Patient
+#   MODULE I)  Creation of ADS$Patient
 #       - Consolidate information from ADS$Events, ADS$Therapy and ADS$Diagnosis
 #
 #   Return statement
@@ -101,47 +117,63 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 #===============================================================================
 
   # --- For Testing Purposes ---
-  # CDS <- CCP.CuratedDataSet
-  # Settings.S <- list(CutoffValues = list(DaysDiagnosisToInitialStaging = 50),
-  #                    DiagnosisAssociation = list(Check = TRUE,
-  #                                                RuleSet = dsCCPhos::Set.DiagnosisAssociation,
-  #                                                Profile = "Default"),
-  #                    EventFeatures = list(RuleSet = dsCCPhos::Proc.EventFeatures,
-  #                                         Profile = "Default"),
-  #                    TherapyOfInterest = list(EventSubclass = "Surgery",
-  #                                             EventSubclassRank = 1),
-  #                    TimeToEvent = list(ReferenceEvent = c(EventClass = "Diagnosis",
-  #                                                          EventSubclass = "InitialDiagnosis"),
-  #                                       TargetEvent = c(EventClass = "VitalStatus",
-  #                                                       EventSubclass = "Deceased")))
-
-#-------------------------------------------------------------------------------
-# - Equip 'Settings' with default values in case of missing arguments -
-#-------------------------------------------------------------------------------
-
-  # Rename 'Settings.S' argument for better code readability
-  Settings <- Settings.S
-
-  # If list of 'Settings' passed to function is incomplete, complete it with default values
-  if (is.null(Settings$DiagnosisAssociation$Check)) { Settings$DiagnosisAssociation$Check <- TRUE }
-  if (is.null(Settings$DiagnosisAssociation$RuleSet)) { Settings$DiagnosisAssociation$RuleSet <- dsCCPhos::Set.DiagnosisAssociation }
-  if (is.null(Settings$DiagnosisAssociation$Profile)) { Settings$DiagnosisAssociation$Profile <- "Default" }
-  if (is.null(Settings$EventFeatures$RuleSet)) { Settings$EventFeatures$RuleSet <- dsCCPhos::Proc.EventFeatures }
-  if (is.null(Settings$EventFeatures$Profile)) { Settings$EventFeatures$Profile <- "Default" }
-  if (is.null(Settings$TimeToEvent)) { Settings$TimeToEvent <- list(ReferenceEvent = c(EventClass = "Diagnosis",
-                                                                                       EventSubclass = "InitialDiagnosis"),
-                                                                    TargetEvent = c(EventClass = "VitalStatus",
-                                                                                    EventSubclass = "Deceased")) }
+  # CuratedDataSetName.S <- "CCP.CuratedDataSet"
+  # CutoffValues.DaysDiagnosisToInitialStaging.S <- 30
+  # DiagnosisAssociation.Check.S <- TRUE
+  # DiagnosisAssociation.RuleSet.S <- dsCCPhos::Set.DiagnosisAssociation
+  # DiagnosisAssociation.Profile.S <- "Default"
+  # EventFeatures.RuleSet.S <- dsCCPhos::Proc.EventFeatures
+  # EventFeatures.Profile.S <- "Default"
+  # Imputation.SystemicTherapyRegimen.Run.S <- TRUE
+  # Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S <- 0.8
+  # Imputation.SystemicTherapyRegimen.RunAccuracyTest.S <- TRUE
+  # Imputation.UICCStage.Run.S <- TRUE
+  # Imputation.UICCStage.AcceptableTNMCongruence.S <- 0.8
+  # Imputation.UICCStage.RunAccuracyTest.S <- TRUE
+  # OverallSurvival.ReferenceEvent.EventClass.S <- "Diagnosis"
+  # OverallSurvival.ReferenceEvent.EventSubclass.S <- "InitialDiagnosis"
+  # TherapyOfInterest.EventSubclass.S <- "Surgery"
+  # TherapyOfInterest.EventSubclassRank.S <- 1
+  # TimeToEvent.ReferenceEvent.EventClass.S <- "Diagnosis"
+  # TimeToEvent.ReferenceEvent.EventSubclass.S <- "InitialDiagnosis"
+  # TimeToEvent.TargetEvent.EventClass.S <- "VitalStatus"
+  # TimeToEvent.TargetEvent.EventSubclass.S <- "Deceased"
+  # MetaDataKey.S <- Sys.getenv("METADATAKEY")
 
   # --- Argument Validation ---
-  assert_that(is.string(CuratedDataSetName.S))
+  assert_that(is.string(CuratedDataSetName.S),
+              is.count(CutoffValues.DaysDiagnosisToInitialStaging.S),
+              is.flag(DiagnosisAssociation.Check.S),
+              is.data.frame(DiagnosisAssociation.RuleSet.S),
+              is.string(DiagnosisAssociation.Profile.S),
+              is.data.frame(EventFeatures.RuleSet.S),
+              is.string(EventFeatures.Profile.S),
+              is.flag(Imputation.SystemicTherapyRegimen.Run.S),
+              is.numeric(Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S),
+              Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S > 0,
+              Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S <= 1,
+              is.flag(Imputation.SystemicTherapyRegimen.RunAccuracyTest.S),
+              is.flag(Imputation.UICCStage.Run.S),
+              is.numeric(Imputation.UICCStage.AcceptableTNMCongruence.S),
+              Imputation.UICCStage.AcceptableTNMCongruence.S > 0,
+              Imputation.UICCStage.AcceptableTNMCongruence.S <= 1,
+              is.flag(Imputation.UICCStage.RunAccuracyTest.S),
+              is.string(OverallSurvival.ReferenceEvent.EventClass.S),
+              is.string(OverallSurvival.ReferenceEvent.EventSubclass.S),
+              is.string(TherapyOfInterest.EventSubclass.S),
+              is.count(TherapyOfInterest.EventSubclassRank.S),
+              is.string(TimeToEvent.ReferenceEvent.EventClass.S),
+              is.string(TimeToEvent.ReferenceEvent.EventSubclass.S),
+              is.string(TimeToEvent.TargetEvent.EventClass.S),
+              is.string(TimeToEvent.TargetEvent.EventSubclass.S),
+              is.string(MetaDataKey.S))
 
 
-#===============================================================================
-
-  # Get local object: Parse expression and evaluate
-  CDS <- eval(parse(text = CuratedDataSetName.S), envir = parent.frame())
-
+  if (Imputation.UICCStage.Run.S == TRUE & (is.na(MetaDataKey.S) || MetaDataKey.S == "" || !nzchar(MetaDataKey.S)))
+  {
+      PrintSoloMessage(c(Warning = "Warning: You provided no password for restricted meta data access. UICC stage imputation will be skipped."))
+      Imputation.UICCStage.Run.S == FALSE
+  }
 
   # if (Settings$EventFeatures$Profile %in% names(Settings$EventFeatures$RuleSet) == FALSE)
   # {
@@ -151,27 +183,84 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 #===============================================================================
-# - Initial statements -
+
+
+#-------------------------------------------------------------------------------
+# - Put settings parameters in one list for readability -
 #-------------------------------------------------------------------------------
 
-  # Print starting message
-  cat("\n")
-  Message <- paste0("Starting Data Augmentation...")
-  cli::cat_bullet(Message, bullet = "star")
-  cat("\n")
+  Settings = list(CutoffValues = list(DaysDiagnosisToInitialStaging = CutoffValues.DaysDiagnosisToInitialStaging.S),
+                  DiagnosisAssociation = list(Check = DiagnosisAssociation.Check.S,
+                                              RuleSet = DiagnosisAssociation.RuleSet.S,
+                                              Profile = DiagnosisAssociation.Profile.S),
+                  EventFeatures = list(RuleSet = EventFeatures.RuleSet.S,
+                                       Profile = EventFeatures.Profile.S),
+                  OverallSurvival = list(ReferenceEvent = c(EventClass = OverallSurvival.ReferenceEvent.EventClass.S,
+                                                            EventSubclass = OverallSurvival.ReferenceEvent.EventSubclass.S)),
+                  TherapyOfInterest = list(EventSubclass = TherapyOfInterest.EventSubclass.S,
+                                           EventSubclassRank = TherapyOfInterest.EventSubclassRank.S),
+                  TimeToEvent = list(ReferenceEvent = list(EventClass = TimeToEvent.ReferenceEvent.EventClass.S,
+                                                           EventSubclass = TimeToEvent.ReferenceEvent.EventSubclass.S),
+                                     TargetEvent = list(EventClass =TimeToEvent.TargetEvent.EventClass.S,
+                                                        EventSubclass = TimeToEvent.TargetEvent.EventSubclass.S)),
+                  Imputation.SystemicTherapyRegimen = list(Run = Imputation.SystemicTherapyRegimen.Run.S,
+                                                          AcceptableSubstanceCongruence = Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S,
+                                                          RunAccuracyTest = Imputation.SystemicTherapyRegimen.RunAccuracyTest.S),
+                  Imputation.UICCStage = list(Run = Imputation.UICCStage.Run.S,
+                                              AcceptableTNMCongruence = Imputation.UICCStage.AcceptableTNMCongruence.S,
+                                              RunAccuracyTest = Imputation.UICCStage.RunAccuracyTest.S))
+
+
+#-------------------------------------------------------------------------------
+# - Set global options -
+#-------------------------------------------------------------------------------
 
   # Suppress summarize info messages
   options(dplyr.summarise.inform = FALSE)
+
+
+#-------------------------------------------------------------------------------
+# - Get local data set object -
+#-------------------------------------------------------------------------------
+
+  # Parse expression and evaluate
+  CDS <- eval(parse(text = CuratedDataSetName.S), envir = parent.frame())
+
+
+#-------------------------------------------------------------------------------
+# - Initiate reporting objects -
+#-------------------------------------------------------------------------------
+
+  # Initiate PROCESS report with some initial entries
+  Report.Process <- list()
+  Report.Process$Process.Start <- Sys.time()
+  Report.Process$Process.CompletionCheck <- "red"
+
+  # Initiate main LOG report
+  Report.Log <- Log.New(ProcessingStage = "General",
+                        Message = "Starting Data Augmentation...",
+                        MessageClass = "Special",
+                        PrintMessage = TRUE)
+
+
+  Report.Imputation <- list()
+
+
+  Messages <- list()
+
+#-------------------------------------------------------------------------------
+# - Initial statements -
+#-------------------------------------------------------------------------------
 
   # Initiate output objects
   ADS <- list()
   AugmentationReport <- NULL
 
   # Initiate Messaging objects
-  Messages <- list()
-  Messages$DiagnosisAssociation <- character()
-  Messages$CheckAugmentationCompletion <- "red"
-  Messages$FinalMessage <- "Augmentation not completed"
+  # Messages <- list()
+  # Messages$DiagnosisAssociation <- character()
+  # Messages$CheckAugmentationCompletion <- "red"
+  # Messages$FinalMessage <- "Augmentation not completed"
 
 #===============================================================================
 
@@ -324,7 +413,6 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
                                                          RuleProfile = Settings$DiagnosisAssociation$Profile,
                                                          ValueIfNoRuleMet = NA)
 
-
       # Make list of rule calls to pass them to function
       RuleCalls.DiagnosisAssociation <- list(IsLikelyAssociated = Call.IsLikelyAssociated,
                                              InconsistencyCheck = Call.InconsistencyCheck,
@@ -336,7 +424,6 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
                                              Relation.Grading = Call.Relation.Grading,
                                              IsLikelyProgression = Call.IsLikelyProgression,
                                              IsLikelyRecoding = Call.IsLikelyRecoding)
-
 
       # Set up progress bar
       #-------------------------------------------------------------------------------
@@ -356,16 +443,16 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
       # Reassemble CDS$Diagnosis after processing of associated diagnosis entries
       CDS$Diagnosis <- CDS$Diagnosis %>%
-                                filter(PatientCountEntries == 1) %>%
-                                mutate(.Reference.DiagnosisID = DiagnosisID,
-                                       IsLikelyAssociated = FALSE) %>%
-                                bind_rows(df_Aux_Diagnosis_ClassifiedAssociations) %>%
-                                mutate(IsReferenceEntry = (.Reference.DiagnosisID == DiagnosisID),
-                                                          .after = DiagnosisID) %>%
-                                arrange(PatientID) %>%
-                                relocate(c(PatientID, .Reference.DiagnosisID), .before = DiagnosisID) %>%
-                                rename(all_of(c(SubDiagnosisID = "DiagnosisID",
-                                                DiagnosisID = ".Reference.DiagnosisID")))
+                            filter(PatientCountEntries == 1) %>%
+                            mutate(ReferenceDiagnosisID = DiagnosisID,
+                                   IsLikelyAssociated = FALSE) %>%
+                            bind_rows(df_Aux_Diagnosis_ClassifiedAssociations) %>%
+                            mutate(IsReferenceEntry = (ReferenceDiagnosisID == DiagnosisID),
+                                   .after = DiagnosisID) %>%
+                            arrange(PatientID) %>%
+                            relocate(c(PatientID, ReferenceDiagnosisID), .before = DiagnosisID) %>%
+                            rename(all_of(c(SubDiagnosisID = "DiagnosisID",
+                                            DiagnosisID = "ReferenceDiagnosisID")))
 
 
       #===============================================================================
@@ -450,7 +537,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
-# Module D 4)
+# Module A 2)
 #===============================================================================
 #   - Reconstruct CDS$Histology from CDS$Diagnosis
 #-------------------------------------------------------------------------------
@@ -473,9 +560,357 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
+#===============================================================================
+# MODULE B)  Simple derivative mutations
+#===============================================================================
+#
+#-------------------------------------------------------------------------------
+
+  CDS$Diagnosis <- CDS$Diagnosis %>%
+                        mutate(ICD10Code.Short = str_sub(ICD10Code, 1, 3),
+                               .after = ICD10Code) %>%
+                        mutate(ICDOTopographyCode.Short = str_sub(ICDOTopographyCode, 1, 3),
+                               .after = ICDOTopographyCode)
+
+  CDS$Staging <- CDS$Staging %>%
+                      mutate(UICCStage.Category = case_when(str_starts(UICCStage, "0") ~ "0",
+                                                            UICCStage %in% c("I", "IS") | str_starts(UICCStage, "IA|IB|IC") ~ "I",
+                                                            UICCStage == "II" | str_starts(UICCStage, "IIA|IIB|IIC") ~ "II",
+                                                            UICCStage == "III" | str_starts(UICCStage, "IIIA|IIIB|IIIC|IIID") ~ "III",
+                                                            str_starts(UICCStage, "IV") ~ "IV",
+                                                             .default = NA_character_),
+                             TNM.T.Short = case_when(str_starts(TNM.T, "0|1|2|3|4") ~ str_sub(TNM.T, 1, 1),
+                                                     .default = NA_character_),
+                             TNM.N.Short = case_when(str_starts(TNM.N, "0|1|2|3") ~ str_sub(TNM.N, 1, 1),
+                                                     .default = NA_character_),
+                             TNM.M.Short = case_when(str_starts(TNM.M, "0|1") ~ str_sub(TNM.M, 1, 1),
+                                                     .default = NA_character_))
+
+  # Add PatientAgeAtStaging to CDS$Staging (needed in part for UICC stage mapping)
+  CDS$Staging <- CDS$Patient %>%
+                      select(PatientID,
+                             DateOfBirth) %>%
+                      right_join(CDS$Staging, by = join_by(PatientID)) %>%
+                      mutate(PatientAgeAtStaging = floor(lubridate::time_length(difftime(StagingDate, DateOfBirth), unit = "years")))
+
 
 #===============================================================================
-# MODULE B)  Generate ADS$Events
+# MODULE C)  Enrichment with Meta Data
+#===============================================================================
+#
+#-------------------------------------------------------------------------------
+
+  # Add meta data on ICD-O morphology code
+  CDS$Diagnosis <- CDS$Diagnosis %>%
+                        left_join(dsCCPhos::Res.ICDOMorphology, by = join_by(ICDOMorphologyCode))
+
+
+
+
+
+
+#===============================================================================
+# MODULE D)  Missing Data Imputation
+#===============================================================================
+#   - D1) Imputation of CDS$Staging$UICCStage
+#   - D2) Imputation of CDS$SystemicTherapy$Regimen
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+# D1) Imputation of CDS$Staging$UICCStage
+#-------------------------------------------------------------------------------
+
+  if (Settings$Imputation.UICCStage$Run == TRUE)
+  {
+      # Get key from .Renviron
+      Key <- sodium::hash(charToRaw(MetaDataKey.S))
+
+      # Read in encrypted file from package
+      CipherObject <- readRDS(system.file("extdata", "Res.UICCMapping.rds", package = "dsCCPhos"))
+
+      # Try to decrypt file and save content in R list object
+      Res.UICCMapping.Decrypt <- tryCatch(sodium::data_decrypt(bin = CipherObject$Cipher,
+                                                               key = Key,
+                                                               nonce = CipherObject$Nonce),
+                                          error = function(e) { NULL })
+
+      if (is.null(Res.UICCMapping.Decrypt))
+      {
+          PrintSoloMessage(c(Warning = "Failure: UICC mapping meta data could not be decrypted. Proceeding without UICC stage imputation."))
+
+      } else {
+
+          # Unserialize decrypted object
+          Res.UICCMapping <- unserialize(Res.UICCMapping.Decrypt)
+
+          # Select records in CDS$Staging that have missing or '.Ineligible' UICCStage values
+          Sel.StagingRecords <- CDS$Diagnosis %>%
+                                    filter(IsReferenceEntry == TRUE) %>%
+                                    select(PatientID,
+                                           DiagnosisID,
+                                           ICD10Code,
+                                           ICD10Code.Short,
+                                           ICDOTopographyCode,
+                                           ICDOTopographyCode.Short,
+                                           ICDOMorphologyCode,
+                                           ICDOMorphologyHistologyCode,
+                                           Grading) %>%
+                                    right_join(CDS$Staging, by = join_by(PatientID, DiagnosisID)) %>%
+                                    filter(!is.na(TNM.T),
+                                           !is.na(TNM.N),
+                                           !is.na(TNM.M),
+                                           !is.na(TNMVersion),
+                                           !is.na(ICDOTopographyCode),
+                                           !is.na(ICDOMorphologyHistologyCode),
+                                           !is.na(ICD10Code))
+
+          # Optionally run accuracy test for UICCStage mapping
+          #---------------------------------------------------------------------
+          if (Settings$Imputation.UICCStage$RunAccuracyTest == TRUE)
+          {
+              # For validation select only records that have a valid UICCStage
+              Sel.StagingRecords.Validation <- Sel.StagingRecords %>%
+                                                    filter(!is.na(UICCStage) & UICCStage != ".Ineligible")
+
+              # Get UICCStage value from diagnosis and staging data
+              UICCStageMapping.AccuracyTest <- Sel.StagingRecords.Validation %>%
+                                                      dsCCPhos::MapUICCStage(Res.TNMGroupMapping = Res.UICCMapping$TNMGroupMapping,
+                                                                             Res.UICCStageMapping = Res.UICCMapping$UICCStageMapping,
+                                                                             AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
+                                                      mutate(UICCStage.MatchFound = case_when(!is.na(UICCStage.Mapped) ~ TRUE,
+                                                                                              .default = FALSE),
+                                                             UICCStage.MappingAccuracy = case_when(UICCStage == UICCStage.Mapped ~ "Exact",
+                                                                                                      UICCStage.Category == UICCStage.Mapped.Category ~ "CategoryOnly",
+                                                                                                      UICCStage.MatchFound == TRUE ~ "Incorrect",
+                                                                                                      .default = NA))
+
+              # Detailed (ICD10Code.Short-specific) report on proportions of (in)correctly classified UICCStage values
+              Report.Imputation$UICCStage$AccuracyTest.Details <- UICCStageMapping.AccuracyTest %>%
+                                                                        group_by(ICD10Code.Short) %>%
+                                                                            summarize(CountTotal = n(),
+                                                                                      CountFoundMatch = sum(UICCStage.MatchFound, na.rm = TRUE),
+                                                                                      PropFoundMatch = ifelse(CountTotal != 0, CountFoundMatch / CountTotal, NA),
+                                                                                      CountCorrect.Exact = sum(UICCStage.MappingAccuracy == "Exact", na.rm = TRUE),
+                                                                                      PropCorrect.Exact = ifelse(CountFoundMatch != 0, CountCorrect.Exact / CountFoundMatch, NA),
+                                                                                      CountCorrect.CategoryOnly = sum(UICCStage.MappingAccuracy == "CategoryOnly", na.rm = TRUE),
+                                                                                      PropCorrect.CategoryOnly = ifelse(CountFoundMatch != 0, CountCorrect.CategoryOnly / CountFoundMatch, NA),
+                                                                                      CountIncorrect = sum(UICCStage.MappingAccuracy == "Incorrect", na.rm = TRUE),
+                                                                                      PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
+
+              # Summarizing report
+              Report.Imputation$UICCStage$AccuracyTest.Summary <- Report.Imputation$UICCStage$AccuracyTest.Details %>%
+                                                                        summarize(across(starts_with("Count"), ~ sum(.x, na.rm = TRUE)),
+                                                                                  PropFoundMatch = ifelse(CountTotal != 0, CountFoundMatch / CountTotal, NA),
+                                                                                  PropCorrect.Exact = ifelse(CountFoundMatch != 0, CountCorrect.Exact / CountFoundMatch, NA),
+                                                                                  PropCorrect.CategoryOnly = ifelse(CountFoundMatch != 0, CountCorrect.CategoryOnly / CountFoundMatch, NA),
+                                                                                  PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
+
+              # Print message
+              PrintSoloMessage(c(Info = paste0("UICCStage imputation (accuracy test): ", Report.Imputation$UICCStage$AccuracyTest.Summary$CountTotal, " / ", nrow(CDS$Staging),
+                                               " values were used for accuracy testing. Of these, ", Report.Imputation$UICCStage$AccuracyTest.Summary$CountFoundMatch, " values (", FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropFoundMatch), ") could be mapped to a UICC stage value. ",
+                                               "After assessing matching accuracy, ", FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropCorrect.Exact), " matched exactly, ",
+                                               FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropCorrect.CategoryOnly), " matched only by UICC stage category and ",
+                                               FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropIncorrect), " were mapped incorrectly.")))
+          }
+          #---------------------------------------------------------------------
+
+
+          # For imputation filter out records that do not have a valid UICCStage value
+          #---------------------------------------------------------------------
+          Sel.StagingRecords.Imputation <- Sel.StagingRecords %>%
+                                                filter(is.na(UICCStage) | UICCStage == ".Ineligible")
+
+          # Get UICCStage value from diagnosis and staging data
+          UICCStageMapping.Imputation <- Sel.StagingRecords.Imputation %>%
+                                              dsCCPhos::MapUICCStage(Res.TNMGroupMapping = Res.UICCMapping$TNMGroupMapping,
+                                                                     Res.UICCStageMapping = Res.UICCMapping$UICCStageMapping,
+                                                                     AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
+                                              mutate(UICCStage.Imputation = case_when(!is.na(UICCStage.Mapped) ~ "Imputed",
+                                                                                      is.na(UICCStage.Mapped) ~ "Failed",
+                                                                                      .default = NA))
+
+          # Calculate report info
+          Report.Imputation$UICCStage$Imputation.Details <- UICCStageMapping.Imputation %>%
+                                                                group_by(ICD10Code.Short) %>%
+                                                                    summarize(CountTotal = n(),
+                                                                              CountImputed = sum(!is.na(UICCStage.Mapped), na.rm = TRUE),
+                                                                              PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+
+          Report.Imputation$UICCStage$Imputation.Summary <- Report.Imputation$UICCStage$Imputation.Details %>%
+                                                                summarize(CountTotal = sum(CountTotal),
+                                                                          CountImputed = sum(CountImputed),
+                                                                          PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+
+          # Print message
+          PrintSoloMessage(c(Success = paste0("UICCStage imputation: ", Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " / ", nrow(CDS$Staging),
+                                              " values were missing. Imputed ", Report.Imputation$UICCStage$Imputation.Summary$CountImputed, " / ",
+                                              Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " (", FormatPercentage(Report.Imputation$UICCStage$Imputation.Summary$PropImputed), ") missing values.")))
+
+          # Isolate mapped UICCStage values ahead of merging with original data
+          MappedUICCStageValues <- UICCStageMapping.Imputation %>%
+                                        select(PatientID,
+                                               DiagnosisID,
+                                               StagingID,
+                                               UICCStage.Mapped,
+                                               UICCStage.Mapped.Category,
+                                               UICCStage.Imputation)
+
+          # Perform imputation of UICCStage
+          CDS$Staging <- CDS$Staging %>%
+                              left_join(MappedUICCStageValues, by = join_by(PatientID, DiagnosisID, StagingID)) %>%
+                              mutate(UICCStage = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped,
+                                                           .default = UICCStage),
+                                     UICCStage.Category = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped.Category,
+                                                                     .default = UICCStage.Category)) %>%
+                              select(-UICCStage.Mapped,
+                                     -UICCStage.Mapped.Category)
+      }
+  }
+
+
+
+#-------------------------------------------------------------------------------
+# D2) Imputation of CDS$SystemicTherapy$Regimen
+#-------------------------------------------------------------------------------
+
+  # CDSSystemicTherapy <- CDS$SystemicTherapy %>%
+  #                           group_by(across(c(-SystemicTherapyID, -Substance, -.HasBeenSplit, -.IsArtificial))) %>%
+  #                               summarize(Substances = list(Substance),
+  #                                         Substances.String = map(Substances, ~ paste(.x, collapse = "*&*")))
+  #
+  #
+  # if (Settings$Imputation.SystemicTherapyRegimen$Run == TRUE)
+  # {
+  #
+  #     # Select records in CDS$SystemicTherapy that have missing or '.Ineligible' UICCStage values
+  #     Sel.StagingRecords <- CDS$Diagnosis %>%
+  #                               filter(IsReferenceEntry == TRUE) %>%
+  #                               select(PatientID,
+  #                                      DiagnosisID,
+  #                                      ICD10Code,
+  #                                      ICD10Code.Short,
+  #                                      ICDOTopographyCode,
+  #                                      ICDOTopographyCode.Short,
+  #                                      ICDOMorphologyCode,
+  #                                      ICDOMorphologyHistologyCode,
+  #                                      Grading) %>%
+  #                               right_join(CDS$Staging, by = join_by(PatientID, DiagnosisID)) %>%
+  #                               filter(!is.na(TNM.T),
+  #                                      !is.na(TNM.N),
+  #                                      !is.na(TNM.M),
+  #                                      !is.na(TNMVersion),
+  #                                      !is.na(ICDOTopographyCode),
+  #                                      !is.na(ICDOMorphologyHistologyCode),
+  #                                      !is.na(ICD10Code))
+  #
+  #     # Optionally run accuracy test for UICCStage mapping
+  #     #---------------------------------------------------------------------
+  #     if (Settings$Imputation.UICCStage$RunAccuracyTest == TRUE)
+  #     {
+  #         # For validation select only records that have a valid UICCStage
+  #         Sel.StagingRecords.Validation <- Sel.StagingRecords %>%
+  #                                               filter(!is.na(UICCStage) & UICCStage != ".Ineligible")
+  #
+  #         # Get UICCStage value from diagnosis and staging data
+  #         UICCStageMapping.AccuracyTest <- Sel.StagingRecords.Validation %>%
+  #                                                 dsCCPhos::MapUICCStage(Res.TNMGroupMapping = Res.UICCMapping$TNMGroupMapping,
+  #                                                                        Res.UICCStageMapping = Res.UICCMapping$UICCStageMapping,
+  #                                                                        AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
+  #                                                 mutate(UICCStage.MatchFound = case_when(!is.na(UICCStage.Mapped) ~ TRUE,
+  #                                                                                         .default = FALSE),
+  #                                                        UICCStage.MappingAccuracy = case_when(UICCStage == UICCStage.Mapped ~ "Exact",
+  #                                                                                                 UICCStage.Category == UICCStage.Mapped.Category ~ "CategoryOnly",
+  #                                                                                                 UICCStage.MatchFound == TRUE ~ "Incorrect",
+  #                                                                                                 .default = NA))
+  #
+  #         # Detailed (ICD10Code.Short-specific) report on proportions of (in)correctly classified UICCStage values
+  #         Report.Imputation$UICCStage$AccuracyTest.Details <- UICCStageMapping.AccuracyTest %>%
+  #                                                                   group_by(ICD10Code.Short) %>%
+  #                                                                       summarize(CountTotal = n(),
+  #                                                                                 CountFoundMatch = sum(UICCStage.MatchFound, na.rm = TRUE),
+  #                                                                                 PropFoundMatch = ifelse(CountTotal != 0, CountFoundMatch / CountTotal, NA),
+  #                                                                                 CountCorrect.Exact = sum(UICCStage.MappingAccuracy == "Exact", na.rm = TRUE),
+  #                                                                                 PropCorrect.Exact = ifelse(CountFoundMatch != 0, CountCorrect.Exact / CountFoundMatch, NA),
+  #                                                                                 CountCorrect.CategoryOnly = sum(UICCStage.MappingAccuracy == "CategoryOnly", na.rm = TRUE),
+  #                                                                                 PropCorrect.CategoryOnly = ifelse(CountFoundMatch != 0, CountCorrect.CategoryOnly / CountFoundMatch, NA),
+  #                                                                                 CountIncorrect = sum(UICCStage.MappingAccuracy == "Incorrect", na.rm = TRUE),
+  #                                                                                 PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
+  #
+  #         # Summarizing report
+  #         Report.Imputation$UICCStage$AccuracyTest.Summary <- Report.Imputation$UICCStage$AccuracyTest.Details %>%
+  #                                                                   summarize(across(starts_with("Count"), ~ sum(.x, na.rm = TRUE)),
+  #                                                                             PropFoundMatch = ifelse(CountTotal != 0, CountFoundMatch / CountTotal, NA),
+  #                                                                             PropCorrect.Exact = ifelse(CountFoundMatch != 0, CountCorrect.Exact / CountFoundMatch, NA),
+  #                                                                             PropCorrect.CategoryOnly = ifelse(CountFoundMatch != 0, CountCorrect.CategoryOnly / CountFoundMatch, NA),
+  #                                                                             PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
+  #
+  #         # Print message
+  #         PrintSoloMessage(c(Info = paste0("UICCStage imputation (accuracy test): ", Report.Imputation$UICCStage$AccuracyTest.Summary$CountTotal, " / ", nrow(CDS$Staging),
+  #                                          " values were used for accuracy testing. Of these, ", Report.Imputation$UICCStage$AccuracyTest.Summary$CountFoundMatch, " values (", FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropFoundMatch), ") could be mapped to a UICC stage value. ",
+  #                                          "After assessing matching accuracy, ", FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropCorrect.Exact), " matched exactly, ",
+  #                                          FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropCorrect.CategoryOnly), " matched only by UICC stage category and ",
+  #                                          FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropIncorrect), " were mapped incorrectly.")))
+  #     }
+  #     #---------------------------------------------------------------------
+  #
+  #
+  #     # For imputation filter out records that do not have a valid UICCStage value
+  #     #---------------------------------------------------------------------
+  #     Sel.StagingRecords.Imputation <- Sel.StagingRecords %>%
+  #                                           filter(is.na(UICCStage) | UICCStage == ".Ineligible")
+  #
+  #     # Get UICCStage value from diagnosis and staging data
+  #     UICCStageMapping.Imputation <- Sel.StagingRecords.Imputation %>%
+  #                                         dsCCPhos::MapUICCStage(Res.TNMGroupMapping = Res.UICCMapping$TNMGroupMapping,
+  #                                                                Res.UICCStageMapping = Res.UICCMapping$UICCStageMapping,
+  #                                                                AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
+  #                                         mutate(UICCStage.Imputation = case_when(!is.na(UICCStage.Mapped) ~ "Imputed",
+  #                                                                                 is.na(UICCStage.Mapped) ~ "Failed",
+  #                                                                                 .default = NA))
+  #
+  #     # Calculate report info
+  #     Report.Imputation$UICCStage$Imputation.Details <- UICCStageMapping.Imputation %>%
+  #                                                           group_by(ICD10Code.Short) %>%
+  #                                                               summarize(CountTotal = n(),
+  #                                                                         CountImputed = sum(!is.na(UICCStage.Mapped), na.rm = TRUE),
+  #                                                                         PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+  #
+  #     Report.Imputation$UICCStage$Imputation.Summary <- Report.Imputation$UICCStage$Imputation.Details %>%
+  #                                                           summarize(CountTotal = sum(CountTotal),
+  #                                                                     CountImputed = sum(CountImputed),
+  #                                                                     PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+  #
+  #     # Print message
+  #     PrintSoloMessage(c(Success = paste0("UICCStage imputation: ", Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " / ", nrow(CDS$Staging),
+  #                                         " values were missing. Imputed ", Report.Imputation$UICCStage$Imputation.Summary$CountImputed, " / ",
+  #                                         Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " (", FormatPercentage(Report.Imputation$UICCStage$Imputation.Summary$PropImputed), ") missing values.")))
+  #
+  #     # Isolate mapped UICCStage values ahead of merging with original data
+  #     MappedUICCStageValues <- UICCStageMapping.Imputation %>%
+  #                                   select(PatientID,
+  #                                          DiagnosisID,
+  #                                          StagingID,
+  #                                          UICCStage.Mapped,
+  #                                          UICCStage.Mapped.Category,
+  #                                          UICCStage.Imputation)
+  #
+  #     # Perform imputation of UICCStage
+  #     CDS$Staging <- CDS$Staging %>%
+  #                         left_join(MappedUICCStageValues, by = join_by(PatientID, DiagnosisID, StagingID)) %>%
+  #                         mutate(UICCStage = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped,
+  #                                                      .default = UICCStage),
+  #                                UICCStage.Category = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped.Category,
+  #                                                                .default = UICCStage.Category)) %>%
+  #                         select(-UICCStage.Mapped,
+  #                                -UICCStage.Mapped.Category)
+  # }
+
+
+
+
+#===============================================================================
+# MODULE C)  Generate ADS$Events
 #===============================================================================
 #   1) Initiation
 #   2) Loop through CDS tables and generate event data
@@ -730,7 +1165,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
                                                          "IsImmunotherapy",
                                                          "IsBoneMarrowTransplant",
                                                          "IsObservantStrategy",
-                                                         "Protocol",
+                                                         "Regimen",
                                                          "Substance",
                                                          "ATC",
                                                          "ATCVersion",
@@ -881,9 +1316,9 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
   #                                                           ProgressBarObject = ProgressBar))
 
 
-  #===============================================================================
-  # MODULE C)  Generate ADS$DiseaseCourse
-  #===============================================================================
+#===============================================================================
+# MODULE D)  Generate ADS$DiseaseCourse
+#===============================================================================
 
 
   # Auxiliary function
@@ -1006,7 +1441,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 #===============================================================================
-# MODULE D)  Generate ADS$Therapy
+# MODULE E)  Generate ADS$Therapy
 #===============================================================================
 
   # TO DO:
@@ -1058,7 +1493,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 #===============================================================================
-# MODULE E)  Generate ADS$Diagnosis
+# MODULE F)  Generate ADS$Diagnosis
 #===============================================================================
 
 
@@ -1082,15 +1517,15 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
                                     group_by(DiagnosisID) %>%
                                         arrange(DiagnosisDate) %>%
                                         slice_head() %>%
-                                    ungroup() %>%
-                                    mutate(UICCStageCategory = case_match(UICCStage,
-                                                                          c("0", "0is", "0a") ~ "0",
-                                                                          c("I", "IA", "IA1", "IA2", "IA3", "IB", "IB1", "IB2", "IC", "IS") ~ "I",
-                                                                          c("II", "IIA", "IIA1", "IIA2", "IIB", "IIC") ~ "II",
-                                                                          c("III", "IIIA", "IIIB", "IIIC", "IIIC1", "IIIC2", "IIID") ~ "III",
-                                                                          c("IV", "IVA", "IVB", "IVC") ~ "IV",
-                                                                          .default = NA_character_),
-                                           .after = UICCStage)
+                                    ungroup()
+                                    # mutate(UICCStageCategory = case_match(UICCStage,
+                                    #                                       c("0", "0is", "0a") ~ "0",
+                                    #                                       c("I", "IA", "IA1", "IA2", "IA3", "IB", "IB1", "IB2", "IC", "IS") ~ "I",
+                                    #                                       c("II", "IIA", "IIA1", "IIA2", "IIB", "IIC") ~ "II",
+                                    #                                       c("III", "IIIA", "IIIB", "IIIC", "IIIC1", "IIIC2", "IIID") ~ "III",
+                                    #                                       c("IV", "IVA", "IVB", "IVC") ~ "IV",
+                                    #                                       .default = NA_character_),
+                                    #        .after = UICCStage)
                                     #--- Update PB ---
                                     # try(ProgressBar$tick())
 
@@ -1162,9 +1597,9 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
-  #===============================================================================
-  # Final modifications
-  #===============================================================================
+#===============================================================================
+# Final modifications
+#===============================================================================
 
   # Unnest Column 'EventDetails' in ADS$Events
   ADS$Events <- ADS$Events %>%
@@ -1177,11 +1612,15 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
 
 
 
-  #===============================================================================
-  # Define content of AugmentationReport
-  #===============================================================================
+#===============================================================================
+# Compile content of main 'Report' object
+#===============================================================================
 
-  ls_AugmentationReport <- list(Test = c("TestReport"))
+  Report <- list(Settings = NULL,      # TO DO: Report chosen settings
+                 Process = Report.Process,
+                 Log = Report.Log,
+                 Imputation = Report.Imputation)
+
 
 
   Messages$CheckAugmentationCompletion <- "green"
@@ -1212,7 +1651,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CuratedDataSet",
   # {
   #   # Return the Augmented Data Set (ADS), an Augmentation Report (defined above) and Messages
     return(list(AugmentedDataSet = ADS,
-                AugmentationReport = ls_AugmentationReport,
+                Report = Report,
                 Messages = Messages))
   # })
 

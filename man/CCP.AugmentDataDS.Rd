@@ -5,17 +5,28 @@
 \title{CCP.AugmentDataDS}
 \usage{
 CCP.AugmentDataDS(
-  CuratedDataSetName.S = "CuratedDataSet",
-  Settings.S = list(CutoffValues = list(DaysDiagnosisToInitialStaging = 30),
-    DiagnosisAssociation = list(Check = TRUE, RuleSet =
-    dsCCPhos::Set.DiagnosisAssociation, Profile = "Default"), EventFeatures =
-    list(RuleSet = dsCCPhos::Proc.EventFeatures, Profile = "Default"), OverallSurvival =
-    list(ReferenceEvent = c(EventClass = "Diagnosis", EventSubclass =
-    "InitialDiagnosis")), TherapyOfInterest = list(EventSubclass = "Surgery",
-    EventSubclassRank = 1), TimeToEvent = list(ReferenceEvent = list(EventClass =
-    "Diagnosis", 
-     EventSubclass = "InitialDiagnosis"), TargetEvent = list(EventClass
-    = "VitalStatus", EventSubclass = "Deceased")))
+  CuratedDataSetName.S = "CCP.CuratedDataSet",
+  CutoffValues.DaysDiagnosisToInitialStaging.S = 30,
+  DiagnosisAssociation.Check.S = TRUE,
+  DiagnosisAssociation.RuleSet.S = dsCCPhos::Set.DiagnosisAssociation,
+  DiagnosisAssociation.Profile.S = "Default",
+  EventFeatures.RuleSet.S = dsCCPhos::Proc.EventFeatures,
+  EventFeatures.Profile.S = "Default",
+  Imputation.SystemicTherapyRegimen.Run.S = TRUE,
+  Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S = 1,
+  Imputation.SystemicTherapyRegimen.RunAccuracyTest.S = TRUE,
+  Imputation.UICCStage.Run.S = TRUE,
+  Imputation.UICCStage.AcceptableTNMCongruence.S = 0.8,
+  Imputation.UICCStage.RunAccuracyTest.S = TRUE,
+  OverallSurvival.ReferenceEvent.EventClass.S = "Diagnosis",
+  OverallSurvival.ReferenceEvent.EventSubclass.S = "InitialDiagnosis",
+  TherapyOfInterest.EventSubclass.S = "Surgery",
+  TherapyOfInterest.EventSubclassRank.S = 1,
+  TimeToEvent.ReferenceEvent.EventClass.S = "Diagnosis",
+  TimeToEvent.ReferenceEvent.EventSubclass.S = "InitialDiagnosis",
+  TimeToEvent.TargetEvent.EventClass.S = "VitalStatus",
+  TimeToEvent.TargetEvent.EventSubclass.S = "Deceased",
+  MetaDataKey.S = Sys.getenv("METADATAKEY")
 )
 }
 \arguments{
