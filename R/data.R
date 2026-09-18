@@ -391,6 +391,7 @@
 #'   \item{Scale}{}
 #'   \item{Availability}{}
 #'   \item{NegligibleValues}{}
+#'   \item{ValidityCriteria}{}
 #' }
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
