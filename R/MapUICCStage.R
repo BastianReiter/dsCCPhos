@@ -46,6 +46,8 @@ MapUICCStage <- function(InputData,
               AcceptableTNMCongruence > 0,
               AcceptableTNMCongruence <= 1)
 
+  if (length(InputData) == 0 || nrow(InputData)) { stop("'InputData' is not a valid non-empty data.frame.") }
+
   # --- Rename argument to avoid naming conflicts ---
   .Param.AcceptableTNMCongruence <- AcceptableTNMCongruence
 
@@ -112,43 +114,56 @@ MapUICCStage <- function(InputData,
   # 1A) Case when distinct TNMGroup was already found only based on basic matching criteria
   TNMGroupMatching.Simple <- TNMGroupMatching.Screening %>%
                                   filter(.CountCandidateMapRows == 1) %>%
-                                  mutate(.CandidateMapRows = unlist(.CandidateMapRows),
-                                         TNMGroup = Res.TNMGroupMapping$TNMGroup[.CandidateMapRows])
+                                  mutate(TNMGroup = NA)
+
+  if (nrow(TNMGroupMatching.Simple) > 0)      # The mutating statements only work on a non-empty data.frame (and on rows that have non-empty vectors in '.CandidateMapRows')
+  {
+      TNMGroupMatching.Simple <- TNMGroupMatching.Simple %>%
+                                      mutate(.CandidateMapRows = unlist(.CandidateMapRows),
+                                             TNMGroup = Res.TNMGroupMapping$TNMGroup[.CandidateMapRows])
+  }
+
 
   # 1B) Case when screening yielded multiple TNMGroup candidates and further criteria need to be assessed
   TNMGroupMatching.Complex <- TNMGroupMatching.Screening %>%
                                   filter(.CountCandidateMapRows > 1) %>%
-                                  mutate(.IsCompliant.Inclusion.ICD10Code.Short = map2(.x = ICD10Code.Short,
-                                                                                       .y = .CandidateMapRows,
-                                                                                       ~ f.IsCompliant.Inclusion(.x, Res.TNMGroupMapping$Inclusion.ICD10Code.Short[.y])),
-                                         .IsCompliant.Inclusion.ICDOMorphologyHistologyCode = map2(.x = ICDOMorphologyHistologyCode,
-                                                                                                   .y = .CandidateMapRows,
-                                                                                                   ~ f.IsCompliant.Inclusion(.x, Res.TNMGroupMapping$Inclusion.ICDOMorphologyHistologyCode[.y])),
-                                         .IsCompliant.Inclusion.PatientAgeAtStaging = map2(.x = PatientAgeAtStaging,
+                                  mutate(TNMGroup = NA)
+
+  if (nrow(TNMGroupMatching.Complex) > 0)
+  {
+      TNMGroupMatching.Complex <- TNMGroupMatching.Complex %>%
+                                      mutate(.IsCompliant.Inclusion.ICD10Code.Short = map2(.x = ICD10Code.Short,
                                                                                            .y = .CandidateMapRows,
-                                                                                           ~ f.IsCompliant.Inclusion.Expression(.x, Res.TNMGroupMapping$Inclusion.PatientAgeAtStaging[.y])),
-                                         .IsCompliant.Exclusion.ICDOTopographyCode = map2(.x = ICDOTopographyCode,
-                                                                                          .y = .CandidateMapRows,
-                                                                                          ~ f.IsCompliant.Exclusion(.x, Res.TNMGroupMapping$Exclusion.ICDOTopographyCode[.y])),
-                                         .IsCompliant.Exclusion.ICD10Code.Short = map2(.x = ICD10Code.Short,
-                                                                                       .y = .CandidateMapRows,
-                                                                                       ~ f.IsCompliant.Exclusion(.x, Res.TNMGroupMapping$Exclusion.ICD10Code.Short[.y])),
-                                         .IsCompliant.Exclusion.ICDOMorphologyHistologyCode = map2(.x = ICDOMorphologyHistologyCode,
-                                                                                                   .y = .CandidateMapRows,
-                                                                                                   ~ f.IsCompliant.Exclusion(.x, Res.TNMGroupMapping$Exclusion.ICDOMorphologyHistologyCode[.y]))) %>%
-                                  mutate(.MatchedSubRows = pmap(list(.IsCompliant.Inclusion.ICD10Code.Short,
-                                                                     .IsCompliant.Inclusion.ICDOMorphologyHistologyCode,
-                                                                     .IsCompliant.Inclusion.PatientAgeAtStaging,
-                                                                     .IsCompliant.Exclusion.ICDOTopographyCode,
-                                                                     .IsCompliant.Exclusion.ICD10Code.Short,
-                                                                     .IsCompliant.Exclusion.ICDOMorphologyHistologyCode),
-                                                                ~ which(..1 & ..2 & ..3 & ..4 & ..5 & ..6)),
-                                         .CountMatchedSubRows = map_int(.MatchedSubRows, \(X) length(X))) %>%
-                                  filter(.CountMatchedSubRows == 1) %>%
-                                  mutate(.MatchedCandidateRow = map2_int(.x = .CandidateMapRows,
-                                                                         .y = .MatchedSubRows,
-                                                                         ~ .x[.y]),
-                                         TNMGroup = Res.TNMGroupMapping$TNMGroup[.MatchedCandidateRow])
+                                                                                           ~ f.IsCompliant.Inclusion(.x, Res.TNMGroupMapping$Inclusion.ICD10Code.Short[.y])),
+                                             .IsCompliant.Inclusion.ICDOMorphologyHistologyCode = map2(.x = ICDOMorphologyHistologyCode,
+                                                                                                       .y = .CandidateMapRows,
+                                                                                                       ~ f.IsCompliant.Inclusion(.x, Res.TNMGroupMapping$Inclusion.ICDOMorphologyHistologyCode[.y])),
+                                             .IsCompliant.Inclusion.PatientAgeAtStaging = map2(.x = PatientAgeAtStaging,
+                                                                                               .y = .CandidateMapRows,
+                                                                                               ~ f.IsCompliant.Inclusion.Expression(.x, Res.TNMGroupMapping$Inclusion.PatientAgeAtStaging[.y])),
+                                             .IsCompliant.Exclusion.ICDOTopographyCode = map2(.x = ICDOTopographyCode,
+                                                                                              .y = .CandidateMapRows,
+                                                                                              ~ f.IsCompliant.Exclusion(.x, Res.TNMGroupMapping$Exclusion.ICDOTopographyCode[.y])),
+                                             .IsCompliant.Exclusion.ICD10Code.Short = map2(.x = ICD10Code.Short,
+                                                                                           .y = .CandidateMapRows,
+                                                                                           ~ f.IsCompliant.Exclusion(.x, Res.TNMGroupMapping$Exclusion.ICD10Code.Short[.y])),
+                                             .IsCompliant.Exclusion.ICDOMorphologyHistologyCode = map2(.x = ICDOMorphologyHistologyCode,
+                                                                                                       .y = .CandidateMapRows,
+                                                                                                       ~ f.IsCompliant.Exclusion(.x, Res.TNMGroupMapping$Exclusion.ICDOMorphologyHistologyCode[.y]))) %>%
+                                      mutate(.MatchedSubRows = pmap(list(.IsCompliant.Inclusion.ICD10Code.Short,
+                                                                         .IsCompliant.Inclusion.ICDOMorphologyHistologyCode,
+                                                                         .IsCompliant.Inclusion.PatientAgeAtStaging,
+                                                                         .IsCompliant.Exclusion.ICDOTopographyCode,
+                                                                         .IsCompliant.Exclusion.ICD10Code.Short,
+                                                                         .IsCompliant.Exclusion.ICDOMorphologyHistologyCode),
+                                                                    ~ which(..1 & ..2 & ..3 & ..4 & ..5 & ..6)),
+                                             .CountMatchedSubRows = map_int(.MatchedSubRows, \(X) length(X))) %>%
+                                      filter(.CountMatchedSubRows == 1) %>%
+                                      mutate(.MatchedCandidateRow = map2_int(.x = .CandidateMapRows,
+                                                                             .y = .MatchedSubRows,
+                                                                             ~ .x[.y]),
+                                             TNMGroup = Res.TNMGroupMapping$TNMGroup[.MatchedCandidateRow])
+  }
 
   # 1c) Select only relevant variables and row-bind both data.frames
   TNMGroupMatched <- bind_rows(select(TNMGroupMatching.Simple, all_of(c(names(InputData), "TNMGroup"))),

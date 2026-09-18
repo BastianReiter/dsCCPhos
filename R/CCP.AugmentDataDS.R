@@ -510,7 +510,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
 #-------------------------------------------------------------------------------
 
   # Create table for DiagnosisID replacement in related tables
-  Aux_Diagnosis_IDMappingAssociations <- CDS$Diagnosis %>%
+  Aux.Diagnosis.IDMappingAssociations <- CDS$Diagnosis %>%
                                               ungroup() %>%
                                               select(PatientID, OriginalDiagnosisID, DiagnosisID) %>%
                                               rename(all_of(c(DiagnosisID = "OriginalDiagnosisID",
@@ -524,7 +524,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                     if (nrow(Table) > 0 & tablename != "Diagnosis" & all(c("PatientID", "DiagnosisID") %in% names(Table)))
                     {
                         Table <- Table %>%
-                                      left_join(Aux_Diagnosis_IDMappingAssociations, by = join_by(PatientID,
+                                      left_join(Aux.Diagnosis.IDMappingAssociations, by = join_by(PatientID,
                                                                                                   DiagnosisID)) %>%
                                       mutate(DiagnosisID = ifelse(!is.na(NewDiagnosisID),
                                                                   NewDiagnosisID,
