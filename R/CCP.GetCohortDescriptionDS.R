@@ -14,7 +14,7 @@
 #'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-CCP.GetCohortDescriptionDS <- function(DataSetName.S = "AugmentedDataSet",
+CCP.GetCohortDescriptionDS <- function(DataSetName.S = "CCP.AugmentedDataSet",
                                        Stage.S = "Augmented")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
