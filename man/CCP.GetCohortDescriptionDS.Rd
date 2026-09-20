@@ -5,7 +5,7 @@
 \title{CCP.GetCohortDescriptionDS}
 \usage{
 CCP.GetCohortDescriptionDS(
-  DataSetName.S = "AugmentedDataSet",
+  DataSetName.S = "CCP.AugmentedDataSet",
   Stage.S = "Augmented"
 )
 }

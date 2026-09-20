@@ -17,6 +17,7 @@
 \item{Scale}{}
 \item{Availability}{}
 \item{NegligibleValues}{}
+\item{ValidityCriteria}{}
 }
 }
 }
