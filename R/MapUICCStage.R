@@ -46,7 +46,11 @@ MapUICCStage <- function(InputData,
               AcceptableTNMCongruence > 0,
               AcceptableTNMCongruence <= 1)
 
-  if (length(InputData) == 0 || nrow(InputData) == 0) { stop("'InputData' is not a valid non-empty data.frame.") }
+  if (length(InputData) == 0 || nrow(InputData) == 0)
+  {
+      warning("'InputData' is not a valid non-empty data.frame.")
+      return(InputData)
+  }
 
   # --- Rename argument to avoid naming conflicts ---
   .Param.AcceptableTNMCongruence <- AcceptableTNMCongruence

@@ -130,7 +130,7 @@ usethis::use_data(Res.ICDOMorphology, overwrite = TRUE)
 
 Res.SystemicTherapy.Regimens <- TinkerLab::Res.SystemicTherapy.Regimens %>%
                                     mutate(Substances = pmap(pick(starts_with("Substance")),
-                                                             ~ unname(c(...)) %>% discard(is.na) %>% sort()),      # Put values of Substance columns in vectors and sort the alphabetically
+                                                             ~ unname(c(...)) %>% discard(is.na) %>% sort()),      # Put values of Substance columns in vectors and sort them alphabetically
                                            .after = Regimen) %>%
                                     select(-matches("^Substance[0-9]$")) %>%
                                     mutate(Substances.String = map_chr(Substances, ~ paste(.x, collapse = "*&*")),
