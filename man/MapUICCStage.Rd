@@ -6,8 +6,8 @@
 \usage{
 MapUICCStage(
   InputData,
-  Res.TNMGroupMapping,
-  Res.UICCStageMapping,
+  Map.TNMGroup,
+  Map.UICCStage,
   AcceptableTNMCongruence = 0.8
 )
 }
@@ -26,14 +26,16 @@ MapUICCStage(
 \item TNM.M
 \item TNMVersion }}
 
-\item{Res.TNMGroupMapping}{\code{data.frame}}
+\item{Map.TNMGroup}{\code{data.frame}}
 
-\item{Res.UICCStageMapping}{\code{data.frame}}
+\item{Map.UICCStage}{\code{data.frame}}
 
 \item{AcceptableTNMCongruence}{\code{double} - The threshold defining how much congruence in fuzzy matching is needed to accept a match. Given as a ratio number (Count of matching features in relation to number of all features used for matching). Must be a value between 0 and 1.}
 }
 \value{
-The input \code{data.frame} with additional data
+A \code{list}:
+\itemize{ \item OutputData - The input \code{data.frame} with additional data
+\item Tracker - A deidentified version of 'OutputData' for reporting }
 }
 \description{
 Performs mapping from TNM data to UICC stage according to TNM classification
