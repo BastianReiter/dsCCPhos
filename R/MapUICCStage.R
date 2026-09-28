@@ -16,37 +16,43 @@
 #'                                \item TNM.N
 #'                                \item TNM.M
 #'                                \item TNMVersion }
-#' @param Res.TNMGroupMapping \code{data.frame}
-#' @param Res.UICCStageMapping \code{data.frame}
+#' @param Map.TNMGroup \code{data.frame}
+#' @param Map.UICCStage \code{data.frame}
 #' @param AcceptableTNMCongruence \code{double} - The threshold defining how much congruence in fuzzy matching is needed to accept a match. Given as a ratio number (Count of matching features in relation to number of all features used for matching). Must be a value between 0 and 1.
 #'
-#' @return The input \code{data.frame} with additional data
+#' @return A \code{list}:
+#'          \itemize{ \item OutputData - The input \code{data.frame} with additional data
+#'                    \item Tracker - A deidentified version of 'OutputData' for reporting }
 #'
 #' @export
 #'
 #' @author Bastian Reiter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 MapUICCStage <- function(InputData,
-                         Res.TNMGroupMapping,
-                         Res.UICCStageMapping,
+                         Map.TNMGroup,
+                         Map.UICCStage,
                          AcceptableTNMCongruence = 0.8)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {
   # --- For Testing Purposes ---
   # InputData <- Sel.StagingRecords
-  # Res.TNMGroupMapping <- Res.UICCMapping$TNMGroupMapping
-  # Res.UICCStageMapping <- Res.UICCMapping$UICCStageMapping
+  # Map.TNMGroup <- Res.UICCMapping$TNMGroupMapping
+  # Map.UICCStage <- Res.UICCMapping$UICCStageMapping
   # AcceptableTNMCongruence <- 0.8
 
   # --- Argument Validation ---
   assert_that(is.data.frame(InputData),
-              is.data.frame(Res.TNMGroupMapping),
-              is.data.frame(Res.UICCStageMapping),
+              is.data.frame(Map.TNMGroup),
+              is.data.frame(Map.UICCStage),
               is.numeric(AcceptableTNMCongruence),
               AcceptableTNMCongruence > 0,
               AcceptableTNMCongruence <= 1)
 
-  if (length(InputData) == 0 || nrow(InputData) == 0) { stop("'InputData' is not a valid non-empty data.frame.") }
+  if (length(InputData) == 0 || nrow(InputData) == 0)
+  {
+      warning("'InputData' is not a valid non-empty data.frame.")
+      return(InputData)
+  }
 
   # --- Rename argument to avoid naming conflicts ---
   .Param.AcceptableTNMCongruence <- AcceptableTNMCongruence
@@ -100,9 +106,9 @@ MapUICCStage <- function(InputData,
 
   # 1) For each record, attempt to find the correct TNMGroup
   TNMGroupMatching.Screening <- InputData %>%
-                                    mutate(.Match.TNMVersion = map(TNMVersion, ~ str_which(Res.TNMGroupMapping$Match.TNMVersion, fixed(.x))),
-                                           .Match.ICDOTopographyCode = map(ICDOTopographyCode, ~ str_which(Res.TNMGroupMapping$Match.ICDOTopographyCode, fixed(.x))),
-                                           .Match.ICDOTopographyCode.Short = map(ICDOTopographyCode.Short, ~ str_which(Res.TNMGroupMapping$Match.ICDOTopographyCode.Short, fixed(.x)))) %>%
+                                    mutate(.Match.TNMVersion = map(TNMVersion, ~ str_which(Map.TNMGroup$Match.TNMVersion, fixed(.x))),
+                                           .Match.ICDOTopographyCode = map(ICDOTopographyCode, ~ str_which(Map.TNMGroup$Match.ICDOTopographyCode, fixed(.x))),
+                                           .Match.ICDOTopographyCode.Short = map(ICDOTopographyCode.Short, ~ str_which(Map.TNMGroup$Match.ICDOTopographyCode.Short, fixed(.x)))) %>%
                                     mutate(.CandidateMapRows = pmap(list(.Match.TNMVersion,
                                                                          .Match.ICDOTopographyCode,
                                                                          .Match.ICDOTopographyCode.Short),
@@ -120,7 +126,7 @@ MapUICCStage <- function(InputData,
   {
       TNMGroupMatching.Simple <- TNMGroupMatching.Simple %>%
                                       mutate(.CandidateMapRows = unlist(.CandidateMapRows),
-                                             TNMGroup = Res.TNMGroupMapping$TNMGroup[.CandidateMapRows])
+                                             TNMGroup = Map.TNMGroup$TNMGroup[.CandidateMapRows])
   }
 
 
@@ -134,22 +140,22 @@ MapUICCStage <- function(InputData,
       TNMGroupMatching.Complex <- TNMGroupMatching.Complex %>%
                                       mutate(.IsCompliant.Inclusion.ICD10Code.Short = map2(.x = ICD10Code.Short,
                                                                                            .y = .CandidateMapRows,
-                                                                                           ~ f.IsCompliant.Inclusion(.x, Res.TNMGroupMapping$Inclusion.ICD10Code.Short[.y])),
+                                                                                           ~ f.IsCompliant.Inclusion(.x, Map.TNMGroup$Inclusion.ICD10Code.Short[.y])),
                                              .IsCompliant.Inclusion.ICDOMorphologyHistologyCode = map2(.x = ICDOMorphologyHistologyCode,
                                                                                                        .y = .CandidateMapRows,
-                                                                                                       ~ f.IsCompliant.Inclusion(.x, Res.TNMGroupMapping$Inclusion.ICDOMorphologyHistologyCode[.y])),
+                                                                                                       ~ f.IsCompliant.Inclusion(.x, Map.TNMGroup$Inclusion.ICDOMorphologyHistologyCode[.y])),
                                              .IsCompliant.Inclusion.PatientAgeAtStaging = map2(.x = PatientAgeAtStaging,
                                                                                                .y = .CandidateMapRows,
-                                                                                               ~ f.IsCompliant.Inclusion.Expression(.x, Res.TNMGroupMapping$Inclusion.PatientAgeAtStaging[.y])),
+                                                                                               ~ f.IsCompliant.Inclusion.Expression(.x, Map.TNMGroup$Inclusion.PatientAgeAtStaging[.y])),
                                              .IsCompliant.Exclusion.ICDOTopographyCode = map2(.x = ICDOTopographyCode,
                                                                                               .y = .CandidateMapRows,
-                                                                                              ~ f.IsCompliant.Exclusion(.x, Res.TNMGroupMapping$Exclusion.ICDOTopographyCode[.y])),
+                                                                                              ~ f.IsCompliant.Exclusion(.x, Map.TNMGroup$Exclusion.ICDOTopographyCode[.y])),
                                              .IsCompliant.Exclusion.ICD10Code.Short = map2(.x = ICD10Code.Short,
                                                                                            .y = .CandidateMapRows,
-                                                                                           ~ f.IsCompliant.Exclusion(.x, Res.TNMGroupMapping$Exclusion.ICD10Code.Short[.y])),
+                                                                                           ~ f.IsCompliant.Exclusion(.x, Map.TNMGroup$Exclusion.ICD10Code.Short[.y])),
                                              .IsCompliant.Exclusion.ICDOMorphologyHistologyCode = map2(.x = ICDOMorphologyHistologyCode,
                                                                                                        .y = .CandidateMapRows,
-                                                                                                       ~ f.IsCompliant.Exclusion(.x, Res.TNMGroupMapping$Exclusion.ICDOMorphologyHistologyCode[.y]))) %>%
+                                                                                                       ~ f.IsCompliant.Exclusion(.x, Map.TNMGroup$Exclusion.ICDOMorphologyHistologyCode[.y]))) %>%
                                       mutate(.MatchedSubRows = pmap(list(.IsCompliant.Inclusion.ICD10Code.Short,
                                                                          .IsCompliant.Inclusion.ICDOMorphologyHistologyCode,
                                                                          .IsCompliant.Inclusion.PatientAgeAtStaging,
@@ -162,7 +168,7 @@ MapUICCStage <- function(InputData,
                                       mutate(.MatchedCandidateRow = map2_int(.x = .CandidateMapRows,
                                                                              .y = .MatchedSubRows,
                                                                              ~ .x[.y]),
-                                             TNMGroup = Res.TNMGroupMapping$TNMGroup[.MatchedCandidateRow])
+                                             TNMGroup = Map.TNMGroup$TNMGroup[.MatchedCandidateRow])
   }
 
   # 1c) Select only relevant variables and row-bind both data.frames
@@ -176,49 +182,49 @@ MapUICCStage <- function(InputData,
                                                             TNMGroup,
                                                             TNMVersion),
                                                        ~ f.TNMMatching(x = ..1,      # x-value: The actual TNM.T value
-                                                                       Y = subset(Res.UICCStageMapping,      # Y-vector: The TNM.T values of the mapping table for a specific TNMGroup and a TNMVersion
+                                                                       Y = subset(Map.UICCStage,      # Y-vector: The TNM.T values of the mapping table for a specific TNMGroup and a TNMVersion
                                                                                   TNMGroup == ..2 & TNMVersion == ..3)$TNM.T)),
                                    .Match.TNM.T.Short = pmap(list(TNM.T.Short,
                                                                   TNMGroup,
                                                                   TNMVersion),
                                                              ~ f.TNMMatching(x = ..1,
-                                                                             Y = subset(Res.UICCStageMapping,
+                                                                             Y = subset(Map.UICCStage,
                                                                                         TNMGroup == ..2 & TNMVersion == ..3)$TNM.T)),
                                    .Match.TNM.N = pmap(list(TNM.N,
                                                             TNMGroup,
                                                             TNMVersion),
                                                        ~ f.TNMMatching(x = ..1,
-                                                                       Y = subset(Res.UICCStageMapping,
+                                                                       Y = subset(Map.UICCStage,
                                                                                   TNMGroup == ..2 & TNMVersion == ..3)$TNM.N)),
                                    .Match.TNM.N.Short = pmap(list(TNM.N.Short,
                                                                   TNMGroup,
                                                                   TNMVersion),
                                                              ~ f.TNMMatching(x = ..1,
-                                                                             Y = subset(Res.UICCStageMapping,
+                                                                             Y = subset(Map.UICCStage,
                                                                                         TNMGroup == ..2 & TNMVersion == ..3)$TNM.N)),
                                    .Match.TNM.M = pmap(list(TNM.M,
                                                             TNMGroup,
                                                             TNMVersion),
                                                         ~ f.TNMMatching(x = ..1,
-                                                                        Y = subset(Res.UICCStageMapping,
+                                                                        Y = subset(Map.UICCStage,
                                                                                    TNMGroup == ..2 & TNMVersion == ..3)$TNM.M)),
                                    .Match.TNM.M.Short = pmap(list(TNM.M.Short,
                                                                   TNMGroup,
                                                                   TNMVersion),
                                                              ~ f.TNMMatching(x = ..1,
-                                                                             Y = subset(Res.UICCStageMapping,
+                                                                             Y = subset(Map.UICCStage,
                                                                                         TNMGroup == ..2 & TNMVersion == ..3)$TNM.M)),
                                    .Match.TNM.S = pmap(list(TNM.S,
                                                             TNMGroup,
                                                             TNMVersion),
                                                        ~ f.TNMMatching(x = ..1,
-                                                                       Y = subset(Res.UICCStageMapping,
+                                                                       Y = subset(Map.UICCStage,
                                                                                   TNMGroup == ..2 & TNMVersion == ..3)$TNM.S)),
                                    .Match.Grading = pmap(list(Grading,
                                                               TNMGroup,
                                                               TNMVersion),
                                                          ~ f.TNMMatching(x = ..1,
-                                                                         Y = subset(Res.UICCStageMapping,
+                                                                         Y = subset(Map.UICCStage,
                                                                                     TNMGroup == ..2 & TNMVersion == ..3)$Grading))) %>%
                             mutate(.Row.ExactMatch = pmap_int(list(.Match.TNM.T,
                                                                    .Match.TNM.N,
@@ -251,7 +257,7 @@ MapUICCStage <- function(InputData,
                                    UICCStage.Mapped = pmap_chr(list(TNMGroup,
                                                                     TNMVersion,
                                                                     .ChosenRow),
-                                                               ~ subset(Res.UICCStageMapping,
+                                                               ~ subset(Map.UICCStage,
                                                                         TNMGroup == ..1 & TNMVersion == ..2)$UICCStage[..3]),
                                    UICCStage.Mapped.Category = case_when(str_starts(UICCStage.Mapped, "0") ~ "0",
                                                                                     UICCStage.Mapped %in% c("I", "IS") | str_starts(UICCStage.Mapped, "IA|IB|IC") ~ "I",
@@ -260,14 +266,28 @@ MapUICCStage <- function(InputData,
                                                                                     str_starts(UICCStage.Mapped, "IV") ~ "IV",
                                                                                     .default = NA_character_))
 
-  # 3) Output complete InputData with added 'TNMGroup', 'UICCStage.Mapped' and 'UICCStage.Mapped.Category'
-  Output <- InputData %>%
-                left_join(UICCStageMatching, by = names(InputData)) %>%      # Join by all common variables (natural join)
-                select(all_of(c(names(InputData),
-                                "TNMGroup",
-                                "UICCStage.Mapped",
-                                "UICCStage.Mapped.Category")))
+  # 3) Create 'Tracker' object for reporting (does not contain any patient- or diagnosis-identifying data)
+  Tracker <- UICCStageMatching %>%
+                  select(ICD10Code,
+                         ICDOTopographyCode,
+                         ICDOMorphologyHistologyCode,
+                         Grading,
+                         TNM.T,
+                         TNM.N,
+                         TNM.M,
+                         TNM.S,
+                         TNMGroup,
+                         UICCStage.Mapped)
+
+  # 4) Create 'OutputData': 'InputData' with added 'TNMGroup', 'UICCStage.Mapped' and 'UICCStage.Mapped.Category'
+  OutputData <- InputData %>%
+                    left_join(UICCStageMatching, by = names(InputData)) %>%      # Join by all common variables (natural join)
+                    select(all_of(c(names(InputData),
+                                    "TNMGroup",
+                                    "UICCStage.Mapped",
+                                    "UICCStage.Mapped.Category")))
 
 #-------------------------------------------------------------------------------
-  return(Output)
+  return(list(OutputData = OutputData,
+              Tracker = Tracker))
 }

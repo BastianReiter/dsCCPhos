@@ -39,11 +39,13 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                               EventFeatures.RuleSet.S = dsCCPhos::Proc.EventFeatures,
                               EventFeatures.Profile.S = "Default",
                               Imputation.SystemicTherapyRegimen.Run.S = TRUE,
-                              Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S = 1,
-                              Imputation.SystemicTherapyRegimen.RunAccuracyTest.S = TRUE,
+                              Imputation.SystemicTherapyRegimen.Substances.MinimumCongruence.S = 0.6,
+                              Imputation.SystemicTherapyRegimen.Substances.AllowedCountDifferenceRange.S = c(0, 2),
+                              Imputation.SystemicTherapyRegimen.Substances.AllowAdditionals.S = FALSE,
+                              Imputation.SystemicTherapyRegimen.RunValidation.S = TRUE,
                               Imputation.UICCStage.Run.S = TRUE,
                               Imputation.UICCStage.AcceptableTNMCongruence.S = 0.8,
-                              Imputation.UICCStage.RunAccuracyTest.S = TRUE,
+                              Imputation.UICCStage.RunValidation.S = TRUE,
                               OverallSurvival.ReferenceEvent.EventClass.S = "Diagnosis",
                               OverallSurvival.ReferenceEvent.EventSubclass.S = "InitialDiagnosis",
                               TherapyOfInterest.EventSubclass.S = "Surgery",
@@ -125,11 +127,13 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
   # EventFeatures.RuleSet.S <- dsCCPhos::Proc.EventFeatures
   # EventFeatures.Profile.S <- "Default"
   # Imputation.SystemicTherapyRegimen.Run.S <- TRUE
-  # Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S <- 0.8
-  # Imputation.SystemicTherapyRegimen.RunAccuracyTest.S <- TRUE
+  # Imputation.SystemicTherapyRegimen.Substances.MinimumCongruence.S <- 0.6
+  # Imputation.SystemicTherapyRegimen.Substances.AllowedCountDifferenceRange.S <- c(0, 2)
+  # Imputation.SystemicTherapyRegimen.Substances.AllowAdditionals.S <- FALSE
+  # Imputation.SystemicTherapyRegimen.RunValidation.S <- TRUE
   # Imputation.UICCStage.Run.S <- TRUE
   # Imputation.UICCStage.AcceptableTNMCongruence.S <- 0.8
-  # Imputation.UICCStage.RunAccuracyTest.S <- TRUE
+  # Imputation.UICCStage.RunValidation.S <- TRUE
   # OverallSurvival.ReferenceEvent.EventClass.S <- "Diagnosis"
   # OverallSurvival.ReferenceEvent.EventSubclass.S <- "InitialDiagnosis"
   # TherapyOfInterest.EventSubclass.S <- "Surgery"
@@ -149,15 +153,17 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
               is.data.frame(EventFeatures.RuleSet.S),
               is.string(EventFeatures.Profile.S),
               is.flag(Imputation.SystemicTherapyRegimen.Run.S),
-              is.numeric(Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S),
-              Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S > 0,
-              Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S <= 1,
-              is.flag(Imputation.SystemicTherapyRegimen.RunAccuracyTest.S),
+              is.number(Imputation.SystemicTherapyRegimen.Substances.MinimumCongruence.S),
+              Imputation.SystemicTherapyRegimen.Substances.MinimumCongruence.S > 0,
+              Imputation.SystemicTherapyRegimen.Substances.MinimumCongruence.S <= 1,
+              is.numeric(Imputation.SystemicTherapyRegimen.Substances.AllowedCountDifferenceRange.S),
+              is.flag(Imputation.SystemicTherapyRegimen.Substances.AllowAdditionals.S),
+              is.flag(Imputation.SystemicTherapyRegimen.RunValidation.S),
               is.flag(Imputation.UICCStage.Run.S),
               is.numeric(Imputation.UICCStage.AcceptableTNMCongruence.S),
               Imputation.UICCStage.AcceptableTNMCongruence.S > 0,
               Imputation.UICCStage.AcceptableTNMCongruence.S <= 1,
-              is.flag(Imputation.UICCStage.RunAccuracyTest.S),
+              is.flag(Imputation.UICCStage.RunValidation.S),
               is.string(OverallSurvival.ReferenceEvent.EventClass.S),
               is.string(OverallSurvival.ReferenceEvent.EventSubclass.S),
               is.string(TherapyOfInterest.EventSubclass.S),
@@ -204,11 +210,13 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                                      TargetEvent = list(EventClass =TimeToEvent.TargetEvent.EventClass.S,
                                                         EventSubclass = TimeToEvent.TargetEvent.EventSubclass.S)),
                   Imputation.SystemicTherapyRegimen = list(Run = Imputation.SystemicTherapyRegimen.Run.S,
-                                                          AcceptableSubstanceCongruence = Imputation.SystemicTherapyRegimen.AcceptableSubstanceCongruence.S,
-                                                          RunAccuracyTest = Imputation.SystemicTherapyRegimen.RunAccuracyTest.S),
+                                                           Substances.MinimumCongruence = Imputation.SystemicTherapyRegimen.Substances.MinimumCongruence.S,
+                                                           Substances.AllowedCountDifferenceRange = Imputation.SystemicTherapyRegimen.Substances.AllowedCountDifferenceRange.S,
+                                                           Substances.AllowAdditionals = Imputation.SystemicTherapyRegimen.Substances.AllowAdditionals.S,
+                                                           RunValidation = Imputation.SystemicTherapyRegimen.RunValidation.S),
                   Imputation.UICCStage = list(Run = Imputation.UICCStage.Run.S,
                                               AcceptableTNMCongruence = Imputation.UICCStage.AcceptableTNMCongruence.S,
-                                              RunAccuracyTest = Imputation.UICCStage.RunAccuracyTest.S))
+                                              RunValidation = Imputation.UICCStage.RunValidation.S))
 
 
 #-------------------------------------------------------------------------------
@@ -623,7 +631,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
 
   if (Settings$Imputation.UICCStage$Run == TRUE)
   {
-      # Get key from .Renviron
+      # Get key from argument
       Key <- sodium::hash(charToRaw(MetaDataKey.S))
 
       # Read in encrypted file from package
@@ -644,7 +652,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
           # Unserialize decrypted object
           Res.UICCMapping <- unserialize(Res.UICCMapping.Decrypt)
 
-          # Select records in CDS$Staging that have missing or '.Ineligible' UICCStage values
+          # Select records in CDS$Staging (linked with diagnostic data) that have necessary data for imputation
           Sel.StagingRecords <- CDS$Diagnosis %>%
                                     filter(IsReferenceEntry == TRUE) %>%
                                     select(PatientID,
@@ -665,28 +673,33 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                                            !is.na(ICDOMorphologyHistologyCode),
                                            !is.na(ICD10Code))
 
-          # Optionally run accuracy test for UICCStage mapping
+          # Optionally run validation (accuracy test) for UICCStage mapping
           #---------------------------------------------------------------------
-          if (Settings$Imputation.UICCStage$RunAccuracyTest == TRUE)
+          if (Settings$Imputation.UICCStage$RunValidation == TRUE)
           {
-              # For validation select only records that have a valid UICCStage
+              # For validation, filter for records that have a valid 'UICCStage' value
               Sel.StagingRecords.Validation <- Sel.StagingRecords %>%
                                                     filter(!is.na(UICCStage) & UICCStage != ".Ineligible")
 
-              # Get UICCStage value from diagnosis and staging data
-              UICCStageMapping.AccuracyTest <- Sel.StagingRecords.Validation %>%
-                                                      dsCCPhos::MapUICCStage(Res.TNMGroupMapping = Res.UICCMapping$TNMGroupMapping,
-                                                                             Res.UICCStageMapping = Res.UICCMapping$UICCStageMapping,
-                                                                             AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
-                                                      mutate(UICCStage.MatchFound = case_when(!is.na(UICCStage.Mapped) ~ TRUE,
-                                                                                              .default = FALSE),
-                                                             UICCStage.MappingAccuracy = case_when(UICCStage == UICCStage.Mapped ~ "Exact",
-                                                                                                      UICCStage.Category == UICCStage.Mapped.Category ~ "CategoryOnly",
-                                                                                                      UICCStage.MatchFound == TRUE ~ "Incorrect",
-                                                                                                      .default = NA))
+              if (nrow(Sel.StagingRecords.Validation) > 0)
+              {
+                  # Perform mapping of UICCStage from diagnosis and staging data
+                  UICCStageMapping.Validation <- Sel.StagingRecords.Validation %>%
+                                                      dsCCPhos::MapUICCStage(Map.TNMGroup = Res.UICCMapping$TNMGroupMapping,
+                                                                             Map.UICCStage = Res.UICCMapping$UICCStageMapping,
+                                                                             AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence)
 
-              # Detailed (ICD10Code.Short-specific) report on proportions of (in)correctly classified UICCStage values
-              Report.Imputation$UICCStage$AccuracyTest.Details <- UICCStageMapping.AccuracyTest %>%
+                  # Get Tracker object for Report
+                  Report.Imputation$UICCStage$Validation.Tracker <- UICCStageMapping.Validation$Tracker
+
+                  # Detailed (ICD10Code.Short-specific) report on proportions of (in)correctly classified UICCStage values
+                  Report.Imputation$UICCStage$Validation.Details <- UICCStageMapping.Validation$OutputData %>%
+                                                                        mutate(UICCStage.MatchFound = case_when(!is.na(UICCStage.Mapped) ~ TRUE,
+                                                                                              .default = FALSE),
+                                                                               UICCStage.MappingAccuracy = case_when(UICCStage == UICCStage.Mapped ~ "Exact",
+                                                                                                                        UICCStage.Category == UICCStage.Mapped.Category ~ "CategoryOnly",
+                                                                                                                        UICCStage.MatchFound == TRUE ~ "Incorrect",
+                                                                                                                        .default = NA)) %>%
                                                                         group_by(ICD10Code.Short) %>%
                                                                             summarize(CountTotal = n(),
                                                                                       CountFoundMatch = sum(UICCStage.MatchFound, na.rm = TRUE),
@@ -698,73 +711,94 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                                                                                       CountIncorrect = sum(UICCStage.MappingAccuracy == "Incorrect", na.rm = TRUE),
                                                                                       PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
 
-              # Summarizing report
-              Report.Imputation$UICCStage$AccuracyTest.Summary <- Report.Imputation$UICCStage$AccuracyTest.Details %>%
+                  # Summarizing report
+                  Report.Imputation$UICCStage$Validation.Summary <- Report.Imputation$UICCStage$Validation.Details %>%
                                                                         summarize(across(starts_with("Count"), ~ sum(.x, na.rm = TRUE)),
                                                                                   PropFoundMatch = ifelse(CountTotal != 0, CountFoundMatch / CountTotal, NA),
                                                                                   PropCorrect.Exact = ifelse(CountFoundMatch != 0, CountCorrect.Exact / CountFoundMatch, NA),
                                                                                   PropCorrect.CategoryOnly = ifelse(CountFoundMatch != 0, CountCorrect.CategoryOnly / CountFoundMatch, NA),
                                                                                   PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
 
-              # Print message
-              PrintSoloMessage(c(Info = paste0("UICCStage imputation (accuracy test): ", Report.Imputation$UICCStage$AccuracyTest.Summary$CountTotal, " / ", nrow(CDS$Staging),
-                                               " values were used for accuracy testing. Of these, ", Report.Imputation$UICCStage$AccuracyTest.Summary$CountFoundMatch, " values (", FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropFoundMatch), ") could be mapped to a UICC stage value. ",
-                                               "After assessing matching accuracy, ", FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropCorrect.Exact), " matched exactly, ",
-                                               FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropCorrect.CategoryOnly), " matched only by UICC stage category and ",
-                                               FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropIncorrect), " were mapped incorrectly.")))
+                  # Print message
+                  PrintSoloMessage(c(Info = paste0("UICCStage imputation (accuracy test): ", Report.Imputation$UICCStage$Validation.Summary$CountTotal, " / ", nrow(CDS$Staging),
+                                                   " values were used for accuracy testing. Of these, ", Report.Imputation$UICCStage$Validation.Summary$CountFoundMatch, " values (", FormatPercentage(Report.Imputation$UICCStage$Validation.Summary$PropFoundMatch), ") could be mapped to a UICC stage value. ",
+                                                   "After assessing matching accuracy, ", FormatPercentage(Report.Imputation$UICCStage$Validation.Summary$PropCorrect.Exact), " matched exactly, ",
+                                                   FormatPercentage(Report.Imputation$UICCStage$Validation.Summary$PropCorrect.CategoryOnly), " matched only by UICC stage category and ",
+                                                   FormatPercentage(Report.Imputation$UICCStage$Validation.Summary$PropIncorrect), " were mapped incorrectly.")))
+              } else {
+
+                  # Let Report know
+                  Report.Imputation$UICCStage$Validation.Summary <- "Found no 'UICCStage' values suitable for validation and skipped test."
+
+                  # Print message
+                  PrintSoloMessage(c(Info = "Found no 'UICCStage' values suitable for validation and skipped test."))
+              }
           }
           #---------------------------------------------------------------------
 
 
-          # For imputation filter out records that do not have a valid UICCStage value
+          # For imputation, filter for records that do not have a valid UICCStage value
           #---------------------------------------------------------------------
           Sel.StagingRecords.Imputation <- Sel.StagingRecords %>%
                                                 filter(is.na(UICCStage) | UICCStage == ".Ineligible")
 
-          # Get UICCStage value from diagnosis and staging data
-          UICCStageMapping.Imputation <- Sel.StagingRecords.Imputation %>%
-                                              dsCCPhos::MapUICCStage(Res.TNMGroupMapping = Res.UICCMapping$TNMGroupMapping,
-                                                                     Res.UICCStageMapping = Res.UICCMapping$UICCStageMapping,
-                                                                     AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
-                                              mutate(UICCStage.Imputation = case_when(!is.na(UICCStage.Mapped) ~ "Imputed",
-                                                                                      is.na(UICCStage.Mapped) ~ "Failed",
-                                                                                      .default = NA))
+          if (nrow(Sel.StagingRecords.Imputation) > 0)
+          {
+              # Get UICCStage value from diagnosis and staging data
+              UICCStageMapping.Imputation <- Sel.StagingRecords.Imputation %>%
+                                                  dsCCPhos::MapUICCStage(Map.TNMGroup = Res.UICCMapping$TNMGroupMapping,
+                                                                         Map.UICCStage = Res.UICCMapping$UICCStageMapping,
+                                                                         AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence)
 
-          # Calculate report info
-          Report.Imputation$UICCStage$Imputation.Details <- UICCStageMapping.Imputation %>%
-                                                                group_by(ICD10Code.Short) %>%
-                                                                    summarize(CountTotal = n(),
-                                                                              CountImputed = sum(!is.na(UICCStage.Mapped), na.rm = TRUE),
+              # Get Tracker object for Report
+              Report.Imputation$UICCStage$Imputation.Tracker <- UICCStageMapping.Imputation$Tracker
+
+              # Calculate report info
+              Report.Imputation$UICCStage$Imputation.Details <- UICCStageMapping.Imputation$OutputData %>%
+                                                                    group_by(ICD10Code.Short) %>%
+                                                                        summarize(CountTotal = n(),
+                                                                                  CountImputed = sum(!is.na(UICCStage.Mapped), na.rm = TRUE),
+                                                                                  PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+
+              Report.Imputation$UICCStage$Imputation.Summary <- Report.Imputation$UICCStage$Imputation.Details %>%
+                                                                    summarize(CountTotal = sum(CountTotal),
+                                                                              CountImputed = sum(CountImputed),
                                                                               PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
 
-          Report.Imputation$UICCStage$Imputation.Summary <- Report.Imputation$UICCStage$Imputation.Details %>%
-                                                                summarize(CountTotal = sum(CountTotal),
-                                                                          CountImputed = sum(CountImputed),
-                                                                          PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+              # Print message
+              PrintSoloMessage(c(Success = paste0("UICCStage imputation: ", nrow(filter(CDS$Staging, is.na(UICCStage) | UICCStage == ".Ineligible")), " / ", nrow(CDS$Staging), " values were missing. ",
+                                                  Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " were eligible for an imputation attempt. Imputed ", Report.Imputation$UICCStage$Imputation.Summary$CountImputed, " / ",
+                                                  Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " (", FormatPercentage(Report.Imputation$UICCStage$Imputation.Summary$PropImputed), ") missing values.")))
 
-          # Print message
-          PrintSoloMessage(c(Success = paste0("UICCStage imputation: ", Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " / ", nrow(CDS$Staging),
-                                              " values were missing. Imputed ", Report.Imputation$UICCStage$Imputation.Summary$CountImputed, " / ",
-                                              Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " (", FormatPercentage(Report.Imputation$UICCStage$Imputation.Summary$PropImputed), ") missing values.")))
+              # Isolate mapped UICCStage values intended for imputation ahead of merging with original data
+              UICCStageImputationValues <- UICCStageMapping.Imputation$OutputData %>%
+                                                mutate(UICCStage.Imputation = case_when(!is.na(UICCStage.Mapped) ~ "Imputed",
+                                                                                              is.na(UICCStage.Mapped) ~ "Failed",
+                                                                                              .default = NA)) %>%
+                                                select(PatientID,
+                                                       DiagnosisID,
+                                                       StagingID,
+                                                       UICCStage.Mapped,
+                                                       UICCStage.Mapped.Category,
+                                                       UICCStage.Imputation)
 
-          # Isolate mapped UICCStage values ahead of merging with original data
-          MappedUICCStageValues <- UICCStageMapping.Imputation %>%
-                                        select(PatientID,
-                                               DiagnosisID,
-                                               StagingID,
-                                               UICCStage.Mapped,
-                                               UICCStage.Mapped.Category,
-                                               UICCStage.Imputation)
+              # Perform imputation of UICCStage
+              CDS$Staging <- CDS$Staging %>%
+                                  left_join(UICCStageImputationValues, by = join_by(PatientID, DiagnosisID, StagingID)) %>%
+                                  mutate(UICCStage = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped,
+                                                               .default = UICCStage),
+                                         UICCStage.Category = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped.Category,
+                                                                         .default = UICCStage.Category)) %>%
+                                  select(-UICCStage.Mapped,
+                                         -UICCStage.Mapped.Category)
+          } else {
 
-          # Perform imputation of UICCStage
-          CDS$Staging <- CDS$Staging %>%
-                              left_join(MappedUICCStageValues, by = join_by(PatientID, DiagnosisID, StagingID)) %>%
-                              mutate(UICCStage = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped,
-                                                           .default = UICCStage),
-                                     UICCStage.Category = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped.Category,
-                                                                     .default = UICCStage.Category)) %>%
-                              select(-UICCStage.Mapped,
-                                     -UICCStage.Mapped.Category)
+              # Let Report know
+              Report.Imputation$UICCStage$Imputation.Summary <- "Found no missing or ineligible values for 'UICCStage' (with enough data to enable mapping) and skipped imputation."
+
+              # Print message
+              PrintSoloMessage(c(Info = "Found no missing or ineligible values for 'UICCStage' (with enough data to enable mapping) and skipped imputation."))
+          }
       }
   }
 
@@ -774,137 +808,169 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
 # D2) Imputation of CDS$SystemicTherapy$Regimen
 #-------------------------------------------------------------------------------
 
-  # CDSSystemicTherapy <- CDS$SystemicTherapy %>%
-  #                           group_by(across(c(-SystemicTherapyID, -Substance, -.HasBeenSplit, -.IsArtificial))) %>%
-  #                               summarize(Substances = list(Substance),
-  #                                         Substances.String = map(Substances, ~ paste(.x, collapse = "*&*")))
-  #
-  #
-  # if (Settings$Imputation.SystemicTherapyRegimen$Run == TRUE)
-  # {
-  #
-  #     # Select records in CDS$SystemicTherapy that have missing or '.Ineligible' UICCStage values
-  #     Sel.StagingRecords <- CDS$Diagnosis %>%
-  #                               filter(IsReferenceEntry == TRUE) %>%
-  #                               select(PatientID,
-  #                                      DiagnosisID,
-  #                                      ICD10Code,
-  #                                      ICD10Code.Short,
-  #                                      ICDOTopographyCode,
-  #                                      ICDOTopographyCode.Short,
-  #                                      ICDOMorphologyCode,
-  #                                      ICDOMorphologyHistologyCode,
-  #                                      Grading) %>%
-  #                               right_join(CDS$Staging, by = join_by(PatientID, DiagnosisID)) %>%
-  #                               filter(!is.na(TNM.T),
-  #                                      !is.na(TNM.N),
-  #                                      !is.na(TNM.M),
-  #                                      !is.na(TNMVersion),
-  #                                      !is.na(ICDOTopographyCode),
-  #                                      !is.na(ICDOMorphologyHistologyCode),
-  #                                      !is.na(ICD10Code))
-  #
-  #     # Optionally run accuracy test for UICCStage mapping
-  #     #---------------------------------------------------------------------
-  #     if (Settings$Imputation.UICCStage$RunAccuracyTest == TRUE)
-  #     {
-  #         # For validation select only records that have a valid UICCStage
-  #         Sel.StagingRecords.Validation <- Sel.StagingRecords %>%
-  #                                               filter(!is.na(UICCStage) & UICCStage != ".Ineligible")
-  #
-  #         # Get UICCStage value from diagnosis and staging data
-  #         UICCStageMapping.AccuracyTest <- Sel.StagingRecords.Validation %>%
-  #                                                 dsCCPhos::MapUICCStage(Res.TNMGroupMapping = Res.UICCMapping$TNMGroupMapping,
-  #                                                                        Res.UICCStageMapping = Res.UICCMapping$UICCStageMapping,
-  #                                                                        AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
-  #                                                 mutate(UICCStage.MatchFound = case_when(!is.na(UICCStage.Mapped) ~ TRUE,
-  #                                                                                         .default = FALSE),
-  #                                                        UICCStage.MappingAccuracy = case_when(UICCStage == UICCStage.Mapped ~ "Exact",
-  #                                                                                                 UICCStage.Category == UICCStage.Mapped.Category ~ "CategoryOnly",
-  #                                                                                                 UICCStage.MatchFound == TRUE ~ "Incorrect",
-  #                                                                                                 .default = NA))
-  #
-  #         # Detailed (ICD10Code.Short-specific) report on proportions of (in)correctly classified UICCStage values
-  #         Report.Imputation$UICCStage$AccuracyTest.Details <- UICCStageMapping.AccuracyTest %>%
-  #                                                                   group_by(ICD10Code.Short) %>%
-  #                                                                       summarize(CountTotal = n(),
-  #                                                                                 CountFoundMatch = sum(UICCStage.MatchFound, na.rm = TRUE),
-  #                                                                                 PropFoundMatch = ifelse(CountTotal != 0, CountFoundMatch / CountTotal, NA),
-  #                                                                                 CountCorrect.Exact = sum(UICCStage.MappingAccuracy == "Exact", na.rm = TRUE),
-  #                                                                                 PropCorrect.Exact = ifelse(CountFoundMatch != 0, CountCorrect.Exact / CountFoundMatch, NA),
-  #                                                                                 CountCorrect.CategoryOnly = sum(UICCStage.MappingAccuracy == "CategoryOnly", na.rm = TRUE),
-  #                                                                                 PropCorrect.CategoryOnly = ifelse(CountFoundMatch != 0, CountCorrect.CategoryOnly / CountFoundMatch, NA),
-  #                                                                                 CountIncorrect = sum(UICCStage.MappingAccuracy == "Incorrect", na.rm = TRUE),
-  #                                                                                 PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
-  #
-  #         # Summarizing report
-  #         Report.Imputation$UICCStage$AccuracyTest.Summary <- Report.Imputation$UICCStage$AccuracyTest.Details %>%
-  #                                                                   summarize(across(starts_with("Count"), ~ sum(.x, na.rm = TRUE)),
-  #                                                                             PropFoundMatch = ifelse(CountTotal != 0, CountFoundMatch / CountTotal, NA),
-  #                                                                             PropCorrect.Exact = ifelse(CountFoundMatch != 0, CountCorrect.Exact / CountFoundMatch, NA),
-  #                                                                             PropCorrect.CategoryOnly = ifelse(CountFoundMatch != 0, CountCorrect.CategoryOnly / CountFoundMatch, NA),
-  #                                                                             PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
-  #
-  #         # Print message
-  #         PrintSoloMessage(c(Info = paste0("UICCStage imputation (accuracy test): ", Report.Imputation$UICCStage$AccuracyTest.Summary$CountTotal, " / ", nrow(CDS$Staging),
-  #                                          " values were used for accuracy testing. Of these, ", Report.Imputation$UICCStage$AccuracyTest.Summary$CountFoundMatch, " values (", FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropFoundMatch), ") could be mapped to a UICC stage value. ",
-  #                                          "After assessing matching accuracy, ", FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropCorrect.Exact), " matched exactly, ",
-  #                                          FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropCorrect.CategoryOnly), " matched only by UICC stage category and ",
-  #                                          FormatPercentage(Report.Imputation$UICCStage$AccuracyTest.Summary$PropIncorrect), " were mapped incorrectly.")))
-  #     }
-  #     #---------------------------------------------------------------------
-  #
-  #
-  #     # For imputation filter out records that do not have a valid UICCStage value
-  #     #---------------------------------------------------------------------
-  #     Sel.StagingRecords.Imputation <- Sel.StagingRecords %>%
-  #                                           filter(is.na(UICCStage) | UICCStage == ".Ineligible")
-  #
-  #     # Get UICCStage value from diagnosis and staging data
-  #     UICCStageMapping.Imputation <- Sel.StagingRecords.Imputation %>%
-  #                                         dsCCPhos::MapUICCStage(Res.TNMGroupMapping = Res.UICCMapping$TNMGroupMapping,
-  #                                                                Res.UICCStageMapping = Res.UICCMapping$UICCStageMapping,
-  #                                                                AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
-  #                                         mutate(UICCStage.Imputation = case_when(!is.na(UICCStage.Mapped) ~ "Imputed",
-  #                                                                                 is.na(UICCStage.Mapped) ~ "Failed",
-  #                                                                                 .default = NA))
-  #
-  #     # Calculate report info
-  #     Report.Imputation$UICCStage$Imputation.Details <- UICCStageMapping.Imputation %>%
-  #                                                           group_by(ICD10Code.Short) %>%
-  #                                                               summarize(CountTotal = n(),
-  #                                                                         CountImputed = sum(!is.na(UICCStage.Mapped), na.rm = TRUE),
-  #                                                                         PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
-  #
-  #     Report.Imputation$UICCStage$Imputation.Summary <- Report.Imputation$UICCStage$Imputation.Details %>%
-  #                                                           summarize(CountTotal = sum(CountTotal),
-  #                                                                     CountImputed = sum(CountImputed),
-  #                                                                     PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
-  #
-  #     # Print message
-  #     PrintSoloMessage(c(Success = paste0("UICCStage imputation: ", Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " / ", nrow(CDS$Staging),
-  #                                         " values were missing. Imputed ", Report.Imputation$UICCStage$Imputation.Summary$CountImputed, " / ",
-  #                                         Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " (", FormatPercentage(Report.Imputation$UICCStage$Imputation.Summary$PropImputed), ") missing values.")))
-  #
-  #     # Isolate mapped UICCStage values ahead of merging with original data
-  #     MappedUICCStageValues <- UICCStageMapping.Imputation %>%
-  #                                   select(PatientID,
-  #                                          DiagnosisID,
-  #                                          StagingID,
-  #                                          UICCStage.Mapped,
-  #                                          UICCStage.Mapped.Category,
-  #                                          UICCStage.Imputation)
-  #
-  #     # Perform imputation of UICCStage
-  #     CDS$Staging <- CDS$Staging %>%
-  #                         left_join(MappedUICCStageValues, by = join_by(PatientID, DiagnosisID, StagingID)) %>%
-  #                         mutate(UICCStage = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped,
-  #                                                      .default = UICCStage),
-  #                                UICCStage.Category = case_when((is.na(UICCStage) | UICCStage == ".Ineligible") & !is.na(UICCStage.Mapped) ~ UICCStage.Mapped.Category,
-  #                                                                .default = UICCStage.Category)) %>%
-  #                         select(-UICCStage.Mapped,
-  #                                -UICCStage.Mapped.Category)
-  # }
+  # Transform table 'SystemicTherapy':
+  #   - Consolidate substance rows belonging to one therapy in one row with a character vector containing the substances
+  #   - The substance rows do not share the same 'SystemicTherapyID' due to splitting during curation (that's why is dropped in the consolidation)
+  #   - Create new 'SystemicTherapyID' afterwards
+  CDS$SystemicTherapy <- CDS$SystemicTherapy %>%
+                              group_by(across(c(-SystemicTherapyID, -Substance, -.HasBeenSplit, -.IsArtificial))) %>%
+                                  summarize(Substances = list(Substance),
+                                            Substances.String = map(Substances, ~ paste(.x, collapse = "*&*"))) %>%
+                              ungroup() %>%
+                              mutate(SystemicTherapyID = row_number(), .after = DiagnosisID)
+
+
+  if (Settings$Imputation.SystemicTherapyRegimen$Run == TRUE)
+  {
+      # Select records in CDS$SystemicTherapy (linked with diagnostic data) that have necessary data for imputation
+      Sel.SystemicTherapyRecords <- CDS$Diagnosis %>%
+                                        filter(IsReferenceEntry == TRUE) %>%
+                                        right_join(CDS$SystemicTherapy, by = join_by(PatientID, DiagnosisID)) %>%
+                                        select(PatientID,
+                                               DiagnosisID,
+                                               SystemicTherapyID,
+                                               Regimen,
+                                               Intention,
+                                               Substances,
+                                               ICD10Code,
+                                               ICD10Code.Short) %>%
+                                        mutate(Substances = map(Substances, ~ na.omit(.x))) %>%
+                                        filter(map_lgl(Substances, ~ length(.x) > 0 && !all(.x == ".Ineligible"))) %>%
+                                        filter(!is.na(ICD10Code))
+
+      # Optionally run validation (accuracy test) for Regimen mapping
+      #---------------------------------------------------------------------
+      if (Settings$Imputation.SystemicTherapyRegimen$RunValidation == TRUE)
+      {
+          # For validation, filter for records that have a valid 'Regimen' value
+          Sel.SystemicTherapyRecords.Validation <- Sel.SystemicTherapyRecords %>%
+                                                        filter(!is.na(Regimen) & Regimen != ".Ineligible")
+
+          # if (nrow(Sel.SystemicTherapyRecords.Validation) > 0)
+          # {
+          #     # Get 'Regimen' value from other data
+          #     SystemicTherapyRegimenMapping.Validation <- Sel.SystemicTherapyRecords.Validation %>%
+          #                                                     dsCCPhos::MapUICCStage(Map.TNMGroup = Res.UICCMapping$TNMGroupMapping,
+          #                                                                            Map.UICCStage = Res.UICCMapping$UICCStageMapping,
+          #                                                                            AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
+          #                                                     mutate(UICCStage.MatchFound = case_when(!is.na(UICCStage.Mapped) ~ TRUE,
+          #                                                                                             .default = FALSE),
+          #                                                            UICCStage.MappingAccuracy = case_when(UICCStage == UICCStage.Mapped ~ "Exact",
+          #                                                                                                     UICCStage.Category == UICCStage.Mapped.Category ~ "CategoryOnly",
+          #                                                                                                     UICCStage.MatchFound == TRUE ~ "Incorrect",
+          #                                                                                                     .default = NA))
+          #
+          #     # Detailed (ICD10Code.Short-specific) report on proportions of (in)correctly classified UICCStage values
+          #     Report.Imputation$UICCStage$Validation.Details <- UICCStageMapping.Validation %>%
+          #                                                               group_by(ICD10Code.Short) %>%
+          #                                                                   summarize(CountTotal = n(),
+          #                                                                             CountFoundMatch = sum(UICCStage.MatchFound, na.rm = TRUE),
+          #                                                                             PropFoundMatch = ifelse(CountTotal != 0, CountFoundMatch / CountTotal, NA),
+          #                                                                             CountCorrect.Exact = sum(UICCStage.MappingAccuracy == "Exact", na.rm = TRUE),
+          #                                                                             PropCorrect.Exact = ifelse(CountFoundMatch != 0, CountCorrect.Exact / CountFoundMatch, NA),
+          #                                                                             CountCorrect.CategoryOnly = sum(UICCStage.MappingAccuracy == "CategoryOnly", na.rm = TRUE),
+          #                                                                             PropCorrect.CategoryOnly = ifelse(CountFoundMatch != 0, CountCorrect.CategoryOnly / CountFoundMatch, NA),
+          #                                                                             CountIncorrect = sum(UICCStage.MappingAccuracy == "Incorrect", na.rm = TRUE),
+          #                                                                             PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
+          #
+          #     # Summarizing report
+          #     Report.Imputation$UICCStage$Validation.Summary <- Report.Imputation$UICCStage$Validation.Details %>%
+          #                                                               summarize(across(starts_with("Count"), ~ sum(.x, na.rm = TRUE)),
+          #                                                                         PropFoundMatch = ifelse(CountTotal != 0, CountFoundMatch / CountTotal, NA),
+          #                                                                         PropCorrect.Exact = ifelse(CountFoundMatch != 0, CountCorrect.Exact / CountFoundMatch, NA),
+          #                                                                         PropCorrect.CategoryOnly = ifelse(CountFoundMatch != 0, CountCorrect.CategoryOnly / CountFoundMatch, NA),
+          #                                                                         PropIncorrect = ifelse(CountFoundMatch != 0, CountIncorrect / CountFoundMatch, NA))
+          #
+          #     # Print message
+          #     PrintSoloMessage(c(Info = paste0("UICCStage imputation (accuracy test): ", Report.Imputation$UICCStage$Validation.Summary$CountTotal, " / ", nrow(CDS$Staging),
+          #                                      " values were used for accuracy testing. Of these, ", Report.Imputation$UICCStage$Validation.Summary$CountFoundMatch, " values (", FormatPercentage(Report.Imputation$UICCStage$Validation.Summary$PropFoundMatch), ") could be mapped to a UICC stage value. ",
+          #                                      "After assessing matching accuracy, ", FormatPercentage(Report.Imputation$UICCStage$Validation.Summary$PropCorrect.Exact), " matched exactly, ",
+          #                                      FormatPercentage(Report.Imputation$UICCStage$Validation.Summary$PropCorrect.CategoryOnly), " matched only by UICC stage category and ",
+          #                                      FormatPercentage(Report.Imputation$UICCStage$Validation.Summary$PropIncorrect), " were mapped incorrectly.")))
+          # } else {
+          #
+          #     # Let Report know
+          #     Report.Imputation$UICCStage$Validation.Summary <- "Found no 'UICCStage' values suitable for validation and skipped test."
+          #
+          #     # Print message
+          #     PrintSoloMessage(c(Info = "Found no 'UICCStage' values suitable for validation and skipped test."))
+          # }
+      }
+      #---------------------------------------------------------------------
+
+
+      # For imputation, filter for records that do not have a valid 'Regimen' value
+      #---------------------------------------------------------------------
+      Sel.SystemicTherapyRecords.Imputation <- Sel.SystemicTherapyRecords %>%
+                                                    filter(is.na(Regimen) | Regimen == ".Ineligible")
+
+      if (nrow(Sel.SystemicTherapyRecords.Imputation) > 0)
+      {
+          # Get 'Regimen' value from other data
+          SystemicTherapyRegimenMapping.Imputation <- Sel.SystemicTherapyRecords.Imputation %>%
+                                                          dsCCPhos::MapSystemicTherapyRegimen(Map.Regimens = dsCCPhos::Res.SystemicTherapy.Regimens,
+                                                                                              Substances.MinimumCongruence = Settings$Imputation.SystemicTherapyRegimen$Substances.MinimumCongruence,
+                                                                                              Substances.AllowedCountDifferenceRange = Settings$Imputation.SystemicTherapyRegimen$Substances.AllowedCountDifferenceRange,
+                                                                                              Substances.AllowAdditionals = Settings$Imputation.SystemicTherapyRegimen$Substances.AllowAdditionals)
+
+          # Get 'Tracker' object for Report
+          Report.Imputation$SystemicTherapyRegimen$Imputation.Tracker <- SystemicTherapyRegimenMapping.Imputation$Tracker
+
+
+            # Report <- Tracker %>%
+  #               group_by(RegimenMatching.Choice, RegimenMatching.Grade) %>%
+  #                   summarize(Count = n()) %>%
+  #               ungroup() %>%
+  #               group_by(RegimenMatching.Choice) %>%
+  #                   mutate(Proportion = Count / sum(Count))
+
+
+          # Calculate report info
+          Report.Imputation$SystemicTherapyRegimen$Imputation.Details <- SystemicTherapyRegimenMapping.Imputation$OutputData %>%
+                                                                              group_by(ICD10Code.Short) %>%
+                                                                                  summarize(CountTotal = n(),
+                                                                                            CountImputed = sum(!is.na(Regimen.Mapped), na.rm = TRUE),
+                                                                                            PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+
+          Report.Imputation$SystemicTherapyRegimen$Imputation.Summary <- Report.Imputation$SystemicTherapyRegimen$Imputation.Details %>%
+                                                                              summarize(CountTotal = sum(CountTotal),
+                                                                                        CountImputed = sum(CountImputed),
+                                                                                        PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+
+          # Print message
+          PrintSoloMessage(c(Success = paste0("SystemicTherapy$Regimen imputation: ", Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$CountTotal, " / ", nrow(CDS$Staging),
+                                              " values were missing. Imputed ", Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$CountImputed, " / ",
+                                              Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$CountTotal, " (", FormatPercentage(Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$PropImputed), ") missing values.")))
+
+          # Isolate mapped Regimen values intended for imputation ahead of merging with original data
+          RegimenImputationValues <- SystemicTherapyRegimenMapping.Imputation$OutputData %>%
+                                          mutate(Regimen.Imputation = case_when(!is.na(Regimen.Mapped) ~ "Imputed",
+                                                                                is.na(Regimen.Mapped) ~ "Failed",
+                                                                                .default = NA)) %>%
+                                          rename(Regimen.Imputation.Grade = "RegimenMapping.Grade") %>%
+                                          select(PatientID,
+                                                 DiagnosisID,
+                                                 SystemicTherapyID,
+                                                 Regimen.Mapped,
+                                                 Regimen.Imputation,
+                                                 Regimen.Imputation.Grade)
+
+          # Perform imputation of 'Regimen'
+          CDS$SystemicTherapy <- CDS$SystemicTherapy %>%
+                                      left_join(RegimenImputationValues, by = join_by(PatientID, DiagnosisID, SystemicTherapyID)) %>%
+                                      mutate(Regimen = case_when((is.na(Regimen) | Regimen == ".Ineligible") & !is.na(Regimen.Mapped) ~ Regimen.Mapped,
+                                                                   .default = Regimen)) %>%
+                                      select(-Regimen.Mapped)
+      } else {
+
+          # Let Report know
+          Report.Imputation$SystemicTherapyRegimen$Imputation.Summary <- "Found no missing or ineligible values for 'Regimen' and skipped imputation."
+
+          # Print message
+          PrintSoloMessage(c(Info = "Found no missing or ineligible values for 'Regimen' and skipped imputation."))
+      }
+  }
+
 
 
 
@@ -1166,7 +1232,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                                                          "IsBoneMarrowTransplant",
                                                          "IsObservantStrategy",
                                                          "Regimen",
-                                                         "Substance",
+                                                         "Substances",
                                                          "ATC",
                                                          "ATCVersion",
                                                          "CTCAEGrade",
