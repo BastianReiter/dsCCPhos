@@ -10,9 +10,7 @@
 #' @param Substances.AllowedCountDifferenceRange \code{numeric vector}
 #' @param Substances.AllowAdditionals \code{logical scalar}
 #'
-#' @return A \code{list}:
-#'          \itemize{ \item OutputData - The input \code{data.frame} with additional data
-#'                    \item Tracker - A deidentified version of 'OutputData' for reporting }
+#' @return The input \code{data.frame} with additional data
 #'
 #' @export
 #'
@@ -83,45 +81,45 @@ MapSystemicTherapyRegimen <- function(InputData,
                                          .Match.ICD10Code.Short = map(ICD10Code.Short, ~ str_detect(Map.Regimens$Match.ICD10Code.Short, fixed(.x))),
                                          .Match.ICD10Code.SecondaryUse = map(ICD10Code, ~ str_detect(Map.Regimens$Match.ICD10Code.SecondaryUse, fixed(.x))),
                                          .Match.ICD10Code.Short.SecondaryUse = map(ICD10Code.Short, ~ str_detect(Map.Regimens$Match.ICD10Code.Short.SecondaryUse, fixed(.x))),
-                                         .Candidates.Grade1 = pmap(list(.IsPerfectSubstanceCongruence,
-                                                                        .Match.ICD10Code,
-                                                                        .Match.ICD10Code.Short),
-                                                                   ~ which(..1 & (..2 | ..3))),
-                                         .Candidates.Grade2 = pmap(list(.IsCompliant,
-                                                                        .IsMaxSubstanceCongruence,
-                                                                        .Match.ICD10Code,
-                                                                        .Match.ICD10Code.Short),
-                                                                   ~ which(..1 & ..2 & (..3 | ..4))),
-                                         .Candidates.Grade3 = pmap(list(.IsCompliant,
-                                                                        .IsMaxSubstanceCongruence,
-                                                                        .Match.ICD10Code.SecondaryUse,
-                                                                        .Match.ICD10Code.Short.SecondaryUse),
-                                                                   ~ which(..1 & ..2 & (..3 | ..4))),
-                                         .Candidates.Grade4 = pmap(list(.IsCompliant,
-                                                                        .Match.ICD10Code,
-                                                                        .Match.ICD10Code.Short),
-                                                                   ~ which(..1 & (..2 | ..3))),
-                                         .Candidates.Grade5 = pmap(list(.IsCompliant,
-                                                                        .Match.ICD10Code.SecondaryUse,
-                                                                        .Match.ICD10Code.Short.SecondaryUse),
-                                                                   ~ which(..1 & (..2 | ..3))),
-                                         .Candidates.Grade6 = map(.IsPerfectSubstanceCongruence, ~ which(.x)))
+                                         .Candidates.MatchGrade1 = pmap(list(.IsPerfectSubstanceCongruence,
+                                                                             .Match.ICD10Code,
+                                                                             .Match.ICD10Code.Short),
+                                                                        ~ which(..1 & (..2 | ..3))),
+                                         .Candidates.MatchGrade2 = pmap(list(.IsCompliant,
+                                                                             .IsMaxSubstanceCongruence,
+                                                                             .Match.ICD10Code,
+                                                                             .Match.ICD10Code.Short),
+                                                                        ~ which(..1 & ..2 & (..3 | ..4))),
+                                         .Candidates.MatchGrade3 = pmap(list(.IsCompliant,
+                                                                             .IsMaxSubstanceCongruence,
+                                                                             .Match.ICD10Code.SecondaryUse,
+                                                                             .Match.ICD10Code.Short.SecondaryUse),
+                                                                        ~ which(..1 & ..2 & (..3 | ..4))),
+                                         .Candidates.MatchGrade4 = pmap(list(.IsCompliant,
+                                                                             .Match.ICD10Code,
+                                                                             .Match.ICD10Code.Short),
+                                                                        ~ which(..1 & (..2 | ..3))),
+                                         .Candidates.MatchGrade5 = pmap(list(.IsCompliant,
+                                                                             .Match.ICD10Code.SecondaryUse,
+                                                                             .Match.ICD10Code.Short.SecondaryUse),
+                                                                        ~ which(..1 & (..2 | ..3))),
+                                         .Candidates.MatchGrade6 = map(.IsPerfectSubstanceCongruence, ~ which(.x)))
 
   # For every given substance vector, identify the best mapping candidates
   RegimenMapping.Candidates <- RegimenMapping.Screening %>%
-                                    mutate(Candidates = pmap(list(.Candidates.Grade1,
-                                                                  .Candidates.Grade2,
-                                                                  .Candidates.Grade3,
-                                                                  .Candidates.Grade4,
-                                                                  .Candidates.Grade5,
-                                                                  .Candidates.Grade6),
-                                                             ~ { case_when(length(..1) > 0 ~ list(RegimenMapping.CandidateRows = ..1, RegimenMapping.CandidateCount = length(..1), RegimenMapping.Grade = 1),      # Approach with case_when() enables step-wise screening: Only if no Grade 1 candidates are found, Grade 2 candidates are looked for, and so forth...
-                                                                           length(..2) > 0 ~ list(RegimenMapping.CandidateRows = ..2, RegimenMapping.CandidateCount = length(..2), RegimenMapping.Grade = 2),
-                                                                           length(..3) > 0 ~ list(RegimenMapping.CandidateRows = ..3, RegimenMapping.CandidateCount = length(..3), RegimenMapping.Grade = 3),
-                                                                           length(..4) > 0 ~ list(RegimenMapping.CandidateRows = ..4, RegimenMapping.CandidateCount = length(..4), RegimenMapping.Grade = 4),
-                                                                           length(..5) > 0 ~ list(RegimenMapping.CandidateRows = ..5, RegimenMapping.CandidateCount = length(..5), RegimenMapping.Grade = 5),
-                                                                           length(..6) > 0 ~ list(RegimenMapping.CandidateRows = ..6, RegimenMapping.CandidateCount = length(..6), RegimenMapping.Grade = 6),
-                                                                           .default = list(RegimenMapping.CandidateRows = NULL, RegimenMapping.CandidateCount = 0, RegimenMapping.Grade = NA)) })) %>%
+                                    mutate(Candidates = pmap(list(.Candidates.MatchGrade1,
+                                                                  .Candidates.MatchGrade2,
+                                                                  .Candidates.MatchGrade3,
+                                                                  .Candidates.MatchGrade4,
+                                                                  .Candidates.MatchGrade5,
+                                                                  .Candidates.MatchGrade6),
+                                                             ~ { case_when(length(..1) > 0 ~ list(RegimenMapping.CandidateRows = ..1, RegimenMapping.CandidateCount = length(..1), RegimenMapping.MatchGrade = "MatchGrade1"),      # Approach with case_when() enables step-wise screening: Only if no Grade 1 candidates are found, Grade 2 candidates are looked for, and so forth...
+                                                                           length(..2) > 0 ~ list(RegimenMapping.CandidateRows = ..2, RegimenMapping.CandidateCount = length(..2), RegimenMapping.MatchGrade = "MatchGrade2"),
+                                                                           length(..3) > 0 ~ list(RegimenMapping.CandidateRows = ..3, RegimenMapping.CandidateCount = length(..3), RegimenMapping.MatchGrade = "MatchGrade3"),
+                                                                           length(..4) > 0 ~ list(RegimenMapping.CandidateRows = ..4, RegimenMapping.CandidateCount = length(..4), RegimenMapping.MatchGrade = "MatchGrade4"),
+                                                                           length(..5) > 0 ~ list(RegimenMapping.CandidateRows = ..5, RegimenMapping.CandidateCount = length(..5), RegimenMapping.MatchGrade = "MatchGrade5"),
+                                                                           length(..6) > 0 ~ list(RegimenMapping.CandidateRows = ..6, RegimenMapping.CandidateCount = length(..6), RegimenMapping.MatchGrade = "MatchGrade6"),
+                                                                           .default = list(RegimenMapping.CandidateRows = NULL, RegimenMapping.CandidateCount = 0, RegimenMapping.MatchGrade = "NoMatch")) })) %>%
                                     unnest_wider(Candidates) %>%
                                     mutate(RegimenMapping.Choice = case_when(RegimenMapping.CandidateCount == 1 ~ "Distinct",
                                                                               RegimenMapping.CandidateCount > 1 ~ "Indistinct",
@@ -132,38 +130,21 @@ MapSystemicTherapyRegimen <- function(InputData,
                         select(c(names(InputData),
                                  RegimenMapping.CandidateRows,
                                  RegimenMapping.CandidateCount,
-                                 RegimenMapping.Grade,
+                                 RegimenMapping.MatchGrade,
                                  RegimenMapping.Choice)) %>%
                         mutate(RegimenMapping.Candidates = map(RegimenMapping.CandidateRows, ~ Map.Regimens$Regimen[.x]),
                                Regimen.Mapped = map2_chr(.x = RegimenMapping.Choice,
                                                          .y = RegimenMapping.Candidates,
                                                          ~ ifelse(.x == "Distinct", .y, NA)))
 
-  # Create 'Tracker' for reporting (does not contain any patient- or diagnosis-identifying data)
-  Tracker <- RegimenMapping %>%
-                  select(Substances,
-                         ICD10Code,
-                         RegimenMapping.Choice,
-                         RegimenMapping.Candidates,
-                         Regimen.Mapped,
-                         RegimenMapping.Grade)
-
-
   # Create 'OutputData'
   OutputData <- RegimenMapping %>%
                     select(c(names(InputData),
-                             Regimen.Mapped,
-                             RegimenMapping.Grade))
-
-  # Report <- Tracker %>%
-  #               group_by(RegimenMapping.Choice, RegimenMapping.Grade) %>%
-  #                   summarize(Count = n()) %>%
-  #               ungroup() %>%
-  #               group_by(RegimenMapping.Choice) %>%
-  #                   mutate(Proportion = Count / sum(Count))
-
+                             RegimenMapping.Candidates,
+                             RegimenMapping.Choice,
+                             RegimenMapping.MatchGrade,
+                             Regimen.Mapped))
 
 #-------------------------------------------------------------------------------
-  return(list(OutputData = OutputData,
-              Tracker = Tracker))
+  return(OutputData)
 }

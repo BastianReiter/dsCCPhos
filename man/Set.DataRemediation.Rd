@@ -20,7 +20,8 @@
 \item{Method.Dictionary}{}
 \item{Method.FuzzyStringMatching}{}
 \item{Method.NaiveBayes}{}
-\item{MatchToDictionaryLookupsInFSM}{}
+\item{StringExtraction.IncludeDictionaryLookups}{}
+\item{FSM.IncludeDictionaryLookups}{}
 \item{UnremediatedValues.Substitute}{}
 \item{UnremediatedValues.Substitution}{}
 }

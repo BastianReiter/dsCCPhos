@@ -33,9 +33,7 @@ MapUICCStage(
 \item{AcceptableTNMCongruence}{\code{double} - The threshold defining how much congruence in fuzzy matching is needed to accept a match. Given as a ratio number (Count of matching features in relation to number of all features used for matching). Must be a value between 0 and 1.}
 }
 \value{
-A \code{list}:
-\itemize{ \item OutputData - The input \code{data.frame} with additional data
-\item Tracker - A deidentified version of 'OutputData' for reporting }
+The input \code{data.frame} with additional data
 }
 \description{
 Performs mapping from TNM data to UICC stage according to TNM classification

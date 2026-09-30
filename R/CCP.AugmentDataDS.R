@@ -687,19 +687,32 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                   UICCStageMapping.Validation <- Sel.StagingRecords.Validation %>%
                                                       dsCCPhos::MapUICCStage(Map.TNMGroup = Res.UICCMapping$TNMGroupMapping,
                                                                              Map.UICCStage = Res.UICCMapping$UICCStageMapping,
-                                                                             AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence)
+                                                                             AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence) %>%
+                                                      mutate(UICCStage.MatchFound = case_when(!is.na(UICCStage.Mapped) ~ TRUE,
+                                                                                              .default = FALSE),
+                                                             UICCStage.MappingAccuracy = case_when(UICCStage == UICCStage.Mapped ~ "Exact",
+                                                                                                   UICCStage.Category == UICCStage.Mapped.Category ~ "CategoryOnly",
+                                                                                                   UICCStage.MatchFound == TRUE ~ "Incorrect",
+                                                                                                   .default = NA))
 
-                  # Get Tracker object for Report
-                  Report.Imputation$UICCStage$Validation.Tracker <- UICCStageMapping.Validation$Tracker
+                  # Create 'Tracker' object for reporting (does not contain any patient- or diagnosis-identifying data)
+                  Report.Imputation$UICCStage$Validation.Tracker <- UICCStageMapping.Validation %>%
+                                                                        select(ICD10Code,
+                                                                               ICDOTopographyCode,
+                                                                               ICDOMorphologyHistologyCode,
+                                                                               Grading,
+                                                                               TNMVersion,
+                                                                               TNM.T,
+                                                                               TNM.N,
+                                                                               TNM.M,
+                                                                               TNM.S,
+                                                                               TNMGroup,
+                                                                               UICCStage.MatchFound,
+                                                                               UICCStage.Mapped,
+                                                                               UICCStage.MappingAccuracy)
 
                   # Detailed (ICD10Code.Short-specific) report on proportions of (in)correctly classified UICCStage values
-                  Report.Imputation$UICCStage$Validation.Details <- UICCStageMapping.Validation$OutputData %>%
-                                                                        mutate(UICCStage.MatchFound = case_when(!is.na(UICCStage.Mapped) ~ TRUE,
-                                                                                              .default = FALSE),
-                                                                               UICCStage.MappingAccuracy = case_when(UICCStage == UICCStage.Mapped ~ "Exact",
-                                                                                                                        UICCStage.Category == UICCStage.Mapped.Category ~ "CategoryOnly",
-                                                                                                                        UICCStage.MatchFound == TRUE ~ "Incorrect",
-                                                                                                                        .default = NA)) %>%
+                  Report.Imputation$UICCStage$Validation.Details <- UICCStageMapping.Validation %>%
                                                                         group_by(ICD10Code.Short) %>%
                                                                             summarize(CountTotal = n(),
                                                                                       CountFoundMatch = sum(UICCStage.MatchFound, na.rm = TRUE),
@@ -750,11 +763,22 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                                                                          Map.UICCStage = Res.UICCMapping$UICCStageMapping,
                                                                          AcceptableTNMCongruence = Settings$Imputation.UICCStage$AcceptableTNMCongruence)
 
-              # Get Tracker object for Report
-              Report.Imputation$UICCStage$Imputation.Tracker <- UICCStageMapping.Imputation$Tracker
+              # Create 'Tracker' object for reporting (does not contain any patient- or diagnosis-identifying data)
+              Report.Imputation$UICCStage$Imputation.Tracker <- UICCStageMapping.Imputation %>%
+                                                                    select(ICD10Code,
+                                                                           ICDOTopographyCode,
+                                                                           ICDOMorphologyHistologyCode,
+                                                                           Grading,
+                                                                           TNMVersion,
+                                                                           TNM.T,
+                                                                           TNM.N,
+                                                                           TNM.M,
+                                                                           TNM.S,
+                                                                           TNMGroup,
+                                                                           UICCStage.Mapped)
 
               # Calculate report info
-              Report.Imputation$UICCStage$Imputation.Details <- UICCStageMapping.Imputation$OutputData %>%
+              Report.Imputation$UICCStage$Imputation.Details <- UICCStageMapping.Imputation %>%
                                                                     group_by(ICD10Code.Short) %>%
                                                                         summarize(CountTotal = n(),
                                                                                   CountImputed = sum(!is.na(UICCStage.Mapped), na.rm = TRUE),
@@ -771,7 +795,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                                                   Report.Imputation$UICCStage$Imputation.Summary$CountTotal, " (", FormatPercentage(Report.Imputation$UICCStage$Imputation.Summary$PropImputed), ") missing values.")))
 
               # Isolate mapped UICCStage values intended for imputation ahead of merging with original data
-              UICCStageImputationValues <- UICCStageMapping.Imputation$OutputData %>%
+              UICCStageImputationValues <- UICCStageMapping.Imputation %>%
                                                 mutate(UICCStage.Imputation = case_when(!is.na(UICCStage.Mapped) ~ "Imputed",
                                                                                               is.na(UICCStage.Mapped) ~ "Failed",
                                                                                               .default = NA)) %>%
@@ -810,7 +834,7 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
 
   # Transform table 'SystemicTherapy':
   #   - Consolidate substance rows belonging to one therapy in one row with a character vector containing the substances
-  #   - The substance rows do not share the same 'SystemicTherapyID' due to splitting during curation (that's why is dropped in the consolidation)
+  #   - The substance rows do not share the same 'SystemicTherapyID' due to splitting during curation (that's why it's dropped in the consolidation)
   #   - Create new 'SystemicTherapyID' afterwards
   CDS$SystemicTherapy <- CDS$SystemicTherapy %>%
                               group_by(across(c(-SystemicTherapyID, -Substance, -.HasBeenSplit, -.IsArtificial))) %>%
@@ -913,53 +937,64 @@ CCP.AugmentDataDS <- function(CuratedDataSetName.S = "CCP.CuratedDataSet",
                                                                                               Substances.AllowedCountDifferenceRange = Settings$Imputation.SystemicTherapyRegimen$Substances.AllowedCountDifferenceRange,
                                                                                               Substances.AllowAdditionals = Settings$Imputation.SystemicTherapyRegimen$Substances.AllowAdditionals)
 
-          # Get 'Tracker' object for Report
-          Report.Imputation$SystemicTherapyRegimen$Imputation.Tracker <- SystemicTherapyRegimenMapping.Imputation$Tracker
-
-
-            # Report <- Tracker %>%
-  #               group_by(RegimenMatching.Choice, RegimenMatching.Grade) %>%
-  #                   summarize(Count = n()) %>%
-  #               ungroup() %>%
-  #               group_by(RegimenMatching.Choice) %>%
-  #                   mutate(Proportion = Count / sum(Count))
-
+          # Create 'Tracker' for reporting (does not contain any patient- or diagnosis-identifying data)
+          Report.Imputation$SystemicTherapyRegimen$Imputation.Tracker <- SystemicTherapyRegimenMapping.Imputation %>%
+                                                                              select(Substances,
+                                                                                     ICD10Code,
+                                                                                     RegimenMapping.Choice,
+                                                                                     RegimenMapping.Candidates,
+                                                                                     RegimenMapping.MatchGrade,
+                                                                                     Regimen.Mapped)
 
           # Calculate report info
-          Report.Imputation$SystemicTherapyRegimen$Imputation.Details <- SystemicTherapyRegimenMapping.Imputation$OutputData %>%
+          Report.Imputation$SystemicTherapyRegimen$Imputation.Details <- SystemicTherapyRegimenMapping.Imputation %>%
+                                                                              group_by(ICD10Code.Short, RegimenMapping.Choice) %>%
+                                                                                  summarize(Count = n()) %>%
                                                                               group_by(ICD10Code.Short) %>%
-                                                                                  summarize(CountTotal = n(),
-                                                                                            CountImputed = sum(!is.na(Regimen.Mapped), na.rm = TRUE),
-                                                                                            PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+                                                                                  mutate(Proportion = Count / sum(Count)) %>%
+                                                                                  pivot_wider(names_from = RegimenMapping.Choice,
+                                                                                              values_from = c(Count, Proportion),
+                                                                                              names_sep = ".")
 
-          Report.Imputation$SystemicTherapyRegimen$Imputation.Summary <- Report.Imputation$SystemicTherapyRegimen$Imputation.Details %>%
-                                                                              summarize(CountTotal = sum(CountTotal),
-                                                                                        CountImputed = sum(CountImputed),
-                                                                                        PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
+          Report.Imputation$SystemicTherapyRegimen$Imputation.Details.MatchingGrade <- SystemicTherapyRegimenMapping.Imputation %>%
+                                                                                            group_by(ICD10Code.Short, RegimenMapping.MatchGrade) %>%
+                                                                                                summarize(Count = n()) %>%
+                                                                                            group_by(ICD10Code.Short) %>%
+                                                                                                mutate(Proportion = Count / sum(Count)) %>%
+                                                                                                arrange(RegimenMapping.MatchGrade, .by_group = TRUE) %>%
+                                                                                                pivot_wider(names_from = RegimenMapping.MatchGrade,
+                                                                                                            values_from = c(Count, Proportion),
+                                                                                                            names_glue = "{RegimenMapping.MatchGrade}.{.value}",
+                                                                                                            names_expand = TRUE)
+
+          # Report.Imputation$SystemicTherapyRegimen$Imputation.Summary <- Report.Imputation$SystemicTherapyRegimen$Imputation.Details %>%
+          #                                                                     summarize(CountTotal = sum(CountTotal),
+          #                                                                               CountImputed = sum(CountImputed),
+          #                                                                               PropImputed = ifelse(CountTotal != 0, CountImputed / CountTotal))
 
           # Print message
-          PrintSoloMessage(c(Success = paste0("SystemicTherapy$Regimen imputation: ", Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$CountTotal, " / ", nrow(CDS$Staging),
-                                              " values were missing. Imputed ", Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$CountImputed, " / ",
-                                              Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$CountTotal, " (", FormatPercentage(Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$PropImputed), ") missing values.")))
+          # PrintSoloMessage(c(Success = paste0("SystemicTherapy$Regimen imputation: ", Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$CountTotal, " / ", nrow(CDS$Staging),
+          #                                     " values were missing. Imputed ", Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$CountImputed, " / ",
+          #                                     Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$CountTotal, " (", FormatPercentage(Report.Imputation$SystemicTherapyRegimen$Imputation.Summary$PropImputed), ") missing values.")))
 
           # Isolate mapped Regimen values intended for imputation ahead of merging with original data
-          RegimenImputationValues <- SystemicTherapyRegimenMapping.Imputation$OutputData %>%
+          RegimenImputationValues <- SystemicTherapyRegimenMapping.Imputation %>%
                                           mutate(Regimen.Imputation = case_when(!is.na(Regimen.Mapped) ~ "Imputed",
                                                                                 is.na(Regimen.Mapped) ~ "Failed",
                                                                                 .default = NA)) %>%
-                                          rename(Regimen.Imputation.Grade = "RegimenMapping.Grade") %>%
+                                          rename(Regimen.Imputation.MatchGrade = "RegimenMapping.MatchGrade") %>%
                                           select(PatientID,
                                                  DiagnosisID,
                                                  SystemicTherapyID,
                                                  Regimen.Mapped,
                                                  Regimen.Imputation,
-                                                 Regimen.Imputation.Grade)
+                                                 Regimen.Imputation.MatchGrade)
 
           # Perform imputation of 'Regimen'
           CDS$SystemicTherapy <- CDS$SystemicTherapy %>%
                                       left_join(RegimenImputationValues, by = join_by(PatientID, DiagnosisID, SystemicTherapyID)) %>%
                                       mutate(Regimen = case_when((is.na(Regimen) | Regimen == ".Ineligible") & !is.na(Regimen.Mapped) ~ Regimen.Mapped,
-                                                                   .default = Regimen)) %>%
+                                                                  .default = Regimen)) %>%
                                       select(-Regimen.Mapped)
       } else {
 
