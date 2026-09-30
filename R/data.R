@@ -289,7 +289,8 @@
 #'   \item{Method.Dictionary}{}
 #'   \item{Method.FuzzyStringMatching}{}
 #'   \item{Method.NaiveBayes}{}
-#'   \item{MatchToDictionaryLookupsInFSM}{}
+#'   \item{StringExtraction.IncludeDictionaryLookups}{}
+#'   \item{FSM.IncludeDictionaryLookups}{}
 #'   \item{UnremediatedValues.Substitute}{}
 #'   \item{UnremediatedValues.Substitution}{}
 #' }
@@ -540,6 +541,32 @@
 #' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
 #' @author Bastian Reiter
 "Set.SecondaryTableCleaning"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Set.StringExtraction.rda
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' Set.StringExtraction
+#'
+#' Feature-specific settings for String Extraction used in Data Remediation
+#'
+#' @format ## `Set.StringExtraction`
+#' \code{tibble}
+#' \describe{
+#'   \item{Profile}{}
+#'   \item{FeatureID}{}
+#'   \item{Table}{}
+#'   \item{Feature}{}
+#'   \item{HasEligibleValueSet}{}
+#'   \item{WorkStringMinimumLength}{}
+#'   \item{RefStringMinimumLength}{}
+#'   \item{StringLengthMinimumRatio}{}
+#' }
+#' @source <https://github.com/BastianReiter/dsCCPhos/blob/main/Development/MetaData>
+#' @author Bastian Reiter
+"Set.StringExtraction"
 
 
 

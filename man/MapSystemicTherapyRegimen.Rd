@@ -25,9 +25,7 @@ MapSystemicTherapyRegimen(
 \item{Substances.AllowAdditionals}{\code{logical scalar}}
 }
 \value{
-A \code{list}:
-\itemize{ \item OutputData - The input \code{data.frame} with additional data
-\item Tracker - A deidentified version of 'OutputData' for reporting }
+The input \code{data.frame} with additional data
 }
 \description{
 Performs mapping from substances to regimen in systemic cancer therapy

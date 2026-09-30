@@ -20,9 +20,7 @@
 #' @param Map.UICCStage \code{data.frame}
 #' @param AcceptableTNMCongruence \code{double} - The threshold defining how much congruence in fuzzy matching is needed to accept a match. Given as a ratio number (Count of matching features in relation to number of all features used for matching). Must be a value between 0 and 1.
 #'
-#' @return A \code{list}:
-#'          \itemize{ \item OutputData - The input \code{data.frame} with additional data
-#'                    \item Tracker - A deidentified version of 'OutputData' for reporting }
+#' @return The input \code{data.frame} with additional data
 #'
 #' @export
 #'
@@ -266,20 +264,7 @@ MapUICCStage <- function(InputData,
                                                                                     str_starts(UICCStage.Mapped, "IV") ~ "IV",
                                                                                     .default = NA_character_))
 
-  # 3) Create 'Tracker' object for reporting (does not contain any patient- or diagnosis-identifying data)
-  Tracker <- UICCStageMatching %>%
-                  select(ICD10Code,
-                         ICDOTopographyCode,
-                         ICDOMorphologyHistologyCode,
-                         Grading,
-                         TNM.T,
-                         TNM.N,
-                         TNM.M,
-                         TNM.S,
-                         TNMGroup,
-                         UICCStage.Mapped)
-
-  # 4) Create 'OutputData': 'InputData' with added 'TNMGroup', 'UICCStage.Mapped' and 'UICCStage.Mapped.Category'
+  # 3) Create 'OutputData': 'InputData' with added 'TNMGroup', 'UICCStage.Mapped' and 'UICCStage.Mapped.Category'
   OutputData <- InputData %>%
                     left_join(UICCStageMatching, by = names(InputData)) %>%      # Join by all common variables (natural join)
                     select(all_of(c(names(InputData),
@@ -288,6 +273,5 @@ MapUICCStage <- function(InputData,
                                     "UICCStage.Mapped.Category")))
 
 #-------------------------------------------------------------------------------
-  return(list(OutputData = OutputData,
-              Tracker = Tracker))
+  return(OutputData)
 }
